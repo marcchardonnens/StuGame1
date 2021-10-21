@@ -1,2 +1,2 @@
 # StuGame1
-Repository for StuGame1 Course
+Repository for StuGame1 Course @ HSLU

@@ -351,9 +351,9 @@ MonoBehaviour:
   xSize: 100
   zSize: 100
   edge: 10
-  XNoiseMult: 0.15
-  ZNoiseMult: 0.15
-  OverallMult: 6
+  XNoiseMult: 0.3
+  ZNoiseMult: 0.3
+  OverallMult: 1
   TreePrefab: {fileID: 2391163762875981780, guid: 46d273508dd61ac43b2552a5b43c0e07, type: 3}
   TreeEdge: 20
 --- !u!23 &998628110

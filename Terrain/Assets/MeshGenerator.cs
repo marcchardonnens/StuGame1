@@ -31,8 +31,8 @@ public class MeshGenerator : MonoBehaviour
 		//GetComponent<MeshCollider>().sharedMesh = mesh;
 		this.gameObject.transform.position += new Vector3(-xSize/2,0,-zSize/2);
 		Generate();
+		//StartCoroutine(GenerateObjects());
 
-		
 
 	}
 
@@ -40,7 +40,6 @@ public class MeshGenerator : MonoBehaviour
 	void Start()
     {
 
-        StartCoroutine(GenerateObjects());
 
     }
 
@@ -74,22 +73,14 @@ public class MeshGenerator : MonoBehaviour
 			for (int x = 0; x <= xSize; x++, i++)
 			{
 				float y = Mathf.PerlinNoise(x*XNoiseMult, z*ZNoiseMult) * OverallMult;
-                if (x < edge)
-                {
-                    y -= Mathf.Abs(0.5f* (x - edge));
-                }
-				else if (z < edge)
-                {
-                    y -= Mathf.Abs(0.5f * (z - edge));
-				}
-				else if (x > xSize - edge)
-				{
-					y -= Mathf.Abs(0.5f * (x + edge - xSize));
-                }
-				else if (z > zSize - edge)
-				{
-					y -= Mathf.Abs(0.5f * (z + edge - zSize));
-                }
+				//y += Mathf.PerlinNoise(x*2f, z*2f) * 5f; //experiment second level of noise
+				LowerEdgeVertices(x,ref y, z);
+
+				//moutain mental notes
+				//select mounsize x elements
+				//select mounsize z elements
+				//create new array and modify y values
+
 				vertices[i] = new Vector3(x, y, z);
 			}
 		}
@@ -111,7 +102,32 @@ public class MeshGenerator : MonoBehaviour
 		mesh.RecalculateBounds();
 		GetComponent<MeshCollider>().sharedMesh = mesh;
 	}
-	
+
+	private void CreateSingleMountain()
+    {
+
+    }
+
+	private void LowerEdgeVertices(float x,ref float y, float z)
+    {
+		if (x < edge)
+		{
+			y -= Mathf.Abs(0.5f * (x - edge));
+		}
+		else if (z < edge)
+		{
+			y -= Mathf.Abs(0.5f * (z - edge));
+		}
+		else if (x > xSize - edge)
+		{
+			y -= Mathf.Abs(0.5f * (x + edge - xSize));
+		}
+		else if (z > zSize - edge)
+		{
+			y -= Mathf.Abs(0.5f * (z + edge - zSize));
+		}
+	}
+
     private IEnumerator GenerateObjects()
     {
         yield return 1;

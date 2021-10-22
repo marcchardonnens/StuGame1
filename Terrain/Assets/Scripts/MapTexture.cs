@@ -35,68 +35,54 @@ public class MapTexture : MonoBehaviour
 
     public void Generate()
     {
-        System.Random rng = seed == 0 ? new System.Random() : new System.Random(seed);
         texture = new Texture2D(xSize, zSize);
 
         float minval = float.MaxValue;
         float maxval = float.MinValue;
 
-        float xRandOffset = rng.Next(-100000, 100000);
-        float zRandOffset = rng.Next(-100000, 100000);
+        float[,] noisemap = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, scale, persistance, lacunarity,
+            octaves, xOffset, zOffset);
+        float[,] noisemap2 = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, 5, 0.5f, 2f,
+            1, xOffset, zOffset);
 
+        
 
-        Vector3[] vertices = new Vector3[xSize * zSize];
         Color[] colorMap = new Color[xSize * zSize];
-
-
-        if(scale == 0)
+        for (int z = 0; z < zSize; z++)
         {
-            scale = 0.0001f;
-        }
-
-        for (int i = 0, z = 0; z < zSize; z++)
-        {
-            for (int x = 0; x < xSize; x++, i++)
+            for (int x = 0; x < xSize; x++)
             {
-                float y = 0;
-                float sPrs = persistance;
-                float sLacu = lacunarity;
-                float amplitude = 1;
-                float frequency  = 1;
-                for (int j = 0; j < octaves; j++)
+                noisemap[x, z] += noisemap2[x, z];
+
+                if (noisemap[x, z] > maxval)
                 {
-                    float sx = ((x - xSize/2f) / scale) * frequency + xOffset + xRandOffset;
-                    float sz = ((z - zSize/2f) / scale) * frequency + zOffset + zRandOffset;
-                    float perlin = Mathf.PerlinNoise(sx, sz) * 2 - 1;
-                    y += perlin * amplitude;
-                    amplitude *= sPrs;
-                    frequency *= sLacu;
+                    maxval = noisemap[x, z];
+                }
+                else if (noisemap[x, z] < minval)
+                {
+                    minval = noisemap[x, z];
                 }
 
-                if(y > maxval)
-                {
-                    maxval = y;
-                }
-                else if(y < minval)
-                {
-                    minval = y;
-                }
-
-                vertices[i] = new Vector3(x, y, z);
             }
         }
+
+        for (int z = 0; z < zSize; z++)
+        {
+            for (int x = 0; x < xSize; x++)
+            {
+                noisemap[x, z] = Mathf.InverseLerp(minval, maxval, noisemap[x, z]);
+            }
+        }
+
 
 
         for (int z = 0; z < zSize; z++)
         {
             for (int x = 0; x < xSize; x++)
             {
-                float y = vertices[z * xSize + x].y;
-                y = Mathf.InverseLerp(minval, maxval, y);
-                colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, y);
+                colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, noisemap[x, z]);
             }
         }
-
 
         texture.SetPixels(colorMap);
         texture.Apply();

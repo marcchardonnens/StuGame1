@@ -6,6 +6,8 @@ using Random = UnityEngine.Random;
 
 public class MeshGenerator : MonoBehaviour
 {
+	public bool DRAW = false;
+
     [SerializeField]private bool DrawEachFrame_Debug = false;
 
     [SerializeField]private int xSize = 20;
@@ -22,7 +24,6 @@ public class MeshGenerator : MonoBehaviour
 
     private Mesh mesh;
 
-	
 
 	private void Awake()
     {
@@ -30,7 +31,7 @@ public class MeshGenerator : MonoBehaviour
 		GetComponent<MeshFilter>().mesh = mesh;
 		//GetComponent<MeshCollider>().sharedMesh = mesh;
 		this.gameObject.transform.position += new Vector3(-xSize/2,0,-zSize/2);
-		Generate();
+		//Generate();
 		//StartCoroutine(GenerateObjects());
 
 
@@ -56,15 +57,34 @@ public class MeshGenerator : MonoBehaviour
     void Update()
     {
 
-        Debug.DrawRay(Vector3.zero, Vector3.up * 1000f, Color.magenta);
+		//ray at position 0,y,0;
+        //Debug.DrawRay(Vector3.zero, Vector3.up * 1000f, Color.magenta);
+
+		if(DRAW)
+        {
+			onDraw();
+        }
+
 	}
 
+	private void onDraw()
+    {
+		DRAW = false;
+		Generate();
 
 
 
+    }
+
+
+
+	//get index from second for loop to 2d iterate over vertices
+	//int yIndex = z * xsize + z  ----------> current y
 	private void Generate()
 	{
 		GetComponent<MeshFilter>().mesh = mesh = new Mesh();
+
+
 
 
         Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
@@ -76,14 +96,26 @@ public class MeshGenerator : MonoBehaviour
 				//y += Mathf.PerlinNoise(x*2f, z*2f) * 5f; //experiment second level of noise
 				LowerEdgeVertices(x,ref y, z);
 
-				//moutain mental notes
-				//select mounsize x elements
-				//select mounsize z elements
-				//create new array and modify y values
+
+
+
+
+
+
 
 				vertices[i] = new Vector3(x, y, z);
 			}
 		}
+
+
+
+
+
+        FinalizeMesh(vertices);
+    }
+
+	private void FinalizeMesh(Vector3[] vertices)
+    {
 		mesh.vertices = vertices;
 
 		int[] triangles = new int[xSize * zSize * 6];
@@ -103,10 +135,15 @@ public class MeshGenerator : MonoBehaviour
 		GetComponent<MeshCollider>().sharedMesh = mesh;
 	}
 
+
+	//shoud probably throw that out and do it properly
 	private void CreateSingleMountain()
     {
-
-    }
+		//moutain mental notes
+		//select mounsize x elements
+		//select mounsize z elements
+		//create new array and modify y values
+	}
 
 	private void LowerEdgeVertices(float x,ref float y, float z)
     {

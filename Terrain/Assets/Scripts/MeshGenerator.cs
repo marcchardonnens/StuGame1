@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -10,32 +11,34 @@ public class MeshGenerator : MonoBehaviour
 
     [SerializeField]private bool DrawEachFrame_Debug = false;
 
-    [SerializeField]private int xSize = 20;
-	[SerializeField]private int zSize = 20;
+    public int seed = 0;
+
+    public int xChunks = 1;
+    public int zChunks = 1;
+
+    public NoiseData[] noisedata;
+
+    [SerializeField]private int xSize = 200;
+	[SerializeField]private int zSize = 200;
 
     [SerializeField] private float edge = 20f;
-	 
-	[SerializeField]private float XNoiseMult = 0.3f;
-	[SerializeField]private float ZNoiseMult = 0.3f;
-	[SerializeField]private float OverallMult = 2f;
+
+
+    public Material material;
 
     public GameObject TreePrefab;
     [SerializeField] private float TreeEdge = 20f;
-
-    private Mesh mesh;
+    
 
 
 	private void Awake()
     {
-		mesh = new Mesh();
-		GetComponent<MeshFilter>().mesh = mesh;
-		//GetComponent<MeshCollider>().sharedMesh = mesh;
-		this.gameObject.transform.position += new Vector3(-xSize/2,0,-zSize/2);
-		//Generate();
-		//StartCoroutine(GenerateObjects());
+
+        Generate();
+        //StartCoroutine(GenerateObjects());
 
 
-	}
+    }
 
 	// Start is called before the first frame update
 	void Start()
@@ -53,70 +56,113 @@ public class MeshGenerator : MonoBehaviour
 
 	}
 
-    // Update is called once per frame
-    void Update()
-    {
-
-		//ray at position 0,y,0;
-        //Debug.DrawRay(Vector3.zero, Vector3.up * 1000f, Color.magenta);
-
-		if(DRAW)
-        {
-			onDraw();
-        }
-
-	}
-
-	private void onDraw()
-    {
-		DRAW = false;
-		Generate();
-
-
-
-    }
-
-
 
 	//get index from second for loop to 2d iterate over vertices
 	//int yIndex = z * xsize + z  ----------> current y
 	private void Generate()
 	{
-		GetComponent<MeshFilter>().mesh = mesh = new Mesh();
+        this.gameObject.transform.position += new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
+        if (!DrawEachFrame_Debug)
+        {
+			Debug.Log("generate start");
+        }
+        if (noisedata.Length <= 0)
+        {
+            return;
+        }
+
+
+        List<float[,]> maps = new List<float[,]>();
+        foreach (NoiseData noiseData in noisedata)
+        {
+            maps.Add(NoiseMapGenerator.GeneratePerlinNM((xSize + 1) * xChunks, (zSize + 1) * zChunks, seed, noiseData));
+        }
+
+        Debug.Log("map 1:    " + maps[0].Length);
+
+        float[,] combinedMap = CombineMaps(maps);
+
+        //using (FileStream fs = File.Open("./scores.txt", FileMode.Create))
+        //{
+        //    StreamWriter sw = new StreamWriter(fs);
+        //    for (int i = 0, z = 0; z <= zSize; z++)
+        //    {
+        //        for (int x = 0; x <= xSize; x++, i++)
+        //        {
+        //            sw.Write(combinedMap[x, z].ToString("0.00") + "  ");
+        //        }
+        //        sw.WriteLine("");
+        //    }
+            
+        //}
+
+
+
+        for (int zchunk = 0; zchunk < xChunks; zchunk++)
+        {
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
+            {
+                GameObject terrainChunk = new GameObject("map chunk");//Instantiate(new GameObject(), gameObject.transform);
+                terrainChunk.transform.parent = gameObject.transform;
+                terrainChunk.transform.localPosition = new Vector3(xSize * xchunk, 0, zSize * zchunk);
+                
+                Mesh mesh = terrainChunk.AddComponent<MeshFilter>().sharedMesh = new Mesh();
+                MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();
+                meshRenderer.sharedMaterial = material;
+                meshRenderer.material = material;
+                MeshCollider meshCollider = terrainChunk.AddComponent<MeshCollider>();
+
+                Vector3[] vertices = MakeChunk(xchunk,zchunk,combinedMap);
+
+                mesh.vertices = vertices;
+
+                FinalizeMesh(mesh, meshCollider);
+            }
+        }
 
 
 
 
-        Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-		for (int i = 0, z = 0; z <= zSize; z++)
-		{
-			for (int x = 0; x <= xSize; x++, i++)
-			{
-				float y = Mathf.PerlinNoise(x*XNoiseMult, z*ZNoiseMult) * OverallMult;
-				//y += Mathf.PerlinNoise(x*2f, z*2f) * 5f; //experiment second level of noise
-				LowerEdgeVertices(x,ref y, z);
-
-
-
-
-
-
-
-
-				vertices[i] = new Vector3(x, y, z);
-			}
-		}
-
-
-
-
-
-        FinalizeMesh(vertices);
+        if (!DrawEachFrame_Debug)
+        {
+            Debug.Log("generate finish");
+        }
     }
 
-	private void FinalizeMesh(Vector3[] vertices)
+    private Vector3[] MakeChunk(int xchunk, int zchunk, float[,] combinedMap)
     {
-		mesh.vertices = vertices;
+        Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+        for (int i = 0, z = 0; z <= zSize; z++)
+        {
+            for (int x = 0; x <= xSize; x++, i++)
+            {
+                vertices[i] = new Vector3(x, combinedMap[(xSize+1)* xchunk + x, (zSize+1)*zchunk + z], z);
+            }
+        }
+
+        Debug.Log("vertices: " + vertices.Length);
+        return vertices;
+    }
+
+    private float[,] CombineMaps(List<float[,]> maps)
+    {
+        float[,] combined = new float[(xSize + 1) * xChunks, (zSize + 1) * zChunks];
+        foreach (float[,] map in maps)
+        {
+            for (int z = 0; z <= zSize; z++)
+            {
+                for (int x = 0; x <= xSize; x++)
+                {
+                    combined[x, z] += map[x,z];
+                }
+            }
+        }
+
+        return combined;
+    }
+
+    private void FinalizeMesh(Mesh mesh, MeshCollider meshCollider)
+    {
 
 		int[] triangles = new int[xSize * zSize * 6];
 		for (int ti = 0, vi = 0, z = 0; z < zSize; z++, vi++)
@@ -132,7 +178,7 @@ public class MeshGenerator : MonoBehaviour
 		mesh.triangles = triangles;
 		mesh.RecalculateNormals();
 		mesh.RecalculateBounds();
-		GetComponent<MeshCollider>().sharedMesh = mesh;
+		meshCollider.sharedMesh = mesh;
 	}
 
 
@@ -165,6 +211,7 @@ public class MeshGenerator : MonoBehaviour
 		}
 	}
 
+
     private IEnumerator GenerateObjects()
     {
         yield return 1;
@@ -193,4 +240,19 @@ public class MeshGenerator : MonoBehaviour
     }
 
 
+}
+
+
+[Serializable]
+public class NoiseData
+{
+    public float scale = 50f;
+    public int octaves = 4;
+    [Range(0, 1)]
+    public float persistance = 0.5f;
+    public float lacunarity = 2f;
+    public float overallMult = 1f;
+
+    public float xOffset = 0;
+    public float zOffset = 0;
 }

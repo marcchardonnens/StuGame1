@@ -14,6 +14,7 @@ public class MapTexture : MonoBehaviour
     [Range(0,1)]
     public float persistance = 1f;
     public float lacunarity = 0f;
+    public float overallMult = 1f;
 
     public float xOffset = 0;
     public float zOffset = 0;
@@ -41,9 +42,9 @@ public class MapTexture : MonoBehaviour
         float maxval = float.MinValue;
 
         float[,] noisemap = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, scale, persistance, lacunarity,
-            octaves, xOffset, zOffset);
+            octaves, xOffset, zOffset, overallMult);
         float[,] noisemap2 = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, 5, 0.5f, 2f,
-            1, xOffset, zOffset);
+            1, xOffset, zOffset, overallMult);
 
         
 
@@ -52,7 +53,7 @@ public class MapTexture : MonoBehaviour
         {
             for (int x = 0; x < xSize; x++)
             {
-                noisemap[x, z] += noisemap2[x, z];
+                //noisemap[x, z] += noisemap2[x, z];
 
                 if (noisemap[x, z] > maxval)
                 {

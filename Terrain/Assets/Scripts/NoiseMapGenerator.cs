@@ -5,7 +5,13 @@ using UnityEngine;
 public class NoiseMapGenerator
 {
 
-    public static float[,] GeneratePerlinNM(int xSize, int zSize, int seed, float scale, float persistance, float lacunarity, int octaves, float xOffset, float zOffset)
+    public static float[,] GeneratePerlinNM(int xSize, int zSize,int seed, NoiseData noiseData)
+    {
+        return GeneratePerlinNM(xSize, zSize, seed, noiseData.scale, noiseData.persistance, noiseData.lacunarity,
+            noiseData.octaves, noiseData.xOffset, noiseData.zOffset, noiseData.overallMult);
+    }
+
+    public static float[,] GeneratePerlinNM(int xSize, int zSize, int seed, float scale, float persistance, float lacunarity, int octaves, float xOffset, float zOffset, float overallMult)
     {
         float[,] noisemap = new float[xSize, zSize];
 
@@ -44,7 +50,7 @@ public class NoiseMapGenerator
                     frequency *= sLacu;
                 }
 
-                noisemap[x, z] = y;
+                noisemap[x, z] = y * overallMult;
             }
         }
 

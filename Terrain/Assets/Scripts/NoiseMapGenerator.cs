@@ -106,21 +106,23 @@ public class NoiseMapGenerator
     //falloff right now is per map, need to make it over all chunks
     public static float[,,,] GenerateFalloff(int xSize, int zSize, int xChunks, int zChunks)
     {
-        float[,,,] noisemap = new float[xSize, zSize, xChunks, zChunks];
+        float[,,,] noisemap = new float[xSize + 1, zSize + 1, xChunks, zChunks];
 
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
             for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                for (int z = 0; z < zSize; z++)
+                for (int z = 0; z <= zSize; z++)
                 {
-                    for (int x = 0; x < xSize; x++)
+                    for (int x = 0; x <= xSize; x++)
                     {
-                        float sx = x / (float)xSize * 2 - 1;
-                        float sz = z / (float)zSize * 2 - 1;
+                        float sx = (x / (float)(xSize*xChunks)) * 2 - 1;
+                        float sz = (z / (float)(zSize*zChunks)) * 2 - 1;
 
                         float y = Mathf.Max(Mathf.Abs(sx), Mathf.Abs(sz));
-                        noisemap[x, z, xchunk, zchunk] = y;
+                        y = Evaluate(y);
+                        y = Mathf.Lerp(-30f, 1, y);
+                        noisemap[x, z, xchunk, zchunk] = -y;
                     }
                 }
             }
@@ -128,8 +130,33 @@ public class NoiseMapGenerator
 
 
         return noisemap;
-    }
 
+    //    float[,] map = new float[size, size];
+
+    //    for (int i = 0; i < size; i++)
+    //    {
+    //        for (int j = 0; j < size; j++)
+    //        {
+    //            float x = i / (float)size * 2 - 1;
+    //            float y = j / (float)size * 2 - 1;
+
+    //            float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+    //            map[i, j] = Evaluate(value);
+    //        }
+    //    }
+
+    //    return map;
+    //}
+
+
+    }
+    private static float Evaluate(float value)
+    {
+        float a = 3;
+        float b = 2.2f;
+
+        return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
+    }
 
     public static float[,,,] CombineMaps(List<float[,,,]> maps, int xSize, int zSize, int xChunks, int zChunks)
     {
@@ -149,29 +176,7 @@ public class NoiseMapGenerator
                     }
                 }
             }
-
-            //Debug.Log("map in loop     " + map.Length);
-            //Debug.Log("index 350,350 in loop    " + map[350, 350].ToString());
-
-            //Debug.Log("combined in loop     " + combined.Length);
-            //Debug.Log("index 350,350 in loop    " + combined[350, 350].ToString());
-
         }
-        //Debug.Log("combined     " + combined.Length);
-        //Debug.Log("index 350,350    " + combined[350, 350].ToString());
-        //using (FileStream fs = File.Open("./combined.txt", FileMode.Create))
-        //{
-        //    StreamWriter sw = new StreamWriter(fs);
-        //    for (int i = 0, z = 0; z < zSize; z++)
-        //    {
-        //        for (int x = 0; x < xSize; x++, i++)
-        //        {
-        //            sw.Write(combined[x, z].ToString() + "  ");
-        //        }
-        //        sw.WriteLine("");
-        //    }
-
-        //}
 
         return combined;
     }

@@ -23,6 +23,7 @@ public class MeshGenerator : MonoBehaviour
 
 
     public Material material;
+    public TextureData TextureData;
 
     public GameObject TreePrefab;
     [SerializeField] private float TreeEdge = 20f;
@@ -84,14 +85,15 @@ public class MeshGenerator : MonoBehaviour
         {
             maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks,  noiseData));
         }
-        
+        maps.Add(NoiseMapGenerator.GenerateFalloff(xSize, zSize, xChunks, zChunks));
 
         float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps,xSize+1,zSize+1,xChunks,zChunks);
 
 
         MakeChunks(combinedMap);
 
-
+        TextureData.ApplyToMaterial(material);
+        TextureData.UpdateMeshHeights(material,TextureData.MinHeight,TextureData.MaxHeight);
 
     }
 
@@ -225,4 +227,40 @@ public class NoiseData
 
     public float xOffset = 0;
     public float zOffset = 0;
+}
+
+
+[Serializable]
+public class TextureData
+{
+
+    public float MinHeight = 0f;
+    public float MaxHeight = 10f;
+
+    public Color[] baseColours;
+    [Range(0, 1)]
+    public float[] baseStartHeights;
+
+    float savedMinHeight;
+    float savedMaxHeight;
+
+    public void ApplyToMaterial(Material material)
+    {
+
+        material.SetInt("baseColourCount", baseColours.Length);
+        material.SetColorArray("baseColours", baseColours);
+        material.SetFloatArray("baseStartHeights", baseStartHeights);
+
+        UpdateMeshHeights(material, savedMinHeight, savedMaxHeight);
+    }
+
+    public void UpdateMeshHeights(Material material, float minHeight, float maxHeight)
+    {
+        savedMinHeight = minHeight;
+        savedMaxHeight = maxHeight;
+
+        material.SetFloat("minHeight", minHeight);
+        material.SetFloat("maxHeight", maxHeight);
+    }
+
 }

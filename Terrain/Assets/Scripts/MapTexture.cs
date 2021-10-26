@@ -52,6 +52,7 @@ public class MapTexture : MonoBehaviour
             maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks, noiseData));
         }
 
+        maps.Add(NoiseMapGenerator.GenerateFalloff(xSize,zSize,xChunks,zChunks));
 
 
 
@@ -114,7 +115,7 @@ public class MapTexture : MonoBehaviour
         }
 
 
-        MakeChunks(combinedMap);
+        DrawMap(combinedMap);
 
 
 
@@ -124,7 +125,7 @@ public class MapTexture : MonoBehaviour
 
 
 
-    private void MakeChunks(float[,,,] combinedMap)
+    private void DrawMap(float[,,,] combinedMap)
     {
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {

@@ -61,8 +61,8 @@ public class NoiseMapGenerator
                             //float sz = ((z - zSize / 2f) / scale) * frequency + zOffset + zRandOffset - ((((float)zchunk * (float)zSize) /scale));
 
 
-                            float sx = (x / scale) * frequency + xOffset + xRandOffset + xChunkOffset;
-                            float sz = (z / scale) * frequency + zOffset + zRandOffset + zChunkOffset;
+                            float sx = ((x - xSize / 2f) / scale) * frequency + xOffset + xRandOffset + xChunkOffset;
+                            float sz = ((z - zSize / 2f) / scale) * frequency + zOffset + zRandOffset + zChunkOffset;
 
                             //float sx = ((x) / scale) * frequency + xOffset + xRandOffset;
                             //float sz = ((z) / scale) * frequency + zOffset + zRandOffset;

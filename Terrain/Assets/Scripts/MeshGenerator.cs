@@ -112,7 +112,8 @@ public class MeshGenerator : MonoBehaviour
 
                 GameObject terrainChunk = new GameObject("map chunk " + xchunk + " " + zchunk);
                 terrainChunk.transform.parent = gameObject.transform;
-                terrainChunk.transform.localPosition = new Vector3(xSize * xchunk, 0, zSize * zchunk);
+                terrainChunk.transform.localPosition = new Vector3((xSize * xchunk - xchunk*1f) /*/ transform.localScale.x*/, 0, (zSize * zchunk - zchunk*1f) /*/ transform.localScale.z*/);
+                terrainChunk.transform.localScale = new Vector3(1, 1, 1);
 
                 Mesh mesh = terrainChunk.AddComponent<MeshFilter>().sharedMesh = new Mesh();
                 MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();

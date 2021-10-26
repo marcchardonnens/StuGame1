@@ -7,10 +7,8 @@ using Random = UnityEngine.Random;
 
 public class MeshGenerator : MonoBehaviour
 {
-	public bool DRAW = false;
-
-    [SerializeField]private bool DrawEachFrame_Debug = false;
-
+	public bool autoupdate = false;
+    
     public int seed = 0;
 
     public int xChunks = 1;
@@ -49,117 +47,88 @@ public class MeshGenerator : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (DrawEachFrame_Debug)
-        {
-            Generate();
-        }
 
-	}
+    }
 
 
 	//get index from second for loop to 2d iterate over vertices
 	//int yIndex = z * xsize + z  ----------> current y
-	private void Generate()
-	{
-        this.gameObject.transform.position += new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
-        if (!DrawEachFrame_Debug)
+	public void Generate()
+    {
+        int count = transform.childCount;
+        List<Transform> children = new List<Transform>();
+        for (int i = 0; i < count; i++)
         {
-			Debug.Log("generate start");
-        }
-        if (noisedata.Length <= 0)
-        {
-            return;
+            children.Add(transform.GetChild(i));
         }
 
+        for (int i = 0; i < count; i++)
+        {
+            if (Application.isEditor)
+            {
+                DestroyImmediate(children[i].gameObject, true);
+            }
+            else
+            {
+                Destroy(children[i]);
+            }
+        }
+        children = null;
+        count = 0;
 
-        List<float[,]> maps = new List<float[,]>();
+
+        this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
+        
+        List<float[,,,]> maps = new List<float[,,,]>();
         foreach (NoiseData noiseData in noisedata)
         {
-            maps.Add(NoiseMapGenerator.GeneratePerlinNM((xSize + 1) * xChunks, (zSize + 1) * zChunks, seed, noiseData));
+            maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks,  noiseData));
         }
+        
 
-        Debug.Log("map 1:    " + maps[0].Length);
+        float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps,xSize+1,zSize+1,xChunks,zChunks);
 
-        float[,] combinedMap = CombineMaps(maps);
 
-        //using (FileStream fs = File.Open("./scores.txt", FileMode.Create))
-        //{
-        //    StreamWriter sw = new StreamWriter(fs);
-        //    for (int i = 0, z = 0; z <= zSize; z++)
-        //    {
-        //        for (int x = 0; x <= xSize; x++, i++)
-        //        {
-        //            sw.Write(combinedMap[x, z].ToString("0.00") + "  ");
-        //        }
-        //        sw.WriteLine("");
-        //    }
-            
-        //}
+        MakeChunks(combinedMap);
 
 
 
-        for (int zchunk = 0; zchunk < xChunks; zchunk++)
+    }
+
+    private void MakeChunks(float[,,,] combinedMap)
+    {
+        for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
             for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                GameObject terrainChunk = new GameObject("map chunk");//Instantiate(new GameObject(), gameObject.transform);
+                Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+                for (int i = 0, z = 0; z <= zSize; z++)
+                {
+                    for (int x = 0; x <= xSize; x++, i++)
+                    { 
+                        vertices[i] = new Vector3(x, combinedMap[x, z, xchunk, zchunk], z);
+                    }
+                }
+
+                GameObject terrainChunk = new GameObject("map chunk " + xchunk + " " + zchunk);
                 terrainChunk.transform.parent = gameObject.transform;
                 terrainChunk.transform.localPosition = new Vector3(xSize * xchunk, 0, zSize * zchunk);
-                
+
                 Mesh mesh = terrainChunk.AddComponent<MeshFilter>().sharedMesh = new Mesh();
                 MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();
                 meshRenderer.sharedMaterial = material;
                 meshRenderer.material = material;
                 MeshCollider meshCollider = terrainChunk.AddComponent<MeshCollider>();
-
-                Vector3[] vertices = MakeChunk(xchunk,zchunk,combinedMap);
-
+                
                 mesh.vertices = vertices;
 
                 FinalizeMesh(mesh, meshCollider);
+
             }
-        }
-
-
-
-
-        if (!DrawEachFrame_Debug)
-        {
-            Debug.Log("generate finish");
         }
     }
 
-    private Vector3[] MakeChunk(int xchunk, int zchunk, float[,] combinedMap)
-    {
-        Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-        for (int i = 0, z = 0; z <= zSize; z++)
-        {
-            for (int x = 0; x <= xSize; x++, i++)
-            {
-                vertices[i] = new Vector3(x, combinedMap[(xSize+1)* xchunk + x, (zSize+1)*zchunk + z], z);
-            }
-        }
 
-        Debug.Log("vertices: " + vertices.Length);
-        return vertices;
-    }
-
-    private float[,] CombineMaps(List<float[,]> maps)
-    {
-        float[,] combined = new float[(xSize + 1) * xChunks, (zSize + 1) * zChunks];
-        foreach (float[,] map in maps)
-        {
-            for (int z = 0; z <= zSize; z++)
-            {
-                for (int x = 0; x <= xSize; x++)
-                {
-                    combined[x, z] += map[x,z];
-                }
-            }
-        }
-
-        return combined;
-    }
 
     private void FinalizeMesh(Mesh mesh, MeshCollider meshCollider)
     {
@@ -233,7 +202,7 @@ public class MeshGenerator : MonoBehaviour
             else
             {
 			}
-			Debug.DrawRay(new Vector3(x,100f, z), Vector3.down * 10000, Color.magenta);
+			//Debug.DrawRay(new Vector3(x,100f, z), Vector3.down * 10000, Color.magenta);
         }
 
 

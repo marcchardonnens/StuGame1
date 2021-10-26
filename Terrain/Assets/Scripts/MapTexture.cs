@@ -6,127 +6,149 @@ public class MapTexture : MonoBehaviour
 {
     public bool autoupdate = false;
     public Renderer texturesRenderer;
+    public int xChunks = 1;
+    public int zChunks = 1;
     public int seed = 0;
     public int xSize = 100;
     public int zSize = 100;
-    public float scale = 0.3f;
-    public int octaves = 1;
-    [Range(0,1)]
-    public float persistance = 1f;
-    public float lacunarity = 0f;
-    public float overallMult = 1f;
 
-    public float xOffset = 0;
-    public float zOffset = 0;
+    public NoiseData[] noisedata;
 
 
-    private Texture2D texture;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     public void Generate()
     {
-        texture = new Texture2D(xSize, zSize);
+
+        if (noisedata.Length <= 0)
+        {
+            Debug.LogError("no noise data");
+            return;
+        }
+
+        List<float[,,,]> maps = new List<float[,,,]>();
+        foreach (NoiseData noiseData in noisedata)
+        {
+            maps.Add(NoiseMapGenerator.GeneratePerlinNM((xSize + 1), (zSize + 1), seed, xChunks, zChunks, noiseData));
+        }
+
+        float[,,,] combinedMap;
+        if (maps.Count > 1)
+        {
+            combinedMap = NoiseMapGenerator.CombineMaps(maps, (xSize + 1), (zSize + 1), xChunks, zChunks);
+        }
+        else
+        {
+            combinedMap = maps[0];
+        }
+
+
+        Texture2D texture = new Texture2D((xSize+1) * xChunks, (zSize+1) * zChunks);
 
         float minval = float.MaxValue;
         float maxval = float.MinValue;
 
-        float[,] noisemap = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, scale, persistance, lacunarity,
-            octaves, xOffset, zOffset, overallMult);
-        float[,] noisemap2 = NoiseMapGenerator.GeneratePerlinNM(xSize, zSize, seed, 5, 0.5f, 2f,
-            1, xOffset, zOffset, overallMult);
-
         
 
-        Color[] colorMap = new Color[xSize * zSize];
-        for (int z = 0; z < zSize; z++)
+        Color[] colorMap = new Color[(xSize+1) * (zSize+1) * xChunks * zChunks];
+
+        for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                //noisemap[x, z] += noisemap2[x, z];
-
-                if (noisemap[x, z] > maxval)
+                for (int z = 0; z <= zSize; z++)
                 {
-                    maxval = noisemap[x, z];
-                }
-                else if (noisemap[x, z] < minval)
-                {
-                    minval = noisemap[x, z];
-                }
+                    for (int x = 0; x <= xSize; x++)
+                    {
+                        if (combinedMap[x, z, xchunk, zchunk] > maxval)
+                        {
+                            maxval = combinedMap[x, z, xchunk, zchunk];
+                        }
+                        else if (combinedMap[x, z, xchunk, zchunk] < minval)
+                        {
+                            minval = combinedMap[x, z, xchunk, zchunk];
+                        }
 
+                    }
+                }
             }
         }
 
-        for (int z = 0; z < zSize; z++)
+
+        for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                noisemap[x, z] = Mathf.InverseLerp(minval, maxval, noisemap[x, z]);
+                for (int z = 0; z <= zSize; z++)
+                {
+                    for (int x = 0; x <= xSize; x++)
+                    {
+                        combinedMap[x, z, xchunk, zchunk] = Mathf.InverseLerp(minval, maxval, combinedMap[x, z, xchunk, zchunk]);
+                    }
+                }
             }
         }
 
 
-
-        for (int z = 0; z < zSize; z++)
+        for (int zchunk = 0, i = 0; zchunk < zChunks; zchunk++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, noisemap[x, z]);
+                for (int z = 0; z <= zSize; z++)
+                {
+                    for (int x = 0; x <= xSize; x++,i++)
+                    {
+                        //colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, noisemap[x, z, xchunk, zchunk]);
+                        //colorMap[z * xSize + x + ((zchunk * zSize) * xChunks + (xchunk * xSize))] = Color.Lerp(Color.black, Color.white, combinedMap[x, z, xchunk, zchunk]);
+                        colorMap[i] = Color.Lerp(Color.black, Color.white, combinedMap[x, z, xchunk, zchunk]);
+                    }
+                }
             }
         }
 
         texture.SetPixels(colorMap);
         texture.Apply();
 
+        //texturesRenderer.sharedMaterial.mainTexture = texture;
+        texturesRenderer.sharedMaterial = new Material(texturesRenderer.sharedMaterial);
         texturesRenderer.sharedMaterial.mainTexture = texture;
-        texturesRenderer.transform.localScale = new Vector3(xSize, 1, zSize); 
+        texturesRenderer.transform.localScale = new Vector3((xSize+1)*xChunks, 1, (zSize+1)*zChunks);
 
     }
 
-    public void GenerateSimple()
-    {
+    //public void GenerateSimple()
+    //{
 
 
-        Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-        Color[] colorMap = new Color[(xSize + 1) * (zSize + 1)];
-
-
-
-        for (int z = 0; z <= zSize; z++)
-        {
-            for (int x = 0; x <= xSize; x++)
-            {
-                float y = 0;
-
-                float sx = x / scale + xOffset;
-                float sz = z / scale + zOffset;
-                float perlin = Mathf.PerlinNoise(sx, sz);
-                y += perlin;
-
-                vertices[z * xSize + x] = new Vector3(x, y, z);
-                colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, y);
-            }
-        }
+    //    Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+    //    Color[] colorMap = new Color[(xSize + 1) * (zSize + 1)];
 
 
 
-        texture.SetPixels(colorMap);
-        texture.Apply();
+    //    for (int z = 0; z <= zSize; z++)
+    //    {
+    //        for (int x = 0; x <= xSize; x++)
+    //        {
+    //            float y = 0;
 
-        texturesRenderer.sharedMaterial.mainTexture = texture;
-        texturesRenderer.transform.localScale = new Vector3(xSize, 1, zSize);
+    //            float sx = x / scale + xOffset;
+    //            float sz = z / scale + zOffset;
+    //            float perlin = Mathf.PerlinNoise(sx, sz);
+    //            y += perlin;
 
-    }
+    //            vertices[z * xSize + x] = new Vector3(x, y, z);
+    //            colorMap[z * xSize + x] = Color.Lerp(Color.black, Color.white, y);
+    //        }
+    //    }
+
+
+
+    //    texture.SetPixels(colorMap);
+    //    texture.Apply();
+
+    //    texturesRenderer.sharedMaterial.mainTexture = texture;
+    //    texturesRenderer.transform.localScale = new Vector3(xSize, 1, zSize);
+
+    //}
 
 
     void OnValidate()
@@ -139,13 +161,13 @@ public class MapTexture : MonoBehaviour
         {
             zSize = 1;
         }
-        if (lacunarity < 1)
-        {
-            lacunarity = 1;
-        }
-        if (octaves < 0)
-        {
-            octaves = 0;
-        }
+        //if (noiselacunarity < 1)
+        //{
+        //    lacunarity = 1;
+        //}
+        //if (octaves < 0)
+        //{
+        //    octaves = 0;
+        //}
     }
 }

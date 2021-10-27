@@ -10,57 +10,57 @@ public class MeshGenerator : MonoBehaviour
 	public bool autoupdate = false;
     
     public int seed = 0;
-
+    public int xSize = 200;
+    public int zSize = 200;
     public int xChunks = 1;
     public int zChunks = 1;
 
+    public AnimationCurve animationCurve = new AnimationCurve();
+
     public NoiseData[] noisedata;
 
-    [SerializeField]private int xSize = 200;
-	[SerializeField]private int zSize = 200;
 
-    [SerializeField] private float edge = 20f;
 
 
     public Material material;
+    public GameObject Water;
     public TextureData TextureData;
 
-    public GameObject TreePrefab;
-    [SerializeField] private float TreeEdge = 20f;
-    
 
 
-	private void Awake()
+    public void GenerateInternal()
     {
+        List<float[,,,]> maps = new List<float[,,,]>();
+        foreach (NoiseData noiseData in noisedata)
+        {
+            if (noiseData.enabled)
+            {
+                maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks, noiseData));
+            }
+        };
 
-        Generate();
-        //StartCoroutine(GenerateObjects());
+        float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps, xSize + 1, zSize + 1, xChunks, zChunks);
 
-
-    }
-
-	// Start is called before the first frame update
-	void Start()
-    {
-
-
-    }
-
-    void FixedUpdate()
-    {
-
+        Generate(combinedMap);
     }
 
 
-	//get index from second for loop to 2d iterate over vertices
-	//int yIndex = z * xsize + z  ----------> current y
-	public void Generate()
+
+    //get index from second for loop to 2d iterate over vertices
+    //int yIndex = z * xsize + z  ----------> current y
+    public void Generate(float[,,,] combinedMap)
     {
         int count = transform.childCount;
         List<Transform> children = new List<Transform>();
         for (int i = 0; i < count; i++)
-        {
-            children.Add(transform.GetChild(i));
+        {   
+            //TODO better way of doing this
+            //right now this is so water/other objects dont get deleted.
+            //deleting them and re-instantiating might be better or necessary, but this is easier for testing
+            if(transform.GetChild(i).name.StartsWith("map chunk"))
+            {
+                children.Add(transform.GetChild(i));
+            }
         }
 
         for (int i = 0; i < count; i++)
@@ -80,24 +80,67 @@ public class MeshGenerator : MonoBehaviour
 
         this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
         
-        List<float[,,,]> maps = new List<float[,,,]>();
-        foreach (NoiseData noiseData in noisedata)
-        {
-            maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks,  noiseData));
-        }
-        maps.Add(NoiseMapGenerator.GenerateFalloff(xSize, zSize, xChunks, zChunks));
-
-        float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps,xSize+1,zSize+1,xChunks,zChunks);
 
 
-        MakeChunks(combinedMap);
+
+        Vector2 minmax = FindMaxHeightMult(combinedMap);
+
+        float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
+        Water.transform.localPosition = new  Vector3(transform.localScale.x * 100f, waterHeight * transform.localScale.y, transform.localScale.z * 100f);
+        Water.transform.localScale = new Vector3(transform.localScale.x * 200f, 1, transform.localScale.z * 200f);
+
+        MakeChunks(combinedMap, minmax);
+
 
         TextureData.ApplyToMaterial(material);
-        TextureData.UpdateMeshHeights(material,TextureData.MinHeight,TextureData.MaxHeight);
+        TextureData.UpdateMeshHeights(material,minmax.x * transform.localScale.y,minmax.y * transform.localScale.y);
 
     }
 
-    private void MakeChunks(float[,,,] combinedMap)
+    private Vector2 FindMaxHeightMult(float[,,,] combined)
+    {
+        Vector2 minmax = new Vector2(float.MaxValue,float.MinValue);
+        for (int zchunk = 0; zchunk < zChunks; zchunk++)
+        {
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
+            {
+                Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+                for (int i = 0, z = 0; z <= zSize; z++)
+                {
+                    for (int x = 0; x <= xSize; x++, i++)
+                    {
+                        if(combined[x,z,xchunk,zchunk] < minmax.x)
+                        {
+                            minmax.x = combined[x, z, xchunk, zchunk];
+                        }
+                        else if (combined[x, z, xchunk, zchunk] > minmax.y)
+                        {
+                            minmax.y = combined[x, z, xchunk, zchunk];
+                        }
+                    }
+                }
+            }
+        }
+
+        return minmax;
+    }
+
+
+
+
+    /*
+     * 
+     *      very interesting terrain but not intended
+     *      float y = animationCurve.Evaluate(Mathf.InverseLerp(0, 1f, combinedMap[x, z, xchunk, zchunk])) * 20f;
+            vertices[i] = new Vector3(x, y, z);
+     * 
+     * 
+     * 
+     */
+
+
+
+    private void MakeChunks(float[,,,] combinedMap, Vector2 minmax)
     {
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
@@ -107,8 +150,13 @@ public class MeshGenerator : MonoBehaviour
                 for (int i = 0, z = 0; z <= zSize; z++)
                 {
                     for (int x = 0; x <= xSize; x++, i++)
-                    { 
-                        vertices[i] = new Vector3(x, combinedMap[x, z, xchunk, zchunk], z);
+                    {
+                        //float y = animationCurve.Evaluate(Mathf.InverseLerp(minmax.y, 1f, combinedMap[x, z, xchunk, zchunk])) * 20f;
+                        float cury = combinedMap[x, z, xchunk, zchunk];
+                        float yinv =  Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[x, z, xchunk, zchunk]);
+                        float y = animationCurve.Evaluate(yinv);
+                        Vector3 v =    new Vector3(x, combinedMap[x,z,xchunk,zchunk]*y, z);
+                        vertices[i] = v;
                     }
                 }
 
@@ -150,66 +198,67 @@ public class MeshGenerator : MonoBehaviour
 		mesh.triangles = triangles;
 		mesh.RecalculateNormals();
 		mesh.RecalculateBounds();
+        mesh.Optimize();
 		meshCollider.sharedMesh = mesh;
 	}
 
 
 	//shoud probably throw that out and do it properly
-	private void CreateSingleMountain()
-    {
-		//moutain mental notes
-		//select mounsize x elements
-		//select mounsize z elements
-		//create new array and modify y values
-	}
+	//private void CreateSingleMountain()
+ //   {
+	//	//moutain mental notes
+	//	//select mounsize x elements
+	//	//select mounsize z elements
+	//	//create new array and modify y values
+	//}
 
-	private void LowerEdgeVertices(float x,ref float y, float z)
-    {
-		if (x < edge)
-		{
-			y -= Mathf.Abs(0.5f * (x - edge));
-		}
-		else if (z < edge)
-		{
-			y -= Mathf.Abs(0.5f * (z - edge));
-		}
-		else if (x > xSize - edge)
-		{
-			y -= Mathf.Abs(0.5f * (x + edge - xSize));
-		}
-		else if (z > zSize - edge)
-		{
-			y -= Mathf.Abs(0.5f * (z + edge - zSize));
-		}
-	}
-
-
-    private IEnumerator GenerateObjects()
-    {
-        yield return 1;
-
-		int layermask = 1 << 8;
-
-        for (int i = 0; i < 100; i++)
-        {
-            float x = Random.Range(TreeEdge, xSize - TreeEdge) + transform.position.x;
-            float z = Random.Range(TreeEdge, zSize - TreeEdge) + transform.position.z;
-
-            RaycastHit hit;
-            if (Physics.Raycast(new Vector3(x,10f,z), Vector3.down, out hit, 2000f, layermask))
-            {
-                //Instantiate(TreePrefab, new Vector3(x,TreePrefab.transform.position.y + hit.transform.position.y,z),Quaternion.identity);
-                Instantiate(TreePrefab,TreePrefab.transform.position + hit.point, Quaternion.Euler(0,Random.Range(0,360f),0));
-				//Debug.Log(hit.point.y);
-			}
-            else
-            {
-			}
-			//Debug.DrawRay(new Vector3(x,100f, z), Vector3.down * 10000, Color.magenta);
-        }
+	//private void LowerEdgeVertices(float x,ref float y, float z)
+ //   {
+	//	if (x < edge)
+	//	{
+	//		y -= Mathf.Abs(0.5f * (x - edge));
+	//	}
+	//	else if (z < edge)
+	//	{
+	//		y -= Mathf.Abs(0.5f * (z - edge));
+	//	}
+	//	else if (x > xSize - edge)
+	//	{
+	//		y -= Mathf.Abs(0.5f * (x + edge - xSize));
+	//	}
+	//	else if (z > zSize - edge)
+	//	{
+	//		y -= Mathf.Abs(0.5f * (z + edge - zSize));
+	//	}
+	//}
 
 
-    }
+  //  private IEnumerator GenerateObjects()
+  //  {
+  //      yield return 1;
+
+		//int layermask = 1 << 8;
+
+  //      for (int i = 0; i < 100; i++)
+  //      {
+  //          float x = Random.Range(TreeEdge, xSize - TreeEdge) + transform.position.x;
+  //          float z = Random.Range(TreeEdge, zSize - TreeEdge) + transform.position.z;
+
+  //          RaycastHit hit;
+  //          if (Physics.Raycast(new Vector3(x,10f,z), Vector3.down, out hit, 2000f, layermask))
+  //          {
+  //              //Instantiate(TreePrefab, new Vector3(x,TreePrefab.transform.position.y + hit.transform.position.y,z),Quaternion.identity);
+  //              Instantiate(TreePrefab,TreePrefab.transform.position + hit.point, Quaternion.Euler(0,Random.Range(0,360f),0));
+		//		//Debug.Log(hit.point.y);
+		//	}
+  //          else
+  //          {
+		//	}
+		//	//Debug.DrawRay(new Vector3(x,100f, z), Vector3.down * 10000, Color.magenta);
+  //      }
+
+
+  //  }
 
 
 }
@@ -218,6 +267,7 @@ public class MeshGenerator : MonoBehaviour
 [Serializable]
 public class NoiseData
 {
+    public bool enabled = true;
     public float scale = 50f;
     public int octaves = 4;
     [Range(0, 1)]

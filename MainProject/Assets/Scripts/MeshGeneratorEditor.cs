@@ -11,12 +11,12 @@ public class MeshGeneratorEditor : Editor
         MeshGenerator map = (MeshGenerator)target;
         if (DrawDefaultInspector() && map.autoupdate)
         {
-            map.Generate();
+            map.GenerateInternal();
         }
 
         if (GUILayout.Button("Generate"))
         {
-            map.Generate();
+            map.GenerateInternal();
         }
     }
 

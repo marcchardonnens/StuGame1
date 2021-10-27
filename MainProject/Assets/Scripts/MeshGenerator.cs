@@ -63,15 +63,15 @@ public class MeshGenerator : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < count; i++)
+        foreach(Transform child in children)
         {
             if (Application.isEditor)
             {
-                DestroyImmediate(children[i].gameObject, true);
+                DestroyImmediate(child.gameObject, true);
             }
             else
             {
-                Destroy(children[i]);
+                Destroy(child);
             }
         }
         children = null;
@@ -164,6 +164,7 @@ public class MeshGenerator : MonoBehaviour
                 terrainChunk.transform.parent = gameObject.transform;
                 terrainChunk.transform.localPosition = new Vector3((xSize * xchunk - xchunk*1f) /*/ transform.localScale.x*/, 0, (zSize * zchunk - zchunk*1f) /*/ transform.localScale.z*/);
                 terrainChunk.transform.localScale = new Vector3(1, 1, 1);
+                terrainChunk.layer = 6;
 
                 Mesh mesh = terrainChunk.AddComponent<MeshFilter>().sharedMesh = new Mesh();
                 MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();

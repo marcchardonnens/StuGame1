@@ -181,5 +181,19 @@ public class NoiseMapGenerator
         return combined;
     }
 
+    public static Vector2Int FindChunk(Vector2 pos, int xSize, int zSize)
+    {
+        Vector2Int chunk = new Vector2Int();
+
+        float x = pos.x;
+        float z = pos.y;
+
+        chunk.x = (int)x / xSize;
+        chunk.y = (int)z / zSize;
+
+
+        return chunk;
+    }
+
 
 }

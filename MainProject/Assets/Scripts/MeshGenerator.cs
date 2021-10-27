@@ -15,7 +15,7 @@ public class MeshGenerator : MonoBehaviour
     public int xChunks = 1;
     public int zChunks = 1;
 
-    public AnimationCurve animationCurve = new AnimationCurve();
+    //public AnimationCurve animationCurve = new AnimationCurve();
 
     public NoiseData[] noisedata;
 
@@ -86,8 +86,8 @@ public class MeshGenerator : MonoBehaviour
         Vector2 minmax = FindMaxHeightMult(combinedMap);
 
         float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
-        Water.transform.localPosition = new  Vector3(transform.localScale.x * 100f, waterHeight * transform.localScale.y, transform.localScale.z * 100f);
-        Water.transform.localScale = new Vector3(transform.localScale.x * 200f, 1, transform.localScale.z * 200f);
+        Water.transform.localScale = new Vector3(transform.localScale.x * xSize, /*Mathf.Abs(minmax.x) - waterHeight*/ 1f, transform.localScale.z * xSize);
+        Water.transform.localPosition = new  Vector3(transform.localScale.x * (xSize/2f), waterHeight * transform.localScale.y - (Water.transform.localScale.y/2f), transform.localScale.z * (zSize/2f));
 
         MakeChunks(combinedMap, minmax);
 
@@ -97,7 +97,9 @@ public class MeshGenerator : MonoBehaviour
 
     }
 
-    private Vector2 FindMaxHeightMult(float[,,,] combined)
+
+
+    public Vector2 FindMaxHeightMult(float[,,,] combined)
     {
         Vector2 minmax = new Vector2(float.MaxValue,float.MinValue);
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
@@ -152,17 +154,17 @@ public class MeshGenerator : MonoBehaviour
                     for (int x = 0; x <= xSize; x++, i++)
                     {
                         //float y = animationCurve.Evaluate(Mathf.InverseLerp(minmax.y, 1f, combinedMap[x, z, xchunk, zchunk])) * 20f;
-                        float cury = combinedMap[x, z, xchunk, zchunk];
-                        float yinv =  Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[x, z, xchunk, zchunk]);
-                        float y = animationCurve.Evaluate(yinv);
-                        Vector3 v =    new Vector3(x, combinedMap[x,z,xchunk,zchunk]*y, z);
-                        vertices[i] = v;
+                        //float cury = combinedMap[x, z, xchunk, zchunk];
+                        //float yinv =  Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[x, z, xchunk, zchunk]);
+                        //float y = animationCurve.Evaluate(yinv);
+                        //Vector3 v =    new Vector3(x, combinedMap[x,z,xchunk,zchunk], z);
+                        vertices[i] = new Vector3(x, combinedMap[x, z, xchunk, zchunk], z); ;
                     }
                 }
 
                 GameObject terrainChunk = new GameObject("map chunk " + xchunk + " " + zchunk);
                 terrainChunk.transform.parent = gameObject.transform;
-                terrainChunk.transform.localPosition = new Vector3((xSize * xchunk - xchunk*1f) /*/ transform.localScale.x*/, 0, (zSize * zchunk - zchunk*1f) /*/ transform.localScale.z*/);
+                terrainChunk.transform.localPosition = new Vector3((xSize * xchunk - xchunk), 0, (zSize * zchunk - zchunk));
                 terrainChunk.transform.localScale = new Vector3(1, 1, 1);
                 terrainChunk.layer = 6;
 
@@ -269,6 +271,7 @@ public class MeshGenerator : MonoBehaviour
 public class NoiseData
 {
     public bool enabled = true;
+    public bool positiveOnly = false;
     public float scale = 50f;
     public int octaves = 4;
     [Range(0, 1)]
@@ -278,6 +281,8 @@ public class NoiseData
 
     public float xOffset = 0;
     public float zOffset = 0;
+
+    public AnimationCurve animationCurve = new AnimationCurve();
 }
 
 

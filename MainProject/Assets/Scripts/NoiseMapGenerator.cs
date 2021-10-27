@@ -8,11 +8,12 @@ public class NoiseMapGenerator
     public static float[,,,] GeneratePerlinNM(int xSize, int zSize,int seed, int xChunks, int zChunks, NoiseData noiseData)
     {
         return GeneratePerlinNM(xSize, zSize, seed, xChunks, zChunks, noiseData.scale, noiseData.persistance, noiseData.lacunarity,
-            noiseData.octaves, noiseData.xOffset, noiseData.zOffset, noiseData.overallMult);
+            noiseData.octaves, noiseData.xOffset, noiseData.zOffset, noiseData.overallMult, noiseData.animationCurve, noiseData.positiveOnly);
     }
 
     private static int count = 1;
-    public static float[,,,] GeneratePerlinNM(int xSize, int zSize, int seed, int xChunks, int zChunks, float scale, float persistance, float lacunarity, int octaves, float xOffset, float zOffset, float overallMult)
+    public static float[,,,] GeneratePerlinNM(int xSize, int zSize, int seed, int xChunks, int zChunks, float scale, float persistance, 
+        float lacunarity, int octaves, float xOffset, float zOffset, float overallMult, AnimationCurve animationCurve, bool positiveOnly)
     {
         float[,,,] noisemap = new float[xSize, zSize,xChunks,zChunks];
 
@@ -66,14 +67,20 @@ public class NoiseMapGenerator
 
                             //float sx = ((x) / scale) * frequency + xOffset + xRandOffset;
                             //float sz = ((z) / scale) * frequency + zOffset + zRandOffset;
-                            float perlin = Mathf.PerlinNoise(sx, sz) * 2 - 1;
+
+                            float perlin = Mathf.PerlinNoise(sx, sz);
+                            perlin = animationCurve.Evaluate(perlin);
+                            if (!positiveOnly)
+                            {
+                                perlin = perlin * 2 - 1;
+                            }
                             y += perlin * amplitude;
                             amplitude *= sPrs;
                             frequency *= sLacu;
                         }
 
 
-
+                        //y = animationCurve.Evaluate(y);
                         noisemap[x, z, xchunk, zchunk] = y * overallMult;
                     }
                 }

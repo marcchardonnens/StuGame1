@@ -18,7 +18,6 @@ public class TerrainBuilder : MonoBehaviour
     private Vector3 objectivePosition;
     private System.Random RNG;
 
-
     private void Awake()
     {
 
@@ -26,6 +25,7 @@ public class TerrainBuilder : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
     }
 
     // Update is called once per frame
@@ -65,23 +65,141 @@ public class TerrainBuilder : MonoBehaviour
         //spawn objects
 
 
-        int x = (new System.Random().Next(20, (MG.xSize-20))) - (int)transform.localScale.x;
-        int z = (new System.Random().Next(20, (MG.zSize-20))) - (int)transform.localScale.z;
+        PlaceHouse(combinedMap);
 
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(x, z), MG.xSize, MG.zSize);
 
-        housePosition = new Vector3(x, combinedMap[x, z,chunk.x, chunk.y], z);
+
+        PlaceObjective(combinedMap);
+
+
+
+
+
+
+        MG.Generate(combinedMap);
+
+    }
+
+    private void PlaceObjective(float[,,,] combinedMap)
+    {
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
+
+        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
+
+
+        bool found = false;
+        float y = 0f;
+        int x = 0;
+        int z = 0;
+        for (int i = MG.xSize-50; i > 50; i--)
+        {
+            for (int j = MG.zSize-50; j > 50; j--)
+            {
+                var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
+                if (invlerpy > 0.6f && invlerpy < 0.8f)
+                {
+                    found = true;
+                    y = combinedMap[i, j, chunk.x, chunk.y];
+                    x = i;
+                    z = j;
+                }
+            }
+        }
+        objectivePosition = new Vector3(x, combinedMap[x, z, chunk.x, chunk.y], z);
+
+        if (!found)
+        {
+            Debug.Log("Bad Seed");
+        }
+
 
 
         //platform for house
-        for (int i = -4; i < HousePrefab.transform.localScale.x +4; i++)
+        for (int i = -1; i < SurvivorPrefab.transform.localScale.x + 1; i++)
+        {
+            for (int j = -1; j < SurvivorPrefab.transform.localScale.z + 1; j++)
+            {
+                int cx = x + i;
+                int cz = z + j;
+
+                try
+                {
+                    combinedMap[cx, cz, chunk.x, chunk.y] = objectivePosition.y;
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+        }
+
+        //TODO round edges of platform to go towards rest of terrain
+        //something like y-(Min(y of x+1, y of z +1)/2)
+
+
+        GameObject go = Instantiate(SurvivorPrefab, transform);
+        go.name = "Survivor";
+        go.transform.position = objectivePosition;
+        go.transform.position += transform.localPosition;
+        go.transform.position += new Vector3(go.transform.localScale.x / 2f, go.transform.localPosition.y - go.transform.localScale.y / 2f, go.transform.localScale.z / 2f);
+
+    }
+
+    private void PlaceHouse(float[,,,] combinedMap)
+    {
+
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
+
+        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
+
+
+        bool found = false;
+        float y = 0f;
+        int x = 0;
+        int z = 0;
+        for (int j = 50; j < MG.zSize-50; j++)
+        {
+            for (int i = 50; i < MG.xSize-50; i++)
+            {
+                var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
+                if (invlerpy > 0.6f && invlerpy < 0.8f)
+                {
+                    found = true;
+                    y = combinedMap[i, j, chunk.x, chunk.y];
+                    x = i;
+                    z = j;
+                }
+            }
+        }
+        housePosition = new Vector3(x, combinedMap[x, z, chunk.x, chunk.y], z);
+
+        if (!found)
+        {
+            Debug.Log("Bad Seed");
+        }
+
+
+
+        //platform for house
+        for (int i = -4; i < HousePrefab.transform.localScale.x + 4; i++)
         {
             for (int j = -4; j < HousePrefab.transform.localScale.z + 4; j++)
             {
                 int cx = x + i;
                 int cz = z + j;
 
-                combinedMap[cx, cz, chunk.x, chunk.y] = housePosition.y;
+                try
+                {
+                    combinedMap[cx, cz, chunk.x, chunk.y] = housePosition.y;
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 
@@ -93,22 +211,10 @@ public class TerrainBuilder : MonoBehaviour
         go.name = "House";
         go.transform.position = housePosition;
         go.transform.position += transform.localPosition;
-        go.transform.position += new Vector3(go.transform.localScale.x / 2f, go.transform.localPosition.y - go.transform.localScale.y/2f, go.transform.localScale.z / 2f);
-
-        housePosition = Vector3.zero;
-
-        
-
-
-
-
-
-
-
-
-        MG.Generate(combinedMap);
+        go.transform.position += new Vector3(go.transform.localScale.x / 2f, go.transform.localPosition.y - go.transform.localScale.y / 2f, go.transform.localScale.z / 2f);
 
     }
+
 
     private void CleanupScene()
     {
@@ -127,7 +233,7 @@ public class TerrainBuilder : MonoBehaviour
         
         foreach (GameObject child in gameObject.scene.GetRootGameObjects())
         {
-            if(child.name == "House")
+            if(child.name == "House" || child.name == "Survivor")
             {
                 if (Application.isEditor)
                 {
@@ -142,7 +248,7 @@ public class TerrainBuilder : MonoBehaviour
 
         foreach (Transform child in children)
         {
-            if (child.name == "House")
+            if (child.name == "House" || child.name == "Survivor")
             {
                 if (Application.isEditor)
                 {

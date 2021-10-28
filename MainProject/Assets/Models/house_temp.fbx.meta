@@ -1,19 +1,15 @@
 fileFormatVersion: 2
-guid: be402836dff9547ebb9285b54d9c37bf
+guid: bc3077f57f7494512bcf3368ca0af7b1
 ModelImporter:
   serializedVersion: 20200
-  internalIDToNameTable: []
-  externalObjects:
+  internalIDToNameTable:
   - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: treeLeaves
-    second: {fileID: 2100000, guid: 3f5b26f8209c54c3c998e861674a1a6a, type: 2}
+      74: 1371062618531562728
+    second: door|doorClose
   - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: treeTrunk
-    second: {fileID: 2100000, guid: 56634e21eb95945edaae8e1ad3a56910, type: 2}
+      74: -5399200397528593491
+    second: door|doorOpen
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

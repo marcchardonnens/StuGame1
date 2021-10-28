@@ -105,6 +105,9 @@ public class TerrainBuilder : MonoBehaviour
                 }
             }
         }
+
+        CreateSmallPlatform(combinedMap, x, z, (int)SurvivorPrefab.transform.localScale.x, (int)SurvivorPrefab.transform.localScale.z, 2, chunk, false);
+        
         objectivePosition = new Vector3(x, combinedMap[x, z, chunk.x, chunk.y], z);
 
         if (!found)
@@ -114,26 +117,29 @@ public class TerrainBuilder : MonoBehaviour
 
 
 
-        //platform for house
-        for (int i = -1; i < SurvivorPrefab.transform.localScale.x + 1; i++)
-        {
-            for (int j = -1; j < SurvivorPrefab.transform.localScale.z + 1; j++)
-            {
-                int cx = x + i;
-                int cz = z + j;
+        //platform for Survivor
 
-                try
-                {
-                    combinedMap[cx, cz, chunk.x, chunk.y] = objectivePosition.y;
 
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }
-        }
+
+        //for (int i = -1; i < SurvivorPrefab.transform.localScale.x + 1; i++)
+        //{
+        //    for (int j = -1; j < SurvivorPrefab.transform.localScale.z + 1; j++)
+        //    {
+        //        int cx = x + i;
+        //        int cz = z + j;
+
+        //        try
+        //        {
+        //            combinedMap[cx, cz, chunk.x, chunk.y] = objectivePosition.y;
+
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            Console.WriteLine(e);
+        //            throw;
+        //        }
+        //    }
+        //}
 
         //TODO round edges of platform to go towards rest of terrain
         //something like y-(Min(y of x+1, y of z +1)/2)
@@ -143,7 +149,7 @@ public class TerrainBuilder : MonoBehaviour
         go.name = "Survivor";
         go.transform.position = objectivePosition;
         go.transform.position += transform.localPosition;
-        go.transform.position += new Vector3(go.transform.localScale.x / 2f, go.transform.localPosition.y - go.transform.localScale.y / 2f, go.transform.localScale.z / 2f);
+        go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x, z, chunk.x, chunk.y] + go.transform.localScale.y / 2, go.transform.localScale.z / 2f);
 
     }
 
@@ -183,9 +189,29 @@ public class TerrainBuilder : MonoBehaviour
 
 
         //platform for house
-        for (int i = -4; i < HousePrefab.transform.localScale.x + 4; i++)
+        CreateSmallPlatform(combinedMap, x, z, (int)HousePrefab.transform.localScale.x, (int)HousePrefab.transform.localScale.z, 4, chunk, false);
+
+
+        //TODO round edges of platform to go towards rest of terrain
+        //something like y-(Min(y of x+1, y of z +1)/2)
+
+
+        GameObject go = Instantiate(HousePrefab, transform);
+        go.name = "House";
+        go.transform.position = housePosition;
+        go.transform.position += transform.localPosition;
+        go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x,z,chunk.x,chunk.y] + go.transform.localScale.y/2, go.transform.localScale.z / 2f);
+
+    }
+
+
+    private void CreateSmallPlatform(float[,,,] combinedMap, int x, int z, int xSize, int zSize, int extraSize, Vector2Int chunk, bool smooth = true)
+    {
+
+
+        for (int i = -extraSize; i < HousePrefab.transform.localScale.x + extraSize; i++)
         {
-            for (int j = -4; j < HousePrefab.transform.localScale.z + 4; j++)
+            for (int j = -extraSize; j < HousePrefab.transform.localScale.z +extraSize; j++)
             {
                 int cx = x + i;
                 int cz = z + j;
@@ -203,15 +229,65 @@ public class TerrainBuilder : MonoBehaviour
             }
         }
 
-        //TODO round edges of platform to go towards rest of terrain
-        //something like y-(Min(y of x+1, y of z +1)/2)
+
+        if(smooth)
+        {
+
+        //smoothing TODO / WIP
+        //for (int i = 0; i < extraSize; i++)
+        //{
+        //    for (int j = 0; j < extraSize; j++)
+        //    {
+
+        //        int cx, cz;
+        //        bool addSize = false;
+        //        int lerpval = Math.Max(Math.Abs(i), Math.Abs(j));
+
+        //        //if(j >= extraSize/2)
+        //        //{
+        //        //    cx = x + j + xSize;
+        //        //    addSize = true;
+        //        //}
+        //        //else{
+        //        //    cx = x - j;
+        //        //}
+        //        //if(i >= extraSize/2)
+        //        //{
+        //        //    cz = x + i + zSize;
+        //        //    addSize = true;
+        //        //}
+        //        //else
+        //        //{
+        //        //    cz = x - i;
+        //        //}
+
+        //        cx = x - j;
+        //        cz = z - j;
+                
+        //        combinedMap[cx,cz,chunk.x,chunk.y] = Mathf.Lerp(combinedMap[])
 
 
-        GameObject go = Instantiate(HousePrefab, transform);
-        go.name = "House";
-        go.transform.position = housePosition;
-        go.transform.position += transform.localPosition;
-        go.transform.position += new Vector3(go.transform.localScale.x / 2f, go.transform.localPosition.y - go.transform.localScale.y / 2f, go.transform.localScale.z / 2f);
+        //        cx = x + j + xSize;
+        //        cz = z + i + zSize;
+
+        //        if(addSize)
+        //        {
+        //        }
+        //        else
+        //        {
+
+        //        }
+
+        //        //float ylerp = Mathf.Lerp([x, cz, chunk.x, chunk.y], combineMap[1,2,3,4], (lerpval/4f));
+
+        //    }
+        //}
+        }
+        else
+        {
+            //simple platform;
+        }
+
 
     }
 

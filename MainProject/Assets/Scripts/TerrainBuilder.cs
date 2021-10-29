@@ -75,11 +75,12 @@ public class TerrainBuilder : MonoBehaviour
 
         MG = new MeshGenerator(combinedMap, seed, xSize, zSize, xChunks, zChunks, noisedata, material, TextureData);
 
-        minmax = MG.FindMaxHeightMult();
+        //minmax = MG.FindActualMinMax();
+        minmax = MG.CalcPotentialMinMax();
 
 
         float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
-        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks, /*Mathf.Abs(minmax.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks);
+        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks, /*Mathf.Abs(minmaxActual.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks);
         Water.transform.localPosition = new Vector3(-transform.localPosition.x, waterHeight * transform.localScale.y - (Water.transform.localScale.y / 2f), -transform.localPosition.z);
 
 
@@ -92,7 +93,7 @@ public class TerrainBuilder : MonoBehaviour
         //PlaceHouse();
         //PlaceObjective();
 
-        MG.Generate().ForEach(x =>
+        MG.Generate(false).ForEach(x =>
         {
             toCleanUp.Add(x);
             x.transform.SetParent(transform,false);
@@ -114,7 +115,7 @@ public class TerrainBuilder : MonoBehaviour
     {
         Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
 
-        Vector2 minmax = MG.FindMaxHeightMult();
+        Vector2 minmax = MG.FindActualMinMax();
 
 
         bool found = false;

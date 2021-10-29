@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 
 public class MeshGenerator
 {
+    public Vector2 minmaxActual;
+
     private float[,,,] combinedMap;
     private int seed;
     private int xSize;
@@ -31,6 +33,7 @@ public class MeshGenerator
         this.noisedata = noisedata;
         this.material = material;
         this.TextureData = textureData;
+        minmaxActual = FindActualMinMax();
     }
 
     
@@ -38,16 +41,16 @@ public class MeshGenerator
 
     //get index from second for loop to 2d iterate over vertices
     //int yIndex = z * xsize + z  ----------> current y
-    public List<GameObject> Generate()
+    public List<GameObject> Generate(bool doLerp = false)
     {
-        List<GameObject> chunks = MakeChunks(combinedMap);
+        List<GameObject> chunks = MakeChunks(doLerp);
 
         return chunks;
     }
 
 
 
-    public Vector2 FindMaxHeightMult()
+    public Vector2 FindActualMinMax()
     {
         Vector2 minmax = new Vector2(float.MaxValue,float.MinValue);
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
@@ -75,6 +78,17 @@ public class MeshGenerator
         return minmax;
     }
 
+    public Vector2 CalcPotentialMinMax()
+    {
+        float multipliers = 0f;
+        foreach (NoiseData noise in noisedata)
+        {
+            multipliers += noise.overallMult;
+        }
+
+        return new Vector2(-multipliers, multipliers);
+    }
+
 
     /*
      * 
@@ -86,7 +100,7 @@ public class MeshGenerator
      * 
      */
 
-    private List<GameObject> MakeChunks(float[,,,] combinedMap)
+    private List<GameObject> MakeChunks(bool doLerp)
     {
         List<GameObject> objects = new List<GameObject>();
         for (int zchunk = 0; zchunk < zChunks; zchunk++)
@@ -98,7 +112,15 @@ public class MeshGenerator
                 {
                     for (int x = 0; x <= xSize; x++, i++)
                     {
-                        vertices[i] = new Vector3(x, combinedMap[x, z, xchunk, zchunk], z); ;
+                        if (doLerp)
+                        {
+                            float ylerped = Mathf.Lerp(minmaxActual.x, minmaxActual.y, combinedMap[x, z, xchunk, zchunk]);
+                            vertices[i] = new Vector3(x, ylerped, z);
+                        }
+                        else
+                        {
+                            vertices[i] = new Vector3(x, combinedMap[x, z, xchunk, zchunk], z);
+                        }
                     }
                 }
 

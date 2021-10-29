@@ -13,7 +13,7 @@
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		const static int maxColourCount = 8;
+		const static int maxColourCount = 10;
 
 		int baseColourCount;
 		float3 baseColours[maxColourCount];

@@ -83,7 +83,14 @@ public class MeshGenerator
         float multipliers = 0f;
         foreach (NoiseData noise in noisedata)
         {
-            multipliers += noise.overallMult;
+            if (noise.enabled)
+            {
+                multipliers += noise.overallMult;
+            }
+            //if (noise.overallMult > multipliers)
+            //{
+            //    multipliers = noise.overallMult;
+            //}
         }
 
         return new Vector2(-multipliers, multipliers);

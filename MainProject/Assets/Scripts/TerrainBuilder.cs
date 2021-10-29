@@ -16,6 +16,7 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private int zSize = 200;
     [SerializeField] private int xChunks = 1;
     [SerializeField] private int zChunks = 1;
+    [SerializeField] private float yAdjustment = 0f;
     [SerializeField]private NoiseData[] noisedata;
     public Material material;
     public GameObject HousePrefab;
@@ -57,7 +58,7 @@ public class TerrainBuilder : MonoBehaviour
         CleanupScene();
         
 
-        this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
+        this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, yAdjustment, -zSize * zChunks / 2);
 
         RNG = seed == 0 ? new System.Random() : new System.Random(seed);
         

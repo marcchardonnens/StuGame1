@@ -9,6 +9,9 @@ public class MeshGenerator
 {
     public Vector2 minmaxActual;
 
+    public delegate void Notify();
+    public event Notify OnComplete;
+
     private float[,,,] combinedMap;
     private int seed;
     private int xSize;
@@ -45,7 +48,13 @@ public class MeshGenerator
     {
         List<GameObject> chunks = MakeChunks(doLerp);
 
+        onComplete();
         return chunks;
+    }
+
+    protected virtual void onComplete()
+    {
+        OnComplete?.Invoke();
     }
 
 

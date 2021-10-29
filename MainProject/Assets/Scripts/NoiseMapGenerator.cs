@@ -19,11 +19,8 @@ public class NoiseMapGenerator
 
         System.Random rng = seed == 0 ? new System.Random() : new System.Random(seed);
 
-
-
         float xRandOffset = rng.Next(-100000, 100000);
         float zRandOffset = rng.Next(-100000, 100000);
-
 
         if (scale == 0)
         {
@@ -34,11 +31,6 @@ public class NoiseMapGenerator
         {
             for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                //xRandOffset += (xchunk * xSize);
-                //zRandOffset += (zchunk * zSize);
-
-                //Debug.Log("xchunk offset:   " + (xchunk * xSize));
-                //Debug.Log("xchunk offset:   " + (zchunk * zSize));
                 float xChunkOffset = 0f;
                 float zChunkOffset = 0f;
                 if (scale > 1)
@@ -58,15 +50,8 @@ public class NoiseMapGenerator
                         float frequency = 1;
                         for (int j = 0; j < octaves; j++)
                         {
-                            //float sx = ((x - xSize / 2f) / scale) * frequency + xOffset + xRandOffset - ((((float)xchunk * (float)xSize) /scale));
-                            //float sz = ((z - zSize / 2f) / scale) * frequency + zOffset + zRandOffset - ((((float)zchunk * (float)zSize) /scale));
-
-
                             float sx = ((x - xSize / 2f) / scale) * frequency + xOffset + xRandOffset + xChunkOffset;
                             float sz = ((z - zSize / 2f) / scale) * frequency + zOffset + zRandOffset + zChunkOffset;
-
-                            //float sx = ((x) / scale) * frequency + xOffset + xRandOffset;
-                            //float sz = ((z) / scale) * frequency + zOffset + zRandOffset;
 
                             float perlin = Mathf.PerlinNoise(sx, sz);
                             perlin = animationCurve.Evaluate(perlin);
@@ -79,30 +64,12 @@ public class NoiseMapGenerator
                             frequency *= sLacu;
                         }
 
-
-                        //y = animationCurve.Evaluate(y);
                         noisemap[x, z, xchunk, zchunk] = y * overallMult;
                     }
                 }
             }
         }
-
-        //Debug.Log("map " + count.ToString() + "     "+ noisemap.Length);
-        //Debug.Log("index 350,350    " + noisemap[350, 350].ToString());
-        //using (FileStream fs = File.Open("./map"+count.ToString()+".txt", FileMode.Create))
-        //{
-        //    StreamWriter sw = new StreamWriter(fs);
-        //    for (int i = 0, z = 0; z < zSize; z++)
-        //    {
-        //        for (int x = 0; x < xSize; x++, i++)
-        //        {
-        //            sw.Write(noisemap[x, z].ToString() + "  ");
-        //        }
-        //        sw.WriteLine("");
-        //    }
-
-        //}
-
+        
         count++;
 
         return noisemap;

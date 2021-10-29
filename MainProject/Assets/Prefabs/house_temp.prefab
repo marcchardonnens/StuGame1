@@ -13293,6 +13293,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5909418526359640643}
+  - component: {fileID: -1179443102080764294}
   m_Layer: 0
   m_Name: house_temp
   m_TagString: Untagged
@@ -13308,7 +13309,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6433858791165853945}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 6.32}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 8229082382777823856}
@@ -13544,6 +13545,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!111 &-1179443102080764294
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6433858791165853945}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 1371062618531562728, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
+  m_Animations:
+  - {fileID: 1371062618531562728, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
 --- !u!1 &6494420330253680004
 GameObject:
   m_ObjectHideFlags: 0

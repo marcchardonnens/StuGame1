@@ -6,17 +6,33 @@ using UnityEngine;
 //this class is responsible for placing gameplay objects like hut, survivors, scenery, etc.. 
 public class TerrainBuilder : MonoBehaviour
 {
+
+
+    [SerializeField] const int houseEdgeMinDistance = 50;
+
     public bool autoupdate = false;
-    public int seed = 1;
+    [SerializeField]private int seed = 0;
+    [SerializeField] private int xSize = 200;
+    [SerializeField] private int zSize = 200;
+    [SerializeField] private int xChunks = 1;
+    [SerializeField] private int zChunks = 1;
+    [SerializeField]private NoiseData[] noisedata;
+    public Material material;
     public GameObject HousePrefab;
     public GameObject SurvivorPrefab;
-    
-    
-    
+    public GameObject Water;
+
+
+    private float[,,,] combinedMap;
     private MeshGenerator MG;
     private Vector3 housePosition;
     private Vector3 objectivePosition;
     private System.Random RNG;
+    private Vector2 minmax;
+    [SerializeField] TextureData TextureData;
+
+    private List<GameObject> toCleanUp = new List<GameObject>();
+
 
     private void Awake()
     {
@@ -37,63 +53,77 @@ public class TerrainBuilder : MonoBehaviour
 
     public void MakeTerrain()
     {
-
+        
         CleanupScene();
+        
+
+        this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, 0, -zSize * zChunks / 2);
 
         RNG = seed == 0 ? new System.Random() : new System.Random(seed);
-        MG = gameObject.GetComponent<MeshGenerator>();
-        MG.seed = seed;
+        
 
         List<float[,,,]> maps = new List<float[,,,]>();
-        foreach (NoiseData noiseData in MG.noisedata)
+        foreach (NoiseData noiseData in noisedata)
         {
             if (noiseData.enabled)
             {
-                maps.Add(NoiseMapGenerator.GeneratePerlinNM(MG.xSize + 1, MG.zSize + 1, MG.seed, MG.xChunks, MG.zChunks, noiseData));
+                maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks, noiseData));
             }
         };
 
-        float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps, MG.xSize + 1, MG.zSize + 1, MG.xChunks, MG.zChunks);
+        combinedMap = NoiseMapGenerator.CombineMaps(maps, xSize + 1, zSize + 1, xChunks, zChunks);
+
+        MG = new MeshGenerator(combinedMap, seed, xSize, zSize, xChunks, zChunks, noisedata, material, TextureData);
+
+        minmax = MG.FindMaxHeightMult();
 
 
-        //Debug.DrawRay()
+        float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
+        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks, /*Mathf.Abs(minmax.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks);
+        Water.transform.localPosition = new Vector3(-transform.localPosition.x, waterHeight * transform.localScale.y - (Water.transform.localScale.y / 2f), -transform.localPosition.z);
+
+
         //adjustments here
-
-
 
 
         //spawn objects
 
 
-        PlaceHouse(combinedMap);
+        //PlaceHouse();
+        //PlaceObjective();
+
+        MG.Generate().ForEach(x =>
+        {
+            toCleanUp.Add(x);
+            x.transform.SetParent(transform,false);
+        });
 
 
 
-        PlaceObjective(combinedMap);
-
-
-
-
-
-
-        MG.Generate(combinedMap);
+        TextureData.ApplyToMaterial(material);
+        TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
     }
 
-    private void PlaceObjective(float[,,,] combinedMap)
+    private void createTerrainObjects()
     {
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
 
-        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
+    }
+
+    private void PlaceObjective()
+    {
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
+
+        Vector2 minmax = MG.FindMaxHeightMult();
 
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
-        for (int i = MG.xSize-50; i > 50; i--)
+        for (int i = xSize-50; i > 50; i--)
         {
-            for (int j = MG.zSize-50; j > 50; j--)
+            for (int j = zSize-50; j > 50; j--)
             {
                 var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
                 if (invlerpy > 0.6f && invlerpy < 0.8f)
@@ -114,32 +144,8 @@ public class TerrainBuilder : MonoBehaviour
         {
             Debug.Log("Bad Seed");
         }
+        
 
-
-
-        //platform for Survivor
-
-
-
-        //for (int i = -1; i < SurvivorPrefab.transform.localScale.x + 1; i++)
-        //{
-        //    for (int j = -1; j < SurvivorPrefab.transform.localScale.z + 1; j++)
-        //    {
-        //        int cx = x + i;
-        //        int cz = z + j;
-
-        //        try
-        //        {
-        //            combinedMap[cx, cz, chunk.x, chunk.y] = objectivePosition.y;
-
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Console.WriteLine(e);
-        //            throw;
-        //        }
-        //    }
-        //}
 
         //TODO round edges of platform to go towards rest of terrain
         //something like y-(Min(y of x+1, y of z +1)/2)
@@ -150,24 +156,22 @@ public class TerrainBuilder : MonoBehaviour
         go.transform.position = objectivePosition;
         go.transform.position += transform.localPosition;
         go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x, z, chunk.x, chunk.y] + go.transform.localScale.y / 2, go.transform.localScale.z / 2f);
+        toCleanUp.Add(go);
 
     }
 
-    private void PlaceHouse(float[,,,] combinedMap)
+    private void PlaceHouse()
     {
 
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
-
-        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
-
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
-        for (int j = 50; j < MG.zSize-50; j++)
+        for (int j = houseEdgeMinDistance; j < zSize-houseEdgeMinDistance; j++)
         {
-            for (int i = 50; i < MG.xSize-50; i++)
+            for (int i = houseEdgeMinDistance; i < xSize-houseEdgeMinDistance; i++)
             {
                 var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
                 if (invlerpy > 0.6f && invlerpy < 0.8f)
@@ -201,7 +205,7 @@ public class TerrainBuilder : MonoBehaviour
         go.transform.position = housePosition;
         go.transform.position += transform.localPosition;
         go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x,z,chunk.x,chunk.y] + go.transform.localScale.y/2, go.transform.localScale.z / 2f);
-
+        toCleanUp.Add(go);
     }
 
 
@@ -209,9 +213,9 @@ public class TerrainBuilder : MonoBehaviour
     {
 
 
-        for (int i = -extraSize; i < HousePrefab.transform.localScale.x + extraSize; i++)
+        for (int i = -extraSize; i < xSize + extraSize; i++)
         {
-            for (int j = -extraSize; j < HousePrefab.transform.localScale.z +extraSize; j++)
+            for (int j = -extraSize; j < zSize + extraSize; j++)
             {
                 int cx = x + i;
                 int cz = z + j;
@@ -224,6 +228,13 @@ public class TerrainBuilder : MonoBehaviour
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                    Debug.Log(cx);
+                    Debug.Log(cz);
+                    Debug.Log(x);
+                    Debug.Log(z);
+                    Debug.Log(i);
+                    Debug.Log(i);
+                    Debug.Log(extraSize);
                     throw;
                 }
             }
@@ -294,49 +305,19 @@ public class TerrainBuilder : MonoBehaviour
 
     private void CleanupScene()
     {
-
-        int count = transform.childCount;
-        List<Transform> children = new List<Transform>();
-        for (int i = 0; i < count; i++)
+        toCleanUp.ForEach(x =>
         {
-            //TODO better way of doing this
-            //right now this is so water/other objects dont get deleted.
-            //deleting them and re-instantiating might be better or necessary, but this is easier for testing
-            
-            children.Add(transform.GetChild(i));
-            
-        }
-        
-        foreach (GameObject child in gameObject.scene.GetRootGameObjects())
-        {
-            if(child.name == "House" || child.name == "Survivor")
+            if (Application.isEditor)
             {
-                if (Application.isEditor)
-                {
-                    DestroyImmediate(child.gameObject, true);
-                }
-                else
-                {
-                    Destroy(child);
-                }
+                DestroyImmediate(x.gameObject, true);
             }
-        }
-
-        foreach (Transform child in children)
-        {
-            if (child.name == "House" || child.name == "Survivor")
+            else
             {
-                if (Application.isEditor)
-                {
-                    DestroyImmediate(child.gameObject, true);
-                }
-                else
-                {
-                    Destroy(child);
-                }
+                Destroy(x);
             }
-        }
-
-
+            
+        });
     }
+
+
 }

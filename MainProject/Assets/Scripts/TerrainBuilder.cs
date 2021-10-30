@@ -1,22 +1,24 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = System.Object;
 
 //this class is responsible for placing gameplay objects like hut, survivors, scenery, etc.. 
 public class TerrainBuilder : MonoBehaviour
 {
-
-    
+    private const String CLEANUPTAG = "Cleanup";
 
     public bool autoupdate = false;
     [SerializeField] private int seed = 0;
-    [SerializeField] private const int xSize = 200;
-    [SerializeField] private const int zSize = 200;
+    [SerializeField] private const int XSize = 200;
+    [SerializeField] private const int ZSize = 200;
     [SerializeField] private const int xChunks = 1;
     [SerializeField] private const int zChunks = 1;
     [SerializeField] private float yAdjustment = 0f;
+    [SerializeField] private Vector3 TerrainScale = Vector3.one;
     [SerializeField]private NoiseData[] noisedata;
     public Material material;
     public GameObject HousePrefab;
@@ -36,6 +38,14 @@ public class TerrainBuilder : MonoBehaviour
     private System.Random RNG;
     private Vector2 minmax;
     private const float groundlevel = -7.5f;
+    private int xSize;
+    private int zSize;
+
+
+    //these are for grouping objects together
+    //to hopefully prevent spamming the object viewer
+    private GameObject Scenery;
+    private GameObject Terrain;
 
     private List<GameObject> toCleanUp = new List<GameObject>();
 
@@ -61,7 +71,18 @@ public class TerrainBuilder : MonoBehaviour
     {
         
         CleanupScene();
-        
+
+        xSize = (int)(XSize * TerrainScale.x);
+        zSize = (int)(ZSize * TerrainScale.y);
+
+        Scenery = new GameObject("Scenery");
+        Scenery.tag = CLEANUPTAG;
+        Scenery.transform.SetParent(transform,false);
+        SceneVisibilityManager.instance.DisablePicking(Scenery, true);
+
+        Terrain = new GameObject("Terrain");
+        Terrain.tag = CLEANUPTAG;
+        Terrain.transform.SetParent(transform, false);
 
         this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, yAdjustment, -zSize * zChunks / 2);
 
@@ -87,7 +108,7 @@ public class TerrainBuilder : MonoBehaviour
         MG.Generate(false).ForEach(x =>
         {
             toCleanUp.Add(x);
-            x.transform.SetParent(transform, false);
+            x.transform.SetParent(Terrain.transform, false);
         });
         //minmax = MG.FindActualMinMax();
         minmax = MG.CalcPotentialMinMax();
@@ -147,7 +168,6 @@ public class TerrainBuilder : MonoBehaviour
     private void PlaceObjective()
     {
         const int objectiveEdgeDistance = 50;
-        const float margin = 1f;
         Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
 
         Vector2 minmax = MG.FindActualMinMax();
@@ -201,9 +221,6 @@ public class TerrainBuilder : MonoBehaviour
     private void PlaceHouse()
     {
         const int houseEdgeMinDistance = 50;
-        const float margin = 1f;
-        const int zextra = 8;
-        const int xextra = 5;
 
 
         Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
@@ -249,8 +266,9 @@ public class TerrainBuilder : MonoBehaviour
         GameObject go = Instantiate(HousePrefab, transform);
         go.name = "House";
         go.transform.localPosition = housePosition;
-        //go.transform.localPosition += transform.localPosition;
-        //go.transform.localPosition += new Vector3(go.transform.localScale.x / 2f, combinedMap[x,z,chunk.x,chunk.y] + go.transform.localScale.y/2, go.transform.localScale.z / 2f);
+
+        SceneVisibilityManager.instance.DisablePicking(go, true);
+
         toCleanUp.Add(go);
     }
 
@@ -351,7 +369,6 @@ public class TerrainBuilder : MonoBehaviour
     private void SpawnTrees()
     {
         const int treeDistance = 5;
-        const int edgeRadius = 10;
         
         
         if (TreePrefabs.Length <= 0 || !spawnTrees)
@@ -378,8 +395,8 @@ public class TerrainBuilder : MonoBehaviour
                             
                                 GameObject go = RandomChoice.Choose(TreePrefabs, RNG);
 
-                                go = Instantiate(go, transform);
-                                go.name =  ("tree " + x + " " + z);
+                                go = Instantiate(go, Scenery.transform);
+                                go.name +=  (" " + x + " " + z);
                                 go.transform.localPosition = new Vector3(cx, groundlevel, cz);
                                 go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
                                 toCleanUp.Add(go);
@@ -394,7 +411,7 @@ public class TerrainBuilder : MonoBehaviour
     private void SpawnRocks()
     {
         const int edgeRadius = 1;
-        const int size = (xSize + zSize) * 4;
+        int size = (xSize + zSize) * 4;
         if (RockPrefabs.Length <= 0 || !spawnRocks)
         {
             return;
@@ -409,8 +426,8 @@ public class TerrainBuilder : MonoBehaviour
             {
                 GameObject go = RandomChoice.Choose(RockPrefabs, RNG);
 
-                go = Instantiate(go, transform);
-                go.name = ("Rock " + x + " " + z);
+                go = Instantiate(go, Scenery.transform);
+                go.name += (" " + x + " " + z);
                 go.transform.localPosition = new Vector3(x, groundlevel, z);
                 go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
                 toCleanUp.Add(go);
@@ -574,18 +591,31 @@ public class TerrainBuilder : MonoBehaviour
 
     private void CleanupScene()
     {
-        toCleanUp.ForEach(x =>
+        toCleanUp.ForEach(go =>
         {
             if (Application.isEditor)
             {
-                DestroyImmediate(x.gameObject, true);
+                DestroyImmediate(go.gameObject, true);
             }
             else
             {
-                Destroy(x);
+                Destroy(go);
             }
             
         });
+
+        GameObject[] cleanup = GameObject.FindGameObjectsWithTag(CLEANUPTAG);
+        foreach (GameObject go in cleanup)
+        {
+            if (Application.isEditor)
+            {
+                DestroyImmediate(go.gameObject, true);
+            }
+            else
+            {
+                Destroy(go);
+            }
+        }
     }
     
 

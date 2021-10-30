@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = System.Object;
 
 //this class is responsible for placing gameplay objects like hut, survivors, scenery, etc.. 
 public class TerrainBuilder : MonoBehaviour
@@ -79,6 +78,8 @@ public class TerrainBuilder : MonoBehaviour
         Scenery.tag = CLEANUPTAG;
         Scenery.transform.SetParent(transform,false);
         SceneVisibilityManager.instance.DisablePicking(Scenery, true);
+        
+        
 
         Terrain = new GameObject("Terrain");
         Terrain.tag = CLEANUPTAG;
@@ -268,6 +269,7 @@ public class TerrainBuilder : MonoBehaviour
         go.transform.localPosition = housePosition;
 
         SceneVisibilityManager.instance.DisablePicking(go, true);
+
 
         toCleanUp.Add(go);
     }

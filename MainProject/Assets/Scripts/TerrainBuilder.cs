@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.AI;
+using Unity.AI.Navigation;
 
 //this class is responsible for placing gameplay objects like hut, survivors, scenery, etc.. 
 public class TerrainBuilder : MonoBehaviour
@@ -18,6 +20,11 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private const int zChunks = 1;
     [SerializeField] private float yAdjustment = 0f;
     [SerializeField] private Vector3 TerrainScale = Vector3.one;
+
+    public NavMeshSurface Surface;
+    public NavMeshModifierVolume HighMod;
+    public NavMeshModifierVolume LowMod;
+
     [SerializeField]private NoiseData[] noisedata;
     public Material material;
     public GameObject HousePrefab;
@@ -135,7 +142,7 @@ public class TerrainBuilder : MonoBehaviour
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
 
-
+        MakeNavMesh();
 
 
 
@@ -371,6 +378,8 @@ public class TerrainBuilder : MonoBehaviour
     private void SpawnTrees()
     {
         const int treeDistance = 5;
+        const float heightvariance = 0.75f;
+        const float thicknessvariance = 0.15f;
         
         
         if (TreePrefabs.Length <= 0 || !spawnTrees)
@@ -401,6 +410,14 @@ public class TerrainBuilder : MonoBehaviour
                                 go.name +=  (" " + x + " " + z);
                                 go.transform.localPosition = new Vector3(cx, groundlevel, cz);
                                 go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
+                                float heightScale = (float)RNG.NextDouble() * heightvariance * 2 - heightvariance;
+                                float thickScale = (float)RNG.NextDouble() * thicknessvariance * 2 - thicknessvariance;
+                                heightScale += 1f;
+                                thickScale += 1f;
+                                go.transform.localScale =
+                                    new Vector3(go.transform.localScale.x * heightScale * thickScale,
+                                        go.transform.localScale.y * heightvariance,
+                                        go.transform.localScale.z * heightvariance * thickScale);
                                 toCleanUp.Add(go);
                             }
                         }
@@ -413,6 +430,7 @@ public class TerrainBuilder : MonoBehaviour
     private void SpawnRocks()
     {
         const int edgeRadius = 1;
+        const float sizeVariance = 0.15f; //percent
         int size = (xSize + zSize) * 4;
         if (RockPrefabs.Length <= 0 || !spawnRocks)
         {
@@ -431,7 +449,10 @@ public class TerrainBuilder : MonoBehaviour
                 go = Instantiate(go, Scenery.transform);
                 go.name += (" " + x + " " + z);
                 go.transform.localPosition = new Vector3(x, groundlevel, z);
-                go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
+                go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x + (float)RNG.NextDouble() * 360f, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z + (float)RNG.NextDouble() * 360f);
+                float scale = (float)RNG.NextDouble() * sizeVariance * 2 - sizeVariance;
+                scale += 1f;
+                go.transform.localScale *= scale;
                 toCleanUp.Add(go);
             }
         }
@@ -590,6 +611,22 @@ public class TerrainBuilder : MonoBehaviour
         #endregion
 
     }
+
+
+
+
+    private void MakeNavMesh()
+    {
+        HighMod.size = new Vector3(xSize, 50f, zSize);
+        HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
+        LowMod.size = new Vector3(xSize, 50f, zSize);
+        LowMod.center = new Vector3(0, groundlevel - 1f - LowMod.size.y / 2f, 0);
+
+        Surface.BuildNavMesh();
+
+    }
+
+
 
     private void CleanupScene()
     {

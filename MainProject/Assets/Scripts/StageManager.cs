@@ -10,9 +10,7 @@ public class StageManager : MonoBehaviour
 {
     public bool autoupdate = false;
 
-    public NavMeshSurface Surface;
-    public NavMeshModifierVolume HighMod;
-    public NavMeshModifierVolume LowMod;
+
 
 
     public void MakeStage()

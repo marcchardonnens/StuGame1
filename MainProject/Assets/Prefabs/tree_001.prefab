@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2983249401075014799}
   - component: {fileID: 9117144523911576298}
   - component: {fileID: 230742698732495036}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: treeTrunk_001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -3399484189048965588, guid: a63109107a30a48dbbc21172c57fddcc, type: 3}
 --- !u!1 &662974644758371170
@@ -108,7 +108,7 @@ GameObject:
   - component: {fileID: 2396421812107929027}
   - component: {fileID: 4021103197468508799}
   - component: {fileID: 2281590784125447204}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: treeLeaves_001_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 2068491706364548363, guid: a63109107a30a48dbbc21172c57fddcc, type: 3}
 --- !u!1 &4959684640001094578
@@ -204,7 +204,7 @@ GameObject:
   - component: {fileID: 5404706012181048585}
   - component: {fileID: 1974141190525147043}
   - component: {fileID: 8084558213351713243}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: treeLeaves_001_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -285,7 +285,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -867413467911764473, guid: a63109107a30a48dbbc21172c57fddcc, type: 3}
 --- !u!1 &6093160963745061350
@@ -300,7 +300,7 @@ GameObject:
   - component: {fileID: 4376186172802031405}
   - component: {fileID: 5177010024646955641}
   - component: {fileID: 898341781983223975}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: treeLeaves_001_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -381,7 +381,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -6782279623493728875, guid: a63109107a30a48dbbc21172c57fddcc, type: 3}
 --- !u!1 &7297583925699596485
@@ -393,7 +393,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7930251006051125887}
-  m_Layer: 0
+  - component: {fileID: -7879518640099123772}
+  m_Layer: 7
   m_Name: tree_001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -419,6 +420,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &-7879518640099123772
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7297583925699596485}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &7977001090508886281
 GameObject:
   m_ObjectHideFlags: 0
@@ -431,7 +448,7 @@ GameObject:
   - component: {fileID: 5480940327628723832}
   - component: {fileID: 1482148062286811780}
   - component: {fileID: 1296092766296824747}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: treeLeaves_001_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -512,6 +529,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -5500301608743565199, guid: a63109107a30a48dbbc21172c57fddcc, type: 3}

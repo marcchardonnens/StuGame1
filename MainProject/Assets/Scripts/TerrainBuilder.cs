@@ -416,8 +416,8 @@ public class TerrainBuilder : MonoBehaviour
                                 thickScale += 1f;
                                 go.transform.localScale =
                                     new Vector3(go.transform.localScale.x * heightScale * thickScale,
-                                        go.transform.localScale.y * heightvariance,
-                                        go.transform.localScale.z * heightvariance * thickScale);
+                                        go.transform.localScale.y * heightScale,
+                                        go.transform.localScale.z * heightScale * thickScale);
                                 toCleanUp.Add(go);
                             }
                         }

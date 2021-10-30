@@ -13294,6 +13294,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5909418526359640643}
   - component: {fileID: -1179443102080764294}
+  - component: {fileID: 1747168329268731056}
   m_Layer: 0
   m_Name: house_temp
   m_TagString: Untagged
@@ -13561,6 +13562,19 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!65 &1747168329268731056
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6433858791165853945}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 7.75, y: 4, z: 6.75}
+  m_Center: {x: 0, y: 2, z: 2.45}
 --- !u!1 &6494420330253680004
 GameObject:
   m_ObjectHideFlags: 0

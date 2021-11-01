@@ -112,7 +112,7 @@ public class SimpleProjectile : MonoBehaviour
     }
 
 
-    private void SelfDestruct()
+    public void SelfDestruct()
     {
         Destroy(gameObject);
     }

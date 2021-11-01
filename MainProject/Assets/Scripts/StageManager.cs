@@ -18,18 +18,32 @@ public enum StageResult
 public class StageManager : MonoBehaviour
 {
     public bool autoupdate = false;
+    public TerrainBuilder Terrain;
 
+
+
+
+    private int MonsterXpCollected = 0;
 
 
 
     public void MakeStage()
     {
+        //Terrain.MakeTerrain();
+
+
 
 
 
 
     }
 
+    public void SetupPlayer(/*PlayerSafeData*/)
+    {
+
+    }
+
+    
     public void EndStage(StageResult result)
     {
         if (result == StageResult.Death || result == StageResult.TimerExpired)
@@ -46,4 +60,18 @@ public class StageManager : MonoBehaviour
         }
 
     }
+
+    public void OnPlayerGetMonsterXP(int amount)
+    {
+        MonsterXpCollected += amount;
+
+
+        //set future enemy level higher if monster xp large enough;
+
+
+    }
+
+
+
+
 }

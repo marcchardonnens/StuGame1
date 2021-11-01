@@ -26,16 +26,22 @@ public class PlayerController : MonoBehaviour
     private float currentHP;
 
     private MeleeWeapon meleeWeapon;
+
+    private StageManager stageManager;
         
 
     void Start()
     {
+        stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
         meleeWeapon = GetComponent<MeleeWeapon>();
+
 
         currentHP = MaxHP;
 
         LockCursor();
+        
+
     }
 
     void Update()
@@ -47,11 +53,16 @@ public class PlayerController : MonoBehaviour
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Vertical") : 0;
         float curSpeedY = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Horizontal") : 0;
+        float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
         if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
+        }
+        else
+        {
+            moveDirection.y = movementDirectionY;
         }
 
 
@@ -86,6 +97,23 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+
+    //later damage types
+    public void TakeDamage(float amount)
+    {
+        float postMitigation = amount;
+
+        //apply mitigation
+
+        currentHP -= postMitigation;
+
+        if (currentHP <= 0)
+        {
+            stageManager.EndStage(StageResult.Death);
+        }
+
     }
 
 }

@@ -238,7 +238,8 @@ GameObject:
   - component: {fileID: 1952649714253000032}
   - component: {fileID: 3887858698339454345}
   - component: {fileID: 8719120378174980580}
-  m_Layer: 0
+  - component: {fileID: 1114268326}
+  m_Layer: 12
   m_Name: Player (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -318,7 +319,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2196724134550070496}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5
   m_Height: 2
@@ -379,6 +380,22 @@ MonoBehaviour:
   damage: 10
   cooldown: 3
   range: 1
+--- !u!208 &1114268326
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2196724134550070496}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.5, y: 1, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &2920689580751228143
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,6 +488,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1950851990650274537}
+  - component: {fileID: 6394841619884983900}
+  - component: {fileID: 6394841619884983901}
   m_Layer: 0
   m_Name: Hand
   m_TagString: Untagged
@@ -494,3 +513,35 @@ Transform:
   m_Father: {fileID: 8358734938980083953}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!111 &6394841619884983900
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5336353923916838481}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 0}
+  m_Animations:
+  - {fileID: 7400000, guid: eaa6e7262a697804a8be29977784d5fd, type: 2}
+  - {fileID: 7400000, guid: 9cb1a863461790745815cb2f4b9fdd92, type: 2}
+  - {fileID: 7400000, guid: 8791e93629439d840aa998589dd98ff4, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 0
+  m_AnimatePhysics: 0
+  m_CullingType: 0
+--- !u!114 &6394841619884983901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5336353923916838481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2aa01b31717890c49acec60297c7f235, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  holding: {fileID: 0}
+  clips: []

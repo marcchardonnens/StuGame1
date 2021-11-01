@@ -617,9 +617,9 @@ public class TerrainBuilder : MonoBehaviour
 
     private void MakeNavMesh()
     {
-        HighMod.size = new Vector3(xSize, 50f, zSize);
+        HighMod.size = new Vector3(xSize, 75f, zSize);
         HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
-        LowMod.size = new Vector3(xSize, 50f, zSize);
+        LowMod.size = new Vector3(xSize, 75f, zSize);
         LowMod.center = new Vector3(0, groundlevel - 1f - LowMod.size.y / 2f, 0);
 
         Surface.BuildNavMesh();

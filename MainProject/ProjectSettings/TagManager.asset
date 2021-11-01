@@ -17,9 +17,9 @@ TagManager:
   - Scenery
   - SceneryNoCollision
   - 
+  - Camera
   - 
-  - 
-  - 
+  - Player
   - 
   - 
   - 

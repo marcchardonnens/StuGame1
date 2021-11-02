@@ -3,6 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum PowerupType
+{
+    IronShroom,
+    RedShroom,
+    BlueShroom,
+    GreenShroom,
+    GoldShroom,
+    WoodShroom,
+    StoneShroom,
+    //TransparentShroom,
+    //YellowShroom,
+    //PlantShroom,
+}
+
 public class PlayerController : MonoBehaviour
 {
     public Hand RightHand;
@@ -12,6 +27,7 @@ public class PlayerController : MonoBehaviour
     public float blockingSpeed = 3.5f;
     public float jumpSpeed = 8.0f;
     public float gravity = 20.0f;
+    public float FallDamageMultiplier = 10f;
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
@@ -26,7 +42,7 @@ public class PlayerController : MonoBehaviour
     public float KillRageAmount = 15f;
     public float RageDissipationTime = 15f;
     public float RageDissipationRatePerSecond = 0.5f;
-    public float RageIntoHPConversion = 0.1f;
+    public float RageIntoHPConversion = 1f;
     public float RageHealingMissingHPMultiplierMax = 2.5f; 
 
     public float HPLevel = 10f;
@@ -89,11 +105,10 @@ public class PlayerController : MonoBehaviour
     private bool previewValid = false;
 
     private float plantAnimationTimer = 0f;
-    //private bool preview1 = false; //grenade
-    //private bool preview2 = false; //shield plant
-    //private bool preview3 = false; //turret plant
-    //private bool preview4 = false; //eating seed steroid
+    private float MonsterXpMult = 0f;
 
+
+    private bool playerWasGrounded = false;
 
 
     void Start()
@@ -104,7 +119,7 @@ public class PlayerController : MonoBehaviour
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
         PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
         PreviewSphere.SetActive(false);
-
+        Powerup asdf;
 
         currentHP = MaxHP;
 
@@ -183,7 +198,6 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-
             if (Input.GetMouseButtonDown(1))
             {
                 previewing = false;
@@ -295,6 +309,14 @@ public class PlayerController : MonoBehaviour
 
 
         float movementDirectionY = moveDirection.y;
+
+
+        if (characterController.isGrounded && !playerWasGrounded)
+        {
+            TakeDamage((-movementDirectionY - jumpSpeed*2) * FallDamageMultiplier);
+        }
+
+
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
         if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
@@ -307,12 +329,20 @@ public class PlayerController : MonoBehaviour
         }
 
 
+
+
+
         // Apply gravity. Gravity is multiplied by deltaTime twice (once here, and once below
         // when the moveDirection is multiplied by deltaTime). This is because gravity should be applied
         // as an acceleration (ms^-2)
         if (!characterController.isGrounded)
         {
+            playerWasGrounded = false;
             moveDirection.y -= gravity * Time.deltaTime;
+        }
+        else
+        {
+            playerWasGrounded = true;
         }
 
         // Move the controller
@@ -336,6 +366,7 @@ public class PlayerController : MonoBehaviour
         grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
         currentSeeds -= SeedGrenadeCost;
     }
+
     private bool PreviewGrenades()
     {
         bool valid = true;
@@ -446,12 +477,20 @@ public class PlayerController : MonoBehaviour
     //later damage types
     public void TakeDamage(float amount)
     {
+        if (amount <= 0)
+        {
+            return;
+        }
         rageTimer = Time.time + RageDissipationTime;
         float postMitigation = amount;
 
         //apply mitigation
 
-        currentHP -= postMitigation;
+
+        if (postMitigation >= 0)
+        {
+            currentHP -= postMitigation;
+        }
 
         if (currentHP <= 0)
         {
@@ -473,7 +512,6 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        rageTimer = Time.time + RageDissipationTime;   
         nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed/ (1+(AttackSpeed/100)));
         RightHand.MeleeAttack();
         isBlocking = false;
@@ -499,9 +537,10 @@ public class PlayerController : MonoBehaviour
     public void GenerateRage(float amount)
     {
         //amount mod here
-     
-        
-        if (Rage + amount > RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
+
+        rageTimer = Time.time + RageDissipationTime;
+
+        if (Rage + amount >= RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
         {
             //conver full ragebar into hp
 
@@ -547,12 +586,63 @@ public class PlayerController : MonoBehaviour
 
     public void GetMonsterXP(int amount)
     {
-        stageManager.OnPlayerGetMonsterXP(amount);
+        stageManager.OnPlayerGetMonsterXP(Mathf.RoundToInt((float)amount * (1f + MonsterXpMult)));
     }
 
-    public void ConsumeShroom()
+    public void GetWood(int amount)
     {
+        stageManager.OnPlayerGetWood(amount);
+    }
 
+    public void ConsumeShroom(Powerup powerup)
+    {
+        switch (powerup.Type)
+        {
+            case PowerupType.BlueShroom:
+            {
+                walkingSpeed += 1f;
+                blockingSpeed += 0.5f;
+                runningSpeed += 1.5f;
+                break;
+            }
+
+            case PowerupType.GoldShroom:
+            {
+                MonsterXpMult += 0.1f;
+                break;
+            }
+
+            case PowerupType.GreenShroom:
+            {
+                RageIntoHPConversion += 0.25f;
+                break;
+            }
+
+            case PowerupType.IronShroom:
+            {
+                Armor += 1;
+                break;
+            }
+
+            case PowerupType.RedShroom:
+            {
+                AttackSpeed += 15;
+                break;
+            }
+
+            case PowerupType.StoneShroom:
+            {
+                RightHand.weapon.StunDuration += 0.25f;
+                break;
+            }
+
+            case PowerupType.WoodShroom:
+            {
+                BaseBlockAmount += 5f;
+                break;
+            }
+
+        }
     }
 
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)

@@ -86,7 +86,7 @@ public class Enemy : MonoBehaviour
     private float nextMeleeCd = 0f;
     private float nextRangedCd = 0f;
     private float stunned = 0f;
-    private float currentHP;
+    [SerializeField] private float currentHP;
 
     private float outOfCombatTimer = 0f;
 
@@ -197,11 +197,29 @@ public class Enemy : MonoBehaviour
                 Vector3 randompos = Random.insideUnitSphere * wanderDistance;
                 randompos += spawnPoint;
                 NavMeshHit hit;
-                    
-                NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask);
-                agent.SetDestination(hit.position);
 
-                currentState = EnemyState.Wandering;
+                
+                //TODO
+                //GameObject go = new GameObject("Target");
+                //Vector3 sourcePostion = new Vector3(100, 20, 100);//The position you want to place your agent
+                //NavMeshHit closestHit;
+                //if (NavMesh.SamplePosition(sourcePostion, out closestHit, 500, 1))
+                //{
+                //    go.transform.position = closestHit.position;
+                //    go.AddComponent<NavMeshAgent>();
+                //    //TODO
+                //}
+                //else
+                //{
+                //    Debug.Log("...");
+                //}
+
+                if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
+                {
+                    agent.SetDestination(hit.position);
+                    currentState = EnemyState.Wandering;
+                }
+
                 break;
             }
 
@@ -410,7 +428,7 @@ public class Enemy : MonoBehaviour
         else
         {
             //slowtracking projectile
-            projectile.SetPropertiesTracked(gameObject, transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform);
+            projectile.SetPropertiesTracked(gameObject, transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
         }
 
 

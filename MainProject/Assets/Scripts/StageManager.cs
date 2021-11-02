@@ -17,6 +17,9 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : MonoBehaviour
 {
+    public static PlayerController Player;
+
+    public bool TestingOnly = false;
     public bool autoupdate = false;
     public TerrainBuilder Terrain;
 
@@ -24,11 +27,24 @@ public class StageManager : MonoBehaviour
 
 
     private int MonsterXpCollected = 0;
+    private int WoodCollected = 0;
 
+
+    void Awake()
+    {
+        Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
+
+    }
 
 
     public void MakeStage()
     {
+        if (TestingOnly)
+        {
+            return;
+        }
+
+
         //Terrain.MakeTerrain();
 
 
@@ -69,6 +85,11 @@ public class StageManager : MonoBehaviour
         //set future enemy level higher if monster xp large enough;
 
 
+    }
+
+    public void OnPlayerGetWood(int amount)
+    {
+        WoodCollected += amount;
     }
 
 

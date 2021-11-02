@@ -106,7 +106,14 @@ public class Weapon : MonoBehaviour
                     player.GetMonsterXP(enemy.RewardAmount());
                     player.GenerateRage(player.KillRageAmount);
                 }
-
+            }
+            else
+            {
+                WoodResource resource = collider.transform.parent.gameObject.GetComponent<WoodResource>();
+                if (resource)
+                {
+                    resource.TakeDamage(Damage);
+                }
             }
 
             //deal dmg to enemies and resources

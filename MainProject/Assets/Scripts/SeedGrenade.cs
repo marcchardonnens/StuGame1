@@ -63,7 +63,7 @@ public class SeedGrenade : MonoBehaviour
 
     }
 
-    public IEnumerator PlayEffect(float effectDuration = 0.5f)
+    public IEnumerator PlayEffect(float effectDuration = 0.1f)
     {
 
         yield return new WaitForSeconds(effectDuration);

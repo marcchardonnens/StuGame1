@@ -22,6 +22,8 @@ public class SimpleProjectile : MonoBehaviour
 
     private bool initialized = false;
 
+    private bool hitTrackedOnly = false;
+
     public void SetPropertiesSimple(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, Transform tracked)
     {
         this.source = source;
@@ -40,7 +42,7 @@ public class SimpleProjectile : MonoBehaviour
         Physics.IgnoreCollision(gameObject.GetComponent<Collider>(), source.GetComponent<Collider>());
     }
 
-    public void SetPropertiesTracked(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, bool slowtracking, float turnspeed, Transform tracked)
+    public void SetPropertiesTracked(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, bool slowtracking, float turnspeed, Transform tracked, bool HitTrackedOnly)
     {
         this.source = source;
         this.direction = direction;
@@ -53,9 +55,14 @@ public class SimpleProjectile : MonoBehaviour
         this.slowtracking = slowtracking;
         this.tracked = tracked;
         transform.rotation = Quaternion.LookRotation(tracked.position - transform.position);
+        this.hitTrackedOnly = HitTrackedOnly;
         initialized = true;
         gameObject.SetActive(true);
-        Physics.IgnoreCollision(gameObject.GetComponent<Collider>(), source.GetComponent<Collider>());
+
+        if (source.GetComponent<Collider>() != null)
+        {
+            Physics.IgnoreCollision(gameObject.GetComponent<Collider>(), source.GetComponent<Collider>());
+        }
     }
 
     void Awake()
@@ -69,6 +76,12 @@ public class SimpleProjectile : MonoBehaviour
     {
         if (!initialized)
         {
+            return;
+        }
+
+        if (tracked == null)
+        {
+            SelfDestruct();
             return;
         }
         
@@ -100,6 +113,24 @@ public class SimpleProjectile : MonoBehaviour
 
     void OnTriggerEnter(Collider collider)
     {
+        if (hitTrackedOnly)
+        {
+            if (collider.transform == tracked)
+            {
+                Enemy enemy = collider.GetComponent<Enemy>();
+                if (enemy)
+                {
+                    bool lethal = enemy.TakeDamage(damage);
+                    if (lethal)
+                    {
+                        StageManager.Player.GetMonsterXP(enemy.RewardAmount());
+                        StageManager.Player.GenerateRage(StageManager.Player.KillRageAmount);
+                    }
+                }
+                SelfDestruct();
+            }
+            return;
+        }
 
         PlayerController pc = collider.transform.GetComponent<PlayerController>();
         if (pc)
@@ -107,7 +138,14 @@ public class SimpleProjectile : MonoBehaviour
             pc.TakeDamage(damage);
         }
 
-        SelfDestruct();
+        if (collider.gameObject.layer == GameConstants.PLAYERLAYER || 
+            collider.gameObject.layer == GameConstants.GROUNDLAYER ||
+            collider.gameObject.layer == GameConstants.RESOURCESLAYER ||
+            collider.gameObject.layer == GameConstants.SCENERYLAYER)
+        {
+            SelfDestruct();
+
+        }
 
     }
 

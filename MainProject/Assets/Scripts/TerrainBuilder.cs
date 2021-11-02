@@ -37,6 +37,8 @@ public class TerrainBuilder : MonoBehaviour
     public RandomChoice[] TreePrefabs;
     [SerializeField] private bool spawnRocks = true;
     public RandomChoice[] RockPrefabs;
+    [SerializeField] private bool spawnPowerups = true;
+    public RandomChoice[] PowerupPrefabs;
     [SerializeField] TextureData TextureData;
 
 
@@ -138,6 +140,7 @@ public class TerrainBuilder : MonoBehaviour
 
         SpawnTrees();
         SpawnRocks();
+        SpawnPowerups();
 
         PlaceHouse();
         PlaceObjective();
@@ -379,7 +382,7 @@ public class TerrainBuilder : MonoBehaviour
 
     }
 
-    private void SpawnTrees()
+    public void SpawnTrees()
     {
         const int treeDistance = 5;
         const float heightvariance = 0.75f;
@@ -431,7 +434,7 @@ public class TerrainBuilder : MonoBehaviour
         }
     }
 
-    private void SpawnRocks()
+    public void SpawnRocks()
     {
         const int edgeRadius = 1;
         const float sizeVariance = 0.15f; //percent
@@ -461,6 +464,11 @@ public class TerrainBuilder : MonoBehaviour
             }
         }
         
+    }
+
+    public void SpawnPowerups()
+    {
+
     }
 
     private bool IsAtGroundLevel(float y, float margin = 1f)
@@ -515,104 +523,6 @@ public class TerrainBuilder : MonoBehaviour
 
         return true;
 
-
-        #region rectangular
-
-        
-
-        //RaycastHit hit;
-
-        //if (Physics.Raycast(new Vector3(x + dist, 100f, z), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if(Physics.Raycast(new Vector3(x - dist, 100f, z), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x , 100f, z - dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x , 100f, z + dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x + dist, 100f, z + dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x - dist, 100f, z - dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x + dist, 100f, z - dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-        //if (Physics.Raycast(new Vector3(x - dist, 100f, z + dist), Vector3.down, out hit, 200f, layer))
-        //{
-        //    if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
-        //    {
-        //        return false;
-        //    }
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-
-        //return true;
-        #endregion
 
     }
 

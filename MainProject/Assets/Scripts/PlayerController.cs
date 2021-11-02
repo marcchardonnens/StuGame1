@@ -39,19 +39,25 @@ public class PlayerController : MonoBehaviour
     public float BlockingSpeedLevel = 0.5f;
     public float LevelToThePowerOf = 1.1f; //level up stats will be calced to whatever + upgrade * leveltothepowerof ** oldLevel
 
-    public int MaxSeeds = 5;
+    public int MaxSeeds = 10;
     public int SeedGrenadeCost = 1;
     public Transform SeedGrenadeRelease;
     public GameObject SeedGrenadePrefab;
     public int ShieldPlantCost = 1;
     public GameObject ShieldPlantPrefab;
     public int TurretPlantCost = 1;
-    public GameObject TurretPlanPrefab;
+    public GameObject TurretPlantPrefab;
     public int SeedPlantCost = 1;
     public GameObject SeedPlantPrefab;
+    
 
+    public float PlantAnimationTime = 1f;
     public float PlantPlaceMaxDistance = 5f;
-
+    public GameObject PreviewSphere;
+    public LineRenderer PreviewLine;
+    public Material PreviewGood;
+    public Material PreviewBad;
+    private MeshRenderer PreviewRenderer;
 
     //BaseStats, will change throughout the game
     public float MaxHP = 100;
@@ -80,6 +86,9 @@ public class PlayerController : MonoBehaviour
 
     private bool previewing = false;
     private int previewNumber = 0;
+    private bool previewValid = false;
+
+    private float plantAnimationTimer = 0f;
     //private bool preview1 = false; //grenade
     //private bool preview2 = false; //shield plant
     //private bool preview3 = false; //turret plant
@@ -91,6 +100,10 @@ public class PlayerController : MonoBehaviour
     {
         stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
+        PreviewSphere = Instantiate(PreviewSphere);
+        PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
+        PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
+        PreviewSphere.SetActive(false);
 
 
         currentHP = MaxHP;
@@ -143,72 +156,84 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (!previewing)
+        if (!previewing) 
         {
-            if (Input.GetMouseButton(0))
+            if (plantAnimationTimer <= Time.time)
             {
-                if (RightHand.weapon.HasRangedAttack)
+                if (Input.GetMouseButton(0))
                 {
-                    RangedAttack();
+                    if (RightHand.weapon.HasRangedAttack)
+                    {
+                        RangedAttack();
+                    }
+                    else
+                    {
+                        MeleeAttack();
+                    }
                 }
-                else
+                if (Input.GetMouseButton(1) && !isBlocking)
                 {
-                    MeleeAttack();
+                    Block();
                 }
-            }
-            if (Input.GetMouseButton(1) && !isBlocking)
-            {
-                Block();
-            }
-            else if (!Input.GetMouseButton(1) && isBlocking)
-            {
-                Unblock();
+                else if (!Input.GetMouseButton(1) && isBlocking)
+                {
+                    Unblock();
+                }
             }
         }
         else
         {
+
             if (Input.GetMouseButtonDown(1))
             {
                 previewing = false;
+                RightHand.gameObject.SetActive(true);
+                PreviewSphere.SetActive(false);
             }
             else if (Input.GetMouseButtonDown(0))
             {
-                //confirm Action
-                if (previewNumber == 1)
+                if (previewValid)
                 {
-                    ThrowGrenade();
+                    //confirm Action
+                    if (previewNumber == 1)
+                    {
+                        ThrowGrenade();
+                    }
+                    else if (previewNumber == 2)
+                    {
+                        PlaceShieldPlant();
+                    }
+                    else if (previewNumber == 3)
+                    {
+                        PlaceTurretPlant();
+                    }
+                    else if (previewNumber == 4)
+                    {
+                        PlaceSeedPlant();
+                    }
+                    previewing = false; //might be better to not go out of preview
+                    plantAnimationTimer = Time.time + PlantAnimationTime;
+                    RightHand.gameObject.SetActive(true);
+                    PreviewSphere.SetActive(false);
                 }
-                else if (previewNumber == 2)
-                {
-                    PlaceShieldPlant();
-                }
-                else if (previewNumber == 3)
-                {
-                    PlaceTurretPlant();
-                }
-                else if (previewNumber == 4)
-                {
-                    PlaceSeedPlant();
-                }
-                previewing = false; //might be better to not go out of preview
             }
             else
             {
                 if (previewNumber == 1)
                 {
-                    PreviewGrenades();
+                    previewValid = PreviewGrenades();
                 }
                 else if (previewNumber == 2)
                 {
-                    PreviewShieldPlant();
+                    previewValid = PreviewShieldPlant();
                 }
                 else if (previewNumber == 3)
                 {
-                    PreviewTurretPlant();
+                    previewValid = PreviewTurretPlant();
                 }
                 else if (previewNumber == 4)
                 {
-                    PreviewSeedPlant();
+                    previewValid = PreviewSeedPlant();
                 }
             }
         }
@@ -300,8 +325,6 @@ public class PlayerController : MonoBehaviour
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
             transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
-
-            
         }
 
 
@@ -309,55 +332,103 @@ public class PlayerController : MonoBehaviour
 
     private void ThrowGrenade()
     {
-        if (currentSeeds < ShieldPlantCost)
+        SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
+        grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
+        currentSeeds -= SeedGrenadeCost;
+    }
+    private bool PreviewGrenades()
+    {
+        bool valid = true;
+        PlacePreviewSphere(15f);
+
+        
+        if (currentSeeds < SeedGrenadeCost)
         {
             Debug.Log("not enough seeds!");
-            return;
+            valid = false;
         }
 
-        SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
-        grenade.Throw(this, transform.forward, BaseDamage);
-
-
-    }
-    private void PreviewGrenades()
-    {
-
-        //do the line thing
-        //or maybe dont, its not the most important
-
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
     private void PlaceShieldPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+    }
+
+    private bool PreviewShieldPlant()
+    {
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position,
+                PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up,
+                ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < ShieldPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        
+        return valid;
     }
 
     private void PlaceTurretPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+    }
+
+    private bool PreviewTurretPlant()
+    {
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < TurretPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
     private void PlaceSeedPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
     }
 
-    private void PreviewSeedPlant()
+    private bool PreviewSeedPlant()
     {
-        throw new NotImplementedException();
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < SeedPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
-    private void PreviewTurretPlant()
+
+    private void PaintPreviewSphere(bool good)
     {
-        throw new NotImplementedException();
+        if (good)
+        {
+            PreviewRenderer.sharedMaterial = PreviewGood;
+            PreviewLine.material = PreviewGood;
+        }
+        else
+        {
+            PreviewRenderer.sharedMaterial = PreviewBad;
+            PreviewLine.material = PreviewBad;
+        }
     }
 
-    private void PreviewShieldPlant()
-    {
-        throw new NotImplementedException();
-    }
 
+  
 
 
     public void LockCursor()
@@ -482,6 +553,37 @@ public class PlayerController : MonoBehaviour
     public void ConsumeShroom()
     {
 
+    }
+
+    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)
+    {
+        RaycastHit hit;
+        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        {
+            pos = hit.point;
+            return true;
+        }
+        else
+        {
+            pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
+            return false;
+        }
+    }
+
+    private bool PlacePreviewSphere(float maxDistance = 5f, int layerMask = ~(1 << GameConstants.PLAYERLAYER))
+    {
+        RightHand.StopAllAnimations();
+        RightHand.gameObject.SetActive(false);
+        PreviewSphere.SetActive(true);
+
+        Vector3 lookPos = new Vector3();
+        bool onGround = CrossHairLookPosition(out lookPos, maxDistance, layerMask);
+        PreviewSphere.transform.position = lookPos;
+        
+        PreviewLine.SetPosition(0, RightHand.transform.position);
+        PreviewLine.SetPosition(1, PreviewSphere.transform.position);
+
+        return onGround;
     }
 
 }

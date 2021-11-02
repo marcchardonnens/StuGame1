@@ -19,11 +19,16 @@ public class Hand : MonoBehaviour
     private Animation anim;
     private bool isBlocking = false;
 
+    private Vector3 resetPos;
+    private Quaternion resetRot;
+
     
 
     // Start is called before the first frame update
     void Start()
     {
+        resetPos = transform.localPosition;
+        resetRot = transform.localRotation;
         weapon.Pickup(Player);
         anim = GetComponent<Animation>();
         
@@ -69,6 +74,13 @@ public class Hand : MonoBehaviour
         anim[UNBLOCKANIM].speed = animationSpeed;
         anim.Play(UNBLOCKANIM);
         weapon.Block();
+    }
+
+    public void StopAllAnimations()
+    {
+        anim.Stop();
+        transform.localPosition = resetPos;
+        transform.localRotation = resetRot;
     }
 
 }

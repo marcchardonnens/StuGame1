@@ -13,6 +13,9 @@ public class TerrainBuilder : MonoBehaviour
     private const String CLEANUPTAG = "Cleanup";
 
     public bool autoupdate = false;
+
+    public bool IsHubScene = false;
+
     [SerializeField] private int seed = 0;
     [SerializeField] private const int XSize = 200;
     [SerializeField] private const int ZSize = 200;
@@ -618,6 +621,11 @@ public class TerrainBuilder : MonoBehaviour
 
     private void MakeNavMesh()
     {
+        if (IsHubScene)
+        {
+            return;
+        }
+
         HighMod.size = new Vector3(xSize, 75f, zSize);
         HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
         LowMod.size = new Vector3(xSize, 75f, zSize);

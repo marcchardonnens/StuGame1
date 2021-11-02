@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,6 +40,17 @@ public class PlayerController : MonoBehaviour
     public float LevelToThePowerOf = 1.1f; //level up stats will be calced to whatever + upgrade * leveltothepowerof ** oldLevel
 
     public int MaxSeeds = 5;
+    public int SeedGrenadeCost = 1;
+    public Transform SeedGrenadeRelease;
+    public GameObject SeedGrenadePrefab;
+    public int ShieldPlantCost = 1;
+    public GameObject ShieldPlantPrefab;
+    public int TurretPlantCost = 1;
+    public GameObject TurretPlanPrefab;
+    public int SeedPlantCost = 1;
+    public GameObject SeedPlantPrefab;
+
+    public float PlantPlaceMaxDistance = 5f;
 
 
     //BaseStats, will change throughout the game
@@ -64,6 +76,14 @@ public class PlayerController : MonoBehaviour
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
     private float rageTimer = 0f;
+
+
+    private bool previewing = false;
+    private int previewNumber = 0;
+    //private bool preview1 = false; //grenade
+    //private bool preview2 = false; //shield plant
+    //private bool preview3 = false; //turret plant
+    //private bool preview4 = false; //eating seed steroid
 
 
 
@@ -101,15 +121,101 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown("1"))
+        {
+            previewNumber = 1;
+            previewing = true;
+        }
+        else if (Input.GetKeyDown("2"))
+        {
+            previewNumber = 2;
+            previewing = true;
+        }
+        else if (Input.GetKeyDown("3"))
+        {
+            previewNumber = 3;
+            previewing = true;
+        }
+        else if (Input.GetKeyDown("4"))
+        {
+            previewNumber = 4;
+            previewing = true;
+        }
 
-        if (Input.GetMouseButton(1) && !isBlocking)
+
+        if (!previewing)
         {
-            Block();
+            if (Input.GetMouseButton(0))
+            {
+                if (RightHand.weapon.HasRangedAttack)
+                {
+                    RangedAttack();
+                }
+                else
+                {
+                    MeleeAttack();
+                }
+            }
+            if (Input.GetMouseButton(1) && !isBlocking)
+            {
+                Block();
+            }
+            else if (!Input.GetMouseButton(1) && isBlocking)
+            {
+                Unblock();
+            }
         }
-        else if (!Input.GetMouseButton(1) && isBlocking)
+        else
         {
-            Unblock();
+            if (Input.GetMouseButtonDown(1))
+            {
+                previewing = false;
+            }
+            else if (Input.GetMouseButtonDown(0))
+            {
+                //confirm Action
+                if (previewNumber == 1)
+                {
+                    ThrowGrenade();
+                }
+                else if (previewNumber == 2)
+                {
+                    PlaceShieldPlant();
+                }
+                else if (previewNumber == 3)
+                {
+                    PlaceTurretPlant();
+                }
+                else if (previewNumber == 4)
+                {
+                    PlaceSeedPlant();
+                }
+                previewing = false; //might be better to not go out of preview
+            }
+            else
+            {
+                if (previewNumber == 1)
+                {
+                    PreviewGrenades();
+                }
+                else if (previewNumber == 2)
+                {
+                    PreviewShieldPlant();
+                }
+                else if (previewNumber == 3)
+                {
+                    PreviewTurretPlant();
+                }
+                else if (previewNumber == 4)
+                {
+                    PreviewSeedPlant();
+                }
+            }
         }
+
+
+
+        
 
 
 
@@ -195,23 +301,64 @@ public class PlayerController : MonoBehaviour
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
             transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
 
-
-            if (Input.GetMouseButton(0))
-            {
-                if (RightHand.weapon.HasRangedAttack)
-                {
-                    RangedAttack();
-                }
-                else
-                {
-                    MeleeAttack();
-                }
-            }
-
+            
         }
 
 
     }
+
+    private void ThrowGrenade()
+    {
+        if (currentSeeds < ShieldPlantCost)
+        {
+            Debug.Log("not enough seeds!");
+            return;
+        }
+
+        SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
+        grenade.Throw(this, transform.forward, BaseDamage);
+
+
+    }
+    private void PreviewGrenades()
+    {
+
+        //do the line thing
+        //or maybe dont, its not the most important
+
+    }
+
+    private void PlaceShieldPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PlaceTurretPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PlaceSeedPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PreviewSeedPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PreviewTurretPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PreviewShieldPlant()
+    {
+        throw new NotImplementedException();
+    }
+
+
 
     public void LockCursor()
     {

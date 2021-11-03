@@ -283,7 +283,7 @@ MonoBehaviour:
   ProjectileLifetime: 5
   ProjectileSpeed: 10
   ProjectileTurnSpeed: 45
-  ProjectileHP: 50
+  ProjectileHP: 100
   ProjectileTrackingChance: 0.5
   wanderSpeed: 2
   wanderDistance: 5
@@ -313,5 +313,5 @@ NavMeshAgent:
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 1
-  m_WalkableMask: 8
+  m_WalkableMask: 1
   m_ObstacleAvoidanceType: 4

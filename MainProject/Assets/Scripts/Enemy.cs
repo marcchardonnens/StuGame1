@@ -67,34 +67,34 @@ public class Enemy : MonoBehaviour
 
 
 
-    private Vector3 spawnPoint;
+    protected Vector3 spawnPoint;
 
     //AI stuff
-    private const int MELEEMASK = 1 << 0  | 1 << 3;
-    private const int RANGEDMASK = 1 << 0 | 1 << 4;
-    private const int WALKABLEMASK = 1 << 0;
-    private const int MELEEONLYMASK = 1 << 3;
-    private const int RANGEDONLYMASK = 1 << 4;
+    protected const int MELEEMASK = 1 << 0  | 1 << 3;
+    protected const int RANGEDMASK = 1 << 0 | 1 << 4;
+    protected const int WALKABLEMASK = 1 << 0;
+    protected const int MELEEONLYMASK = 1 << 3;
+    protected const int RANGEDONLYMASK = 1 << 4;
 
-    private const float SLOWUPDATETIME = .1f;
+    protected const float SLOWUPDATETIME = .1f;
 
     public float AreaDefaultCost = 1f;
     public float nonPrioAreaCost = 10f;
 
     public float aiCirclingMargin = 3f; //choosing random pos within this range from target
-    private NavMeshAgent agent;
-    private EnemyState currentState;
-    private EnemyState? queuedState = null;
-    private PlayerController player;
-    private Transform currentTarget = null;
+    protected NavMeshAgent agent;
+    protected EnemyState currentState;
+    protected EnemyState? queuedState = null;
+    protected PlayerController player;
+    protected Transform currentTarget = null;
 
-    private float slowupdate = SLOWUPDATETIME;
-    private float nextMeleeCd = 0f;
-    private float nextRangedCd = 0f;
-    private float stunned = 0f;
-    [SerializeField] private float currentHP;
+    protected float slowupdate = SLOWUPDATETIME;
+    protected float nextMeleeCd = 0f;
+    protected float nextRangedCd = 0f;
+    protected float stunned = 0f;
+    [SerializeField] protected float currentHP;
 
-    private float outOfCombatTimer = 0f;
+    protected float outOfCombatTimer = 0f;
 
 
 
@@ -114,6 +114,12 @@ public class Enemy : MonoBehaviour
 
 
         killingBlow = CheckDeathCondition();
+
+        if(killingBlow)
+        {
+            player.GetMonsterXP(RewardAmount());
+            player.GenerateRage(player.KillRageAmount);
+        }
 
         return killingBlow;
 
@@ -177,7 +183,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    private void EnemyActions(bool isSlowUpdate = false)
+    protected void EnemyActions(bool isSlowUpdate = false)
     {
 
         switch (currentState)
@@ -392,7 +398,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void CalcRangedPos()
+    protected void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
         Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - attackRange);
@@ -415,7 +421,7 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private void RangedAttack()
+    protected void RangedAttack()
     {
         //cooldown check
         if (nextRangedCd > Time.time)
@@ -440,7 +446,7 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private void MeleeAttack()
+    protected void MeleeAttack()
     {
         //cooldown check
         if (nextMeleeCd > Time.time)
@@ -487,7 +493,7 @@ public class Enemy : MonoBehaviour
         
     }
 
-    private void SetMeleeAgent()
+    protected void SetMeleeAgent()
     {
         agent.areaMask = MELEEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
@@ -496,7 +502,7 @@ public class Enemy : MonoBehaviour
         //could set angular speed/radius or other agent settings here
     }
 
-    private void SetRangedAgent()
+    protected void SetRangedAgent()
     {
         agent.areaMask = RANGEDMASK;
         agent.SetAreaCost(MELEEONLYMASK, nonPrioAreaCost);
@@ -504,7 +510,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    private bool CheckDeathCondition()
+    protected bool CheckDeathCondition()
     {
         bool dead = false;
 
@@ -518,7 +524,7 @@ public class Enemy : MonoBehaviour
         return dead;
     }
 
-    private void InitializeDeath()
+    protected void InitializeDeath()
     {
         //initiate death
         currentState = EnemyState.Dying;
@@ -528,7 +534,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    private bool IsDead()
+    protected bool IsDead()
     {
         if(currentState == EnemyState.Dying ||
             currentState == EnemyState.Dead ||
@@ -543,7 +549,7 @@ public class Enemy : MonoBehaviour
 
 
 
-    private IEnumerator ExecuteIn(float seconds, Action action)
+    protected IEnumerator ExecuteIn(float seconds, Action action)
     {
         yield return new WaitForSeconds(seconds);
         action();

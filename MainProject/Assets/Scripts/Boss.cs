@@ -22,44 +22,12 @@ public enum EnemyState
 
 
 
-public class Boss : MonoBehaviour
+public class Boss : Enemy
 {
-    public float MaxHP = 100f;
-    public float MeleeDamage = 15f;
-    public float RangedDamage = 5f;
-    public float Armor = 0f;
-    public float FrontBlock = 0f;
-    public float PlayerDetectRange = 15f;
-    public float PlayerLoseRange = 25f;
-    public float TimeUntilOutOfCombat = 10f;
-    public float spawnReturnDistance = 5f;
-    public float spawnTime = 2f;
-    public float deathTime = 2f;
-    public float meleeRange = 3f;
-    public float attackRange = 15f;
-    public float MeleeAttackCooldown = 2f;
-    public float RangedAttackCooldown = 4f;
-    public float MeleeAnimationTime = 0.5f;
-    public float RangedAnimationTime = 0.5f;
+    public int RangedAttackSalveAmount = 5;
+    public float RangedAttackSalveSpreadAngle = 30f;
+    
 
-    public int currentLevel = 0;
-    public int BaseRewardAmount = 50;
-    public float PlayerRageLevelRewardMultiplier = 0.25f;
-    public float EnemyLevelRewardMultiplier = 1.25f;
-    public float RandomRewardMultiplier = 0.1f;
-
-    public GameObject ProjectilePrefab;
-    public float ProjectileLifetime = 10f;
-    public float ProjectileSpeed = 5f;
-    public float ProjectileTurnSpeed = 5f;
-    public float ProjectileHP = 50f; //relevant for aura plant for example
-    public float ProjectileTrackingChance = 0.5f; //slowtracking or simple
-
-    public float wanderSpeed = 2f;
-    public float wanderDistance = 5f;
-    public float combatSpeed = 4f;
-
-    public float Gravity = 20f;
 
     public float MeteorDamage = 50f;
     public float MeteorDelay = 2f;
@@ -70,61 +38,47 @@ public class Boss : MonoBehaviour
     public int MeteorSalveAmountLevel = 2;
     public float DelayBetweenMeteorsMin = 0.1f;
     public float DelayBetweenMeteorsMax = 0.5f;
-    public float MeteorSpawnHeight = 10f;
+    public float MeteorSpawnHeight = 100f;
     public GameObject MeteorPrefab;
+    public GameObject MeteorIndicatorPrefab;
 
 
-    private Vector3 spawnPoint;
+    public GameObject EnemyPrefab;
+    public int AddSummonAmount = 3;
+    public float AddSummonCoolDown = 20f;
+    public float AddSummonRadius = 20f;
+    
 
-    //AI stuff
-    private const int MELEEMASK = 1 << 0  | 1 << 3;
-    private const int RANGEDMASK = 1 << 0 | 1 << 4;
-    private const int WALKABLEMASK = 1 << 0;
-    private const int MELEEONLYMASK = 1 << 3;
-    private const int RANGEDONLYMASK = 1 << 4;
-
-    private const float SLOWUPDATETIME = 1f;
-
-    public float AreaDefaultCost = 1f;
-    public float nonPrioAreaCost = 10f;
-
-    public float aiCirclingMargin = 3f; //choosing random pos within this range from target
-    private NavMeshAgent agent;
-    private EnemyState currentState;
-    private EnemyState? queuedState = null;
-    private PlayerController player;
-    private Transform currentTarget = null;
-
-    private float slowupdate = SLOWUPDATETIME;
-    private float nextMeleeCd = 0f;
-    private float nextRangedCd = 0f;
-    private float stunned = 0f;
-    [SerializeField] private float currentHP;
-
-    private float outOfCombatTimer = 0f;
     private float meteorCd = 0f;
+    private float summonCd = 0f;
+
+    //public bool TakeDamage(float amount)
+    //{
+    //    bool killingBlow = false;
+
+    //    amount -= Armor;
+
+    //    //TODO mittigation
 
 
-    public bool TakeDamage(float amount)
-    {
-        bool killingBlow = false;
-
-        amount -= Armor;
-
-        //TODO mittigation
+    //    if (amount > 0)
+    //    {
+    //        currentHP -= amount;
+    //    }
 
 
-        if (amount > 0)
-        {
-            currentHP -= amount;
-        }
 
+    //    if (killingBlow)
+    //    {
+    //        player.GetMonsterXP(RewardAmount());
+    //        player.GenerateRage(player.KillRageAmount);
+    //    }
 
-        killingBlow = CheckDeathCondition();
+    //    killingBlow = CheckDeathCondition();
 
-        return killingBlow;
+    //    return killingBlow;
 
-    }
+    //}
 
     public int RewardAmount()
     {
@@ -168,7 +122,8 @@ public class Boss : MonoBehaviour
     {
         slowupdate -= Time.deltaTime;
         stunned -= Time.deltaTime;
-
+        StartCoroutine(MeteorAttack());
+        SummonAdds();
         //if killing blow from something else
         CheckDeathCondition();
 
@@ -180,6 +135,8 @@ public class Boss : MonoBehaviour
         {
             EnemyActions(false);
         }
+
+
 
     }
 
@@ -431,17 +388,46 @@ public class Boss : MonoBehaviour
         }
         nextRangedCd = Time.time + RangedAttackCooldown;
 
-        SimpleProjectile projectile =
-            Instantiate(ProjectilePrefab, transform.position + transform.forward*1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
-        if (Random.Range(0f, 1f) <= ProjectileTrackingChance)
+
+        for (int i = 0; i < RangedAttackSalveAmount; i++)
         {
-            //simple projectile
-            projectile.SetPropertiesSimple(gameObject, currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
-        }
-        else
-        {
-            //slowtracking projectile
-            projectile.SetPropertiesTracked(gameObject, transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
+
+            float angle;
+            if (RangedAttackSalveAmount % 2 == 1)
+            {
+                angle = (RangedAttackSalveSpreadAngle * 2) / (RangedAttackSalveAmount - 1);
+                angle = angle * (((RangedAttackSalveAmount - i) - RangedAttackSalveAmount / 2) - 1);
+
+            }
+            else
+            {
+                float spread = (RangedAttackSalveSpreadAngle * 2) / (RangedAttackSalveAmount - 1);
+                angle = spread;
+                angle = angle * (((RangedAttackSalveAmount - i) - RangedAttackSalveAmount / 2));
+                angle -= spread / 2;
+
+            }
+
+            Vector3 direction = currentTarget.transform.position - transform.position;
+            direction = direction.normalized;
+            direction *= transform.localScale.z;
+            
+
+            SimpleProjectile projectile =
+                Instantiate(ProjectilePrefab, direction + transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();
+            if (currentLevel < 2)
+            {
+                //simple projectile
+                projectile.SetPropertiesSimple(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
+            }
+            else
+            {
+                //slowtracking projectile
+                projectile.SetPropertiesTracked(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
+            }
+
+            projectile.transform.RotateAround(transform.position, Vector3.up, angle);
+
         }
     }
 
@@ -494,7 +480,7 @@ public class Boss : MonoBehaviour
 
     private void SetMeleeAgent()
     {
-        agent.areaMask = MELEEMASK;
+        agent.areaMask = WALKABLEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
         agent.SetAreaCost(RANGEDONLYMASK, nonPrioAreaCost);
         
@@ -503,7 +489,7 @@ public class Boss : MonoBehaviour
 
     private void SetRangedAgent()
     {
-        agent.areaMask = RANGEDMASK;
+        agent.areaMask = WALKABLEMASK;
         agent.SetAreaCost(MELEEONLYMASK, nonPrioAreaCost);
         agent.SetAreaCost(RANGEDONLYMASK, AreaDefaultCost);
     }
@@ -539,14 +525,15 @@ public class Boss : MonoBehaviour
     {
         if (outOfCombatTimer > Time.time && meteorCd < Time.time && !IsDead())
         {
+            outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
+            meteorCd = Time.time + MeteorAttackCooldown;
             int meteors = MeteorSalveAmountMin + MeteorSalveAmountLevel * currentLevel;
             for (int i = 0; i < meteors; i++)
             {
-                float nextDelay = 0;
+                float nextDelay = Random.Range(DelayBetweenMeteorsMin, DelayBetweenMeteorsMax);
 
 
-
-
+                SpawnMeteor(nextDelay);
 
                 yield return new WaitForSeconds(nextDelay);
             }
@@ -557,14 +544,65 @@ public class Boss : MonoBehaviour
     {
 
         //choose point near player
+        int retries = 3;
+        float accuracyOffset = 10f - 1f*currentLevel;
 
-        float accuracyOffset = 10f;
+        Vector3 playerPos = player.transform.position;
 
+        if(currentLevel > 5)
+        {
+            //moveprediction
+        }
+
+        Vector3 targetPos = Random.insideUnitSphere* accuracyOffset + playerPos;
+
+        RaycastHit hit;
+        for (int i = 0; i < retries; i++)
+        {
+
+            if(Physics.Raycast(new Vector3(targetPos.x, targetPos.y + 100f, targetPos.z), Vector3.down, out hit, 2000f, 1 << GameConstants.GROUNDLAYER ))
+            {
+
+                //make indicator
+                GameObject indicator = Instantiate(MeteorIndicatorPrefab, hit.point, Quaternion.identity);
+
+                GameObject meteorGO = Instantiate(MeteorPrefab, new Vector3(transform.position.x, hit.point.y + MeteorSpawnHeight, transform.position.z), Quaternion.LookRotation(hit.point));
+                Meteor meteor = meteorGO.GetComponent<Meteor>();
+                meteor.Initialize(hit.point, MeteorDamage, MeteorImpactRadius, indicator , MeteorDelay);
+
+
+                break;
+
+            }
+        }
 
 
         //Meteor meteor = Instantiate(MeteorPrefab, )
 
     }
+
+
+    public void SummonAdds()
+    {
+        if (outOfCombatTimer > Time.time && summonCd < Time.time && !IsDead())
+        {
+            summonCd = Time.time + AddSummonCoolDown;
+            for (int i = 0; i < AddSummonAmount; i++)
+            {
+                Vector3 pos = Random.insideUnitSphere * AddSummonRadius + transform.position;
+
+                NavMeshHit hit;
+                if(NavMesh.SamplePosition(pos, out hit, AddSummonRadius, agent.areaMask))
+                {
+                    Enemy enemy = Instantiate(EnemyPrefab, pos, Quaternion.identity).GetComponent<Enemy>();
+                    enemy.transform.position = hit.position;
+                }
+            }
+        }
+    }
+
+
+
 
     private bool IsDead()
     {
@@ -577,12 +615,6 @@ public class Boss : MonoBehaviour
 
         return false;
     }
-
-
-
-
-
-
 
 
     private IEnumerator ExecuteIn(float seconds, Action action)

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class SimpleProjectile : MonoBehaviour
 {
+    public bool IsPlayerProjectile = false;
     public Vector3 direction;
     public float speed;
     public float hp;
@@ -24,7 +25,7 @@ public class SimpleProjectile : MonoBehaviour
 
     private bool hitTrackedOnly = false;
 
-    public void SetPropertiesSimple(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, Transform tracked)
+    public void SetPropertiesSimple(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, Transform tracked, bool fromPlayer = false)
     {
         this.source = source;
         this.direction = direction;
@@ -36,13 +37,14 @@ public class SimpleProjectile : MonoBehaviour
         this.tracking = false;
         this.slowtracking = false;
         this.tracked = tracked;
-        transform.rotation = Quaternion.LookRotation(tracked.position - transform.position);
+        transform.rotation = Quaternion.LookRotation((tracked.position + Vector3.up ) - transform.position);
+        IsPlayerProjectile = fromPlayer;
         initialized = true;
         gameObject.SetActive(true);
         Physics.IgnoreCollision(gameObject.GetComponent<Collider>(), source.GetComponent<Collider>());
     }
 
-    public void SetPropertiesTracked(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, bool slowtracking, float turnspeed, Transform tracked, bool HitTrackedOnly)
+    public void SetPropertiesTracked(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, bool slowtracking, float turnspeed, Transform tracked, bool HitTrackedOnly, bool fromPlayer = false)
     {
         this.source = source;
         this.direction = direction;
@@ -56,6 +58,7 @@ public class SimpleProjectile : MonoBehaviour
         this.tracked = tracked;
         transform.rotation = Quaternion.LookRotation(tracked.position - transform.position);
         this.hitTrackedOnly = HitTrackedOnly;
+        IsPlayerProjectile = fromPlayer;
         initialized = true;
         gameObject.SetActive(true);
 
@@ -121,11 +124,6 @@ public class SimpleProjectile : MonoBehaviour
                 if (enemy)
                 {
                     bool lethal = enemy.TakeDamage(damage);
-                    if (lethal)
-                    {
-                        StageManager.Player.GetMonsterXP(enemy.RewardAmount());
-                        StageManager.Player.GenerateRage(StageManager.Player.KillRageAmount);
-                    }
                 }
                 SelfDestruct();
             }
@@ -144,7 +142,6 @@ public class SimpleProjectile : MonoBehaviour
             collider.gameObject.layer == GameConstants.SCENERYLAYER)
         {
             SelfDestruct();
-
         }
 
     }

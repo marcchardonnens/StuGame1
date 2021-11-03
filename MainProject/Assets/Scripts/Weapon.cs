@@ -100,12 +100,6 @@ public class Weapon : MonoBehaviour
                 float totalDamage = Damage + player.BaseDamage;
                 bool lethal = enemy.TakeDamage(totalDamage);
                 player.GenerateRage(player.MeleeHitRageAmount);
-
-                if (lethal)
-                {
-                    player.GetMonsterXP(enemy.RewardAmount());
-                    player.GenerateRage(player.KillRageAmount);
-                }
             }
             else
             {

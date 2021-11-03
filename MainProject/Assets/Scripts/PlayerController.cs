@@ -362,7 +362,7 @@ public class PlayerController : MonoBehaviour
     private void ThrowGrenade()
     {
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
-        grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
+        grenade.Throw(this, playerCamera.transform.forward, BaseDamage, true);
         currentSeeds -= SeedGrenadeCost;
     }
 

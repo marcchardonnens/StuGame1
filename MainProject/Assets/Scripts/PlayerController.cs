@@ -93,7 +93,12 @@ public class PlayerController : MonoBehaviour
     private StageManager stageManager;
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
+    //HealthBar (placing tbd)
+    public HealthBar healthBar;
 
+    //SeedUI (placing tbd)
+    public SeedUI seedUI;
+    public SeedFunctionUI seedFuncUI;
 
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
@@ -121,8 +126,13 @@ public class PlayerController : MonoBehaviour
         PreviewSphere.SetActive(false);
 
         currentHP = MaxHP;
+        healthBar.SetMaxHealth(MaxHP);
+
+        seedUI.SetSeedAmount(MaxSeeds); //tbd
+        seedUI.SetSeedCounter(currentSeeds);
 
         LockCursor();
+
     }
 
     void Update()
@@ -235,18 +245,22 @@ public class PlayerController : MonoBehaviour
                 if (previewNumber == 1)
                 {
                     previewValid = PreviewGrenades();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
             }
         }
@@ -364,6 +378,7 @@ public class PlayerController : MonoBehaviour
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
         grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
         currentSeeds -= SeedGrenadeCost;
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewGrenades()
@@ -385,6 +400,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceShieldPlant()
     {
         Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewShieldPlant()
@@ -407,6 +423,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceTurretPlant()
     {
         Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewTurretPlant()
@@ -426,6 +443,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceSeedPlant()
     {
         Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewSeedPlant()
@@ -489,6 +507,7 @@ public class PlayerController : MonoBehaviour
         if (postMitigation >= 0)
         {
             currentHP -= postMitigation;
+            healthBar.SetHealth(currentHP);
         }
 
         if (currentHP <= 0)
@@ -496,12 +515,15 @@ public class PlayerController : MonoBehaviour
             stageManager.EndStage(StageResult.Death);
         }
 
+        
+
     }
 
     public void Heal(float amount)
     {
         //no overheal
         currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
+        healthBar.SetHealth(currentHP);
     }
 
     public void MeleeAttack()
@@ -567,7 +589,7 @@ public class PlayerController : MonoBehaviour
         blockingSpeed += BlockingSpeedLevel;
 
 
-
+        healthBar.SetMaxHealth(MaxHP);
         
         RageLevel++;
 

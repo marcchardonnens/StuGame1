@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Rock
-    second: {fileID: 2100000, guid: 8db5f11fb0f5c47d6af2141bc8fd4a8a, type: 2}
+    second: {fileID: 2100000, guid: d79903daa6fa14f17815d8b168185aab, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

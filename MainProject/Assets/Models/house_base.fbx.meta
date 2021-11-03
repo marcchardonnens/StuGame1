@@ -9,7 +9,47 @@ ModelImporter:
   - first:
       74: -5399200397528593491
     second: door|doorOpen
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rock
+    second: {fileID: 2100000, guid: d79903daa6fa14f17815d8b168185aab, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Terrain
+    second: {fileID: 2100000, guid: a3057355276854028935ad41ca7e408f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood
+    second: {fileID: 2100000, guid: 5f857e4fba9474b7dbfbac4e87c7d72f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodDoor
+    second: {fileID: 2100000, guid: 597b597b366874813b959855d857424a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodInterior
+    second: {fileID: 2100000, guid: 70a40abc49b6b43da927146b30a27783, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodRoof
+    second: {fileID: 2100000, guid: f94948a54ca7e420ea559fa84aa3156d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WoodStructure
+    second: {fileID: 2100000, guid: d4808e52264244833a16839553846bb5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bed
+    second: {fileID: 2100000, guid: c1ab4a68fad0a4578809ea43e7076e64, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

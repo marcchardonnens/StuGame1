@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Interactable
+  - Cleanup
   layers:
   - Default
   - TransparentFX
@@ -13,13 +14,13 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Scenery
+  - SceneryNoCollision
+  - Resources
+  - Camera
+  - Enemy
+  - Player
+  - Plants
   - 
   - 
   - 

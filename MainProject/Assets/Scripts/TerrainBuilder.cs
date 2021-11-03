@@ -1,26 +1,69 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Unity.AI;
+using Unity.AI.Navigation;
 
 //this class is responsible for placing gameplay objects like hut, survivors, scenery, etc.. 
 public class TerrainBuilder : MonoBehaviour
 {
+    private const String CLEANUPTAG = "Cleanup";
+
     public bool autoupdate = false;
-    public int seed = 1;
+
+    public bool IsHubScene = false;
+
+    [SerializeField] private int seed = 0;
+    [SerializeField] private const int XSize = 200;
+    [SerializeField] private const int ZSize = 200;
+    [SerializeField] private const int xChunks = 1;
+    [SerializeField] private const int zChunks = 1;
+    [SerializeField] private float yAdjustment = 0f;
+    [SerializeField] private int TerrainScale = 1;
+
+    public NavMeshSurface Surface;
+    public NavMeshModifierVolume HighMod;
+    public NavMeshModifierVolume LowMod;
+
+    [SerializeField]private NoiseData[] noisedata;
+    public Material material;
     public GameObject HousePrefab;
     public GameObject SurvivorPrefab;
-    
-    
-    
+    public GameObject Water;
+    [SerializeField] private bool spawnTrees = true;
+    public RandomChoice[] TreePrefabs;
+    [SerializeField] private bool spawnRocks = true;
+    public RandomChoice[] RockPrefabs;
+    [SerializeField] private bool spawnPowerups = true;
+    public RandomChoice[] PowerupPrefabs;
+    [SerializeField] TextureData TextureData;
+
+
+    private float[,,,] combinedMap;
     private MeshGenerator MG;
     private Vector3 housePosition;
     private Vector3 objectivePosition;
     private System.Random RNG;
+    private Vector2 minmax;
+    private const float groundlevel = -7.5f;
+    private int xSize;
+    private int zSize;
+
+
+    //these are for grouping objects together
+    //to hopefully prevent spamming the object viewer
+    private GameObject Scenery;
+    private GameObject Terrain;
+
+    private List<GameObject> toCleanUp = new List<GameObject>();
+    
 
     private void Awake()
     {
-
+        MakeTerrain();
     }
     // Start is called before the first frame update
     void Start()
@@ -35,111 +78,157 @@ public class TerrainBuilder : MonoBehaviour
     }
 
 
+
     public void MakeTerrain()
     {
-
+        
         CleanupScene();
 
+
+        xSize = XSize;
+        zSize = ZSize;
+
+        Scenery = new GameObject("Scenery");
+        Scenery.tag = CLEANUPTAG;
+        Scenery.transform.SetParent(transform,false);
+        SceneVisibilityManager.instance.DisablePicking(Scenery, true);
+        
+        
+
+        Terrain = new GameObject("Terrain");
+        Terrain.tag = CLEANUPTAG;
+        Terrain.transform.SetParent(transform, false);
+
+        this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, yAdjustment, -zSize * zChunks / 2);
+
         RNG = seed == 0 ? new System.Random() : new System.Random(seed);
-        MG = gameObject.GetComponent<MeshGenerator>();
-        MG.seed = seed;
+        
 
         List<float[,,,]> maps = new List<float[,,,]>();
-        foreach (NoiseData noiseData in MG.noisedata)
+        foreach (NoiseData noiseData in noisedata)
         {
             if (noiseData.enabled)
             {
-                maps.Add(NoiseMapGenerator.GeneratePerlinNM(MG.xSize + 1, MG.zSize + 1, MG.seed, MG.xChunks, MG.zChunks, noiseData));
+                maps.Add(NoiseMapGenerator.GeneratePerlinNM(xSize + 1, zSize + 1, seed, xChunks, zChunks, noiseData));
             }
         };
 
-        float[,,,] combinedMap = NoiseMapGenerator.CombineMaps(maps, MG.xSize + 1, MG.zSize + 1, MG.xChunks, MG.zChunks);
+        combinedMap = NoiseMapGenerator.CombineMaps(maps, xSize + 1, zSize + 1, xChunks, zChunks);
+
+        MG = new MeshGenerator(combinedMap, seed, xSize, zSize, xChunks, zChunks, noisedata, material, TextureData);
+        //MG.OnComplete += SpawnTrees;
+
+        //terrain adjustments here
+
+        MG.Generate(false).ForEach(x =>
+        {
+            toCleanUp.Add(x);
+            x.transform.SetParent(Terrain.transform, false);
+            x.transform.localScale *= TerrainScale;
+            x.transform.localPosition += new Vector3(0, -groundlevel * (TerrainScale - 1), 0);
+        });
 
 
-        //Debug.DrawRay()
-        //adjustments here
+
+        xSize = (int)(XSize * TerrainScale);
+        zSize = (int)(ZSize * TerrainScale);
+        
+
+
+        //minmax = MG.FindActualMinMax();
+        minmax = MG.CalcPotentialMinMax(TerrainScale);
+
+
+        float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
+        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks * TerrainScale, /*Mathf.Abs(minmaxActual.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks * TerrainScale);
+        Water.transform.localPosition = new Vector3(-transform.localPosition.x, waterHeight * transform.localScale.y - (Water.transform.localScale.y / 2f), -transform.localPosition.z);
+
 
 
 
 
         //spawn objects
 
+        SpawnTrees();
+        SpawnRocks();
+        SpawnPowerups();
 
-        PlaceHouse(combinedMap);
+        PlaceHouse();
+        PlaceObjective();
+
+        TextureData.ApplyToMaterial(material);
+        TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
 
 
-        PlaceObjective(combinedMap);
+        MakeNavMesh();
 
 
-
-
-
-
-        MG.Generate(combinedMap);
 
     }
 
-    private void PlaceObjective(float[,,,] combinedMap)
+    private IEnumerator WaitForMesh()
     {
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
+        //yield return new WaitUntil(() =>
+        //{
+        //    RaycastHit hit;
+        //    if (Physics.Raycast(new Vector3(0, 100f, 0), Vector3.down, out hit))
+        //    {
+        //        if (hit.point.y != 0)
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //});
 
-        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
+        yield return new WaitForFixedUpdate();
 
+        //SpawnTrees();
+    }
+
+    private void createTerrainObjects()
+    {
+
+    }
+
+    private void PlaceObjective()
+    {
+        const int objectiveEdgeDistance = 50;
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, ZSize);
+        
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
-        for (int i = MG.xSize-50; i > 50; i--)
+        
+        for (int i = XSize-objectiveEdgeDistance; i > objectiveEdgeDistance; i--)
         {
-            for (int j = MG.zSize-50; j > 50; j--)
+            for (int j = ZSize-objectiveEdgeDistance; j > objectiveEdgeDistance; j--)
             {
-                var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
-                if (invlerpy > 0.6f && invlerpy < 0.8f)
+                y = combinedMap[i, j, chunk.x, chunk.y];
+                if (IsAtGroundLevel(y))
                 {
                     found = true;
-                    y = combinedMap[i, j, chunk.x, chunk.y];
                     x = i;
                     z = j;
+                    objectivePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
+                    i = 0;
+                    j = 0;
+                    break;
                 }
             }
         }
 
-        CreateSmallPlatform(combinedMap, x, z, (int)SurvivorPrefab.transform.localScale.x, (int)SurvivorPrefab.transform.localScale.z, 2, chunk, false);
-        
-        objectivePosition = new Vector3(x, combinedMap[x, z, chunk.x, chunk.y], z);
+        //CreateSmallPlatform(combinedMap, x, z, (int)SurvivorPrefab.transform.localScale.x, (int)SurvivorPrefab.transform.localScale.z, 2, chunk, false);
 
         if (!found)
         {
             Debug.Log("Bad Seed");
         }
+        
 
-
-
-        //platform for Survivor
-
-
-
-        //for (int i = -1; i < SurvivorPrefab.transform.localScale.x + 1; i++)
-        //{
-        //    for (int j = -1; j < SurvivorPrefab.transform.localScale.z + 1; j++)
-        //    {
-        //        int cx = x + i;
-        //        int cz = z + j;
-
-        //        try
-        //        {
-        //            combinedMap[cx, cz, chunk.x, chunk.y] = objectivePosition.y;
-
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            Console.WriteLine(e);
-        //            throw;
-        //        }
-        //    }
-        //}
 
         //TODO round edges of platform to go towards rest of terrain
         //something like y-(Min(y of x+1, y of z +1)/2)
@@ -147,39 +236,41 @@ public class TerrainBuilder : MonoBehaviour
 
         GameObject go = Instantiate(SurvivorPrefab, transform);
         go.name = "Survivor";
-        go.transform.position = objectivePosition;
-        go.transform.position += transform.localPosition;
-        go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x, z, chunk.x, chunk.y] + go.transform.localScale.y / 2, go.transform.localScale.z / 2f);
+        go.transform.localPosition = objectivePosition;
+        //go.transform.position += transform.localPosition;
+        //go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x, z, chunk.x, chunk.y] + go.transform.localScale.y / 2, go.transform.localScale.z / 2f);
+        toCleanUp.Add(go);
 
     }
 
-    private void PlaceHouse(float[,,,] combinedMap)
+    private void PlaceHouse()
     {
+        const int houseEdgeMinDistance = 50;
 
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), MG.xSize, MG.zSize);
-
-        Vector2 minmax = MG.FindMaxHeightMult(combinedMap);
-
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, XSize);
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
-        for (int j = 50; j < MG.zSize-50; j++)
+        for (int j = houseEdgeMinDistance; j < XSize-houseEdgeMinDistance; j++)
         {
-            for (int i = 50; i < MG.xSize-50; i++)
+            for (int i = houseEdgeMinDistance; i < XSize-houseEdgeMinDistance; i++)
             {
-                var invlerpy = Mathf.InverseLerp(minmax.x, minmax.y, combinedMap[i, j, chunk.x, chunk.y]);
-                if (invlerpy > 0.6f && invlerpy < 0.8f)
+                y = combinedMap[i, j, chunk.x, chunk.y];
+                if(IsAtGroundLevel(y))
                 {
                     found = true;
-                    y = combinedMap[i, j, chunk.x, chunk.y];
                     x = i;
                     z = j;
+
+                    housePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
+                    i = XSize;
+                    j = XSize;
+                    break;
                 }
             }
         }
-        housePosition = new Vector3(x, combinedMap[x, z, chunk.x, chunk.y], z);
 
         if (!found)
         {
@@ -189,7 +280,7 @@ public class TerrainBuilder : MonoBehaviour
 
 
         //platform for house
-        CreateSmallPlatform(combinedMap, x, z, (int)HousePrefab.transform.localScale.x, (int)HousePrefab.transform.localScale.z, 4, chunk, false);
+        //CreateSmallPlatform(combinedMap, x, z, (int)HousePrefab.transform.localScale.x, (int)HousePrefab.transform.localScale.z, 4, chunk, false);
 
 
         //TODO round edges of platform to go towards rest of terrain
@@ -198,10 +289,12 @@ public class TerrainBuilder : MonoBehaviour
 
         GameObject go = Instantiate(HousePrefab, transform);
         go.name = "House";
-        go.transform.position = housePosition;
-        go.transform.position += transform.localPosition;
-        go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x,z,chunk.x,chunk.y] + go.transform.localScale.y/2, go.transform.localScale.z / 2f);
+        go.transform.localPosition = housePosition;
 
+        SceneVisibilityManager.instance.DisablePicking(go, true);
+
+
+        toCleanUp.Add(go);
     }
 
 
@@ -209,9 +302,9 @@ public class TerrainBuilder : MonoBehaviour
     {
 
 
-        for (int i = -extraSize; i < HousePrefab.transform.localScale.x + extraSize; i++)
+        for (int i = -extraSize; i < xSize + extraSize; i++)
         {
-            for (int j = -extraSize; j < HousePrefab.transform.localScale.z +extraSize; j++)
+            for (int j = -extraSize; j < zSize + extraSize; j++)
             {
                 int cx = x + i;
                 int cz = z + j;
@@ -224,6 +317,13 @@ public class TerrainBuilder : MonoBehaviour
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                    Debug.Log(cx);
+                    Debug.Log(cz);
+                    Debug.Log(x);
+                    Debug.Log(z);
+                    Debug.Log(i);
+                    Debug.Log(i);
+                    Debug.Log(extraSize);
                     throw;
                 }
             }
@@ -291,52 +391,207 @@ public class TerrainBuilder : MonoBehaviour
 
     }
 
-
-    private void CleanupScene()
+    public void SpawnTrees()
     {
-
-        int count = transform.childCount;
-        List<Transform> children = new List<Transform>();
-        for (int i = 0; i < count; i++)
+        const int treeDistance = 5;
+        const float heightvariance = 0.75f;
+        const float thicknessvariance = 0.15f;
+        
+        
+        if (TreePrefabs.Length <= 0 || !spawnTrees)
         {
-            //TODO better way of doing this
-            //right now this is so water/other objects dont get deleted.
-            //deleting them and re-instantiating might be better or necessary, but this is easier for testing
-            
-            children.Add(transform.GetChild(i));
-            
+            return;
         }
         
-        foreach (GameObject child in gameObject.scene.GetRootGameObjects())
+        
+        for (int zchunk = 0; zchunk < zChunks; zchunk++)
         {
-            if(child.name == "House" || child.name == "Survivor")
+            for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                if (Application.isEditor)
+                for (int z = 0; z < XSize; z+=treeDistance)
                 {
-                    DestroyImmediate(child.gameObject, true);
-                }
-                else
-                {
-                    Destroy(child);
+                    for (int x = 0; x < ZSize; x+=treeDistance)
+                    {
+                        if (IsAtGroundLevel(combinedMap[x, z, xchunk, zchunk]))
+                        {
+                            //if (PointIsNotNearEdge(x,z))
+                            if(PointNotNearEdge(x,z))
+                            {
+                                float cx = x + (float)RNG.NextDouble() * treeDistance;
+                                float cz = z + (float)RNG.NextDouble() * treeDistance;
+
+                                cx *= TerrainScale;
+                                cz *= TerrainScale;
+                            
+                                GameObject go = RandomChoice.Choose(TreePrefabs, RNG);
+
+                                go = Instantiate(go, Scenery.transform);
+                                go.name +=  (" " + x + " " + z);
+                                go.transform.localPosition = new Vector3(cx, groundlevel, cz);
+                                go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
+                                float heightScale = (float)RNG.NextDouble() * heightvariance * 2 - heightvariance;
+                                float thickScale = (float)RNG.NextDouble() * thicknessvariance * 2 - thicknessvariance;
+                                heightScale += 1f;
+                                thickScale += 1f;
+                                go.transform.localScale =
+                                    new Vector3(go.transform.localScale.x * heightScale * thickScale,
+                                        go.transform.localScale.y * heightScale,
+                                        go.transform.localScale.z * heightScale * thickScale);
+                                toCleanUp.Add(go);
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    public void SpawnRocks()
+    {
+        const int edgeRadius = 1;
+        const float sizeVariance = 0.15f; //percent
+        int size = (xSize + zSize) * 4;
+        if (RockPrefabs.Length <= 0 || !spawnRocks)
+        {
+            return;
         }
 
-        foreach (Transform child in children)
+        for (int i = 0; i < size; i++)
         {
-            if (child.name == "House" || child.name == "Survivor")
+            float x = (float)RNG.NextDouble() * XSize;
+            float z = (float)RNG.NextDouble() * ZSize;
+
+
+            if (PointNotNearEdge((int)x, (int)z, edgeRadius))
             {
-                if (Application.isEditor)
-                {
-                    DestroyImmediate(child.gameObject, true);
-                }
-                else
-                {
-                    Destroy(child);
-                }
+                x *= TerrainScale;
+                z *= TerrainScale;
+                GameObject go = RandomChoice.Choose(RockPrefabs, RNG);
+
+                go = Instantiate(go, Scenery.transform);
+                go.name += (" " + x + " " + z);
+                go.transform.localPosition = new Vector3(x, groundlevel, z);
+                go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x + (float)RNG.NextDouble() * 360f, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z + (float)RNG.NextDouble() * 360f);
+                float scale = (float)RNG.NextDouble() * sizeVariance * 2 - sizeVariance;
+                scale += 1f;
+                go.transform.localScale *= scale;
+                toCleanUp.Add(go);
             }
         }
+        
+    }
+
+    public void SpawnPowerups()
+    {
+
+    }
+
+    private bool IsAtGroundLevel(float y, float margin = 1f)
+    {
+        return y < groundlevel + margin && y > groundlevel - margin;
+    }
+
+
+    private bool PointNotNearEdge(int x, int z, int dist = 10)
+    {
+        if (x + dist > XSize || z + dist > ZSize || x < dist || z < dist)
+        {
+            return false;
+        }
+        else if (!(IsAtGroundLevel(combinedMap[x + dist, z + dist, 0, 0]) &&
+                 IsAtGroundLevel(combinedMap[x - dist, z + dist, 0, 0]) &&
+                 IsAtGroundLevel(combinedMap[x + dist, z - dist, 0, 0]) &&
+                 IsAtGroundLevel(combinedMap[x - dist, z - dist, 0, 0])))
+        {
+            return false;
+        }
+
+        return true;
+
 
 
     }
+
+
+    //better but raycast doesnt seem to work
+    private bool PointIsNotNearEdge(float x, float z, float dist = 10f,  float margin = 1f, int layer = 1 << 6)
+    {
+        float height = groundlevel;
+        for (int i = 0; i < 360; i+= 30)
+        {
+            float cx = x + (float)Math.Sin(i) * dist;
+            float cz = z + (float)Math.Cos(i) * dist;
+            RaycastHit hit;
+            if (Physics.Raycast(new Vector3(cx, 100f, cz), Vector3.down, out hit, 2000f))
+            {
+                //Debug.DrawRay(new Vector3(cx,100f,cz), Vector3.down,Color.white, 1f, true);
+                if (!(Math.Abs(height) + margin < hit.point.y && hit.point.y < Math.Abs(height)))
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+
+
+    }
+
+
+
+
+    private void MakeNavMesh()
+    {
+        if (IsHubScene)
+        {
+            return;
+        }
+
+        HighMod.size = new Vector3(xSize, 75f, zSize);
+        HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
+        LowMod.size = new Vector3(xSize, 75f, zSize);
+        LowMod.center = new Vector3(0, groundlevel - 1f - LowMod.size.y / 2f, 0);
+
+        Surface.BuildNavMesh();
+
+    }
+
+
+
+    private void CleanupScene()
+    {
+        toCleanUp.ForEach(go =>
+        {
+            if (Application.isEditor)
+            {
+                DestroyImmediate(go.gameObject, true);
+            }
+            else
+            {
+                Destroy(go);
+            }
+            
+        });
+
+        GameObject[] cleanup = GameObject.FindGameObjectsWithTag(CLEANUPTAG);
+        foreach (GameObject go in cleanup)
+        {
+            if (Application.isEditor)
+            {
+                DestroyImmediate(go.gameObject, true);
+            }
+            else
+            {
+                Destroy(go);
+            }
+        }
+    }
+    
+
+
 }

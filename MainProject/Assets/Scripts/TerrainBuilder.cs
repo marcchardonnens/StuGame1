@@ -22,7 +22,7 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private const int xChunks = 1;
     [SerializeField] private const int zChunks = 1;
     [SerializeField] private float yAdjustment = 0f;
-    [SerializeField] private Vector3 TerrainScale = Vector3.one;
+    [SerializeField] private int TerrainScale = 1;
 
     public NavMeshSurface Surface;
     public NavMeshModifierVolume HighMod;
@@ -59,7 +59,7 @@ public class TerrainBuilder : MonoBehaviour
     private GameObject Terrain;
 
     private List<GameObject> toCleanUp = new List<GameObject>();
-
+    
 
     private void Awake()
     {
@@ -84,8 +84,9 @@ public class TerrainBuilder : MonoBehaviour
         
         CleanupScene();
 
-        xSize = (int)(XSize * TerrainScale.x);
-        zSize = (int)(ZSize * TerrainScale.y);
+
+        xSize = XSize;
+        zSize = ZSize;
 
         Scenery = new GameObject("Scenery");
         Scenery.tag = CLEANUPTAG;
@@ -123,13 +124,23 @@ public class TerrainBuilder : MonoBehaviour
         {
             toCleanUp.Add(x);
             x.transform.SetParent(Terrain.transform, false);
+            x.transform.localScale *= TerrainScale;
+            x.transform.localPosition += new Vector3(0, -groundlevel * (TerrainScale - 1), 0);
         });
+
+
+
+        xSize = (int)(XSize * TerrainScale);
+        zSize = (int)(ZSize * TerrainScale);
+        
+
+
         //minmax = MG.FindActualMinMax();
-        minmax = MG.CalcPotentialMinMax();
+        minmax = MG.CalcPotentialMinMax(TerrainScale);
 
 
         float waterHeight = Mathf.Lerp(minmax.x, minmax.y, 0.3f);// -0.33f ;
-        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks, /*Mathf.Abs(minmaxActual.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks);
+        Water.transform.localScale = new Vector3(transform.localScale.x * xSize * xChunks * TerrainScale, /*Mathf.Abs(minmaxActual.x) - waterHeight*/ 1f, transform.localScale.z * xSize * zChunks * TerrainScale);
         Water.transform.localPosition = new Vector3(-transform.localPosition.x, waterHeight * transform.localScale.y - (Water.transform.localScale.y / 2f), -transform.localPosition.z);
 
 
@@ -147,6 +158,7 @@ public class TerrainBuilder : MonoBehaviour
 
         TextureData.ApplyToMaterial(material);
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
+
 
 
         MakeNavMesh();
@@ -183,19 +195,17 @@ public class TerrainBuilder : MonoBehaviour
     private void PlaceObjective()
     {
         const int objectiveEdgeDistance = 50;
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
-
-        Vector2 minmax = MG.FindActualMinMax();
-
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, ZSize);
+        
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
         
-        for (int i = xSize-objectiveEdgeDistance; i > objectiveEdgeDistance; i--)
+        for (int i = XSize-objectiveEdgeDistance; i > objectiveEdgeDistance; i--)
         {
-            for (int j = zSize-objectiveEdgeDistance; j > objectiveEdgeDistance; j--)
+            for (int j = ZSize-objectiveEdgeDistance; j > objectiveEdgeDistance; j--)
             {
                 y = combinedMap[i, j, chunk.x, chunk.y];
                 if (IsAtGroundLevel(y))
@@ -203,7 +213,7 @@ public class TerrainBuilder : MonoBehaviour
                     found = true;
                     x = i;
                     z = j;
-                    objectivePosition = new Vector3(x, groundlevel, z);
+                    objectivePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
                     i = 0;
                     j = 0;
                     break;
@@ -237,16 +247,15 @@ public class TerrainBuilder : MonoBehaviour
     {
         const int houseEdgeMinDistance = 50;
 
-
-        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), xSize, zSize);
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, XSize);
 
         bool found = false;
         float y = 0f;
         int x = 0;
         int z = 0;
-        for (int j = houseEdgeMinDistance; j < zSize-houseEdgeMinDistance; j++)
+        for (int j = houseEdgeMinDistance; j < XSize-houseEdgeMinDistance; j++)
         {
-            for (int i = houseEdgeMinDistance; i < xSize-houseEdgeMinDistance; i++)
+            for (int i = houseEdgeMinDistance; i < XSize-houseEdgeMinDistance; i++)
             {
                 y = combinedMap[i, j, chunk.x, chunk.y];
                 if(IsAtGroundLevel(y))
@@ -255,9 +264,9 @@ public class TerrainBuilder : MonoBehaviour
                     x = i;
                     z = j;
 
-                    housePosition = new Vector3(x, groundlevel, z);
-                    i = xSize;
-                    j = zSize;
+                    housePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
+                    i = XSize;
+                    j = XSize;
                     break;
                 }
             }
@@ -399,17 +408,20 @@ public class TerrainBuilder : MonoBehaviour
         {
             for (int xchunk = 0; xchunk < xChunks; xchunk++)
             {
-                for (int z = 0; z < xSize; z+=treeDistance)
+                for (int z = 0; z < XSize; z+=treeDistance)
                 {
-                    for (int x = 0; x < zSize; x+=treeDistance)
+                    for (int x = 0; x < ZSize; x+=treeDistance)
                     {
                         if (IsAtGroundLevel(combinedMap[x, z, xchunk, zchunk]))
                         {
                             //if (PointIsNotNearEdge(x,z))
                             if(PointNotNearEdge(x,z))
                             {
-                                float cx = x + (float)RNG.NextDouble();
-                                float cz = z + (float)RNG.NextDouble();
+                                float cx = x + (float)RNG.NextDouble() * treeDistance;
+                                float cz = z + (float)RNG.NextDouble() * treeDistance;
+
+                                cx *= TerrainScale;
+                                cz *= TerrainScale;
                             
                                 GameObject go = RandomChoice.Choose(TreePrefabs, RNG);
 
@@ -446,11 +458,14 @@ public class TerrainBuilder : MonoBehaviour
 
         for (int i = 0; i < size; i++)
         {
-            float x = (float)RNG.NextDouble() * xSize;
-            float z = (float)RNG.NextDouble() * zSize;
+            float x = (float)RNG.NextDouble() * XSize;
+            float z = (float)RNG.NextDouble() * ZSize;
+
 
             if (PointNotNearEdge((int)x, (int)z, edgeRadius))
             {
+                x *= TerrainScale;
+                z *= TerrainScale;
                 GameObject go = RandomChoice.Choose(RockPrefabs, RNG);
 
                 go = Instantiate(go, Scenery.transform);
@@ -479,7 +494,7 @@ public class TerrainBuilder : MonoBehaviour
 
     private bool PointNotNearEdge(int x, int z, int dist = 10)
     {
-        if (x + dist > xSize || z + dist > zSize || x < dist || z < dist)
+        if (x + dist > XSize || z + dist > ZSize || x < dist || z < dist)
         {
             return false;
         }
@@ -499,8 +514,9 @@ public class TerrainBuilder : MonoBehaviour
 
 
     //better but raycast doesnt seem to work
-    private bool PointIsNotNearEdge(float x, float z, float dist = 10f, float height = groundlevel, float margin = 1f, int layer = 1 << 6)
+    private bool PointIsNotNearEdge(float x, float z, float dist = 10f,  float margin = 1f, int layer = 1 << 6)
     {
+        float height = groundlevel;
         for (int i = 0; i < 360; i+= 30)
         {
             float cx = x + (float)Math.Sin(i) * dist;

@@ -119,7 +119,6 @@ public class PlayerController : MonoBehaviour
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
         PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
         PreviewSphere.SetActive(false);
-        Powerup asdf;
 
         currentHP = MaxHP;
 

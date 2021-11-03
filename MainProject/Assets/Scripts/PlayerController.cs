@@ -3,6 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum PowerupType
+{
+    IronShroom,
+    RedShroom,
+    BlueShroom,
+    GreenShroom,
+    GoldShroom,
+    WoodShroom,
+    StoneShroom,
+    //TransparentShroom,
+    //YellowShroom,
+    //PlantShroom,
+}
+
 public class PlayerController : MonoBehaviour
 {
     public Hand RightHand;
@@ -12,6 +27,7 @@ public class PlayerController : MonoBehaviour
     public float blockingSpeed = 3.5f;
     public float jumpSpeed = 8.0f;
     public float gravity = 20.0f;
+    public float FallDamageMultiplier = 10f;
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
@@ -26,7 +42,7 @@ public class PlayerController : MonoBehaviour
     public float KillRageAmount = 15f;
     public float RageDissipationTime = 15f;
     public float RageDissipationRatePerSecond = 0.5f;
-    public float RageIntoHPConversion = 0.1f;
+    public float RageIntoHPConversion = 1f;
     public float RageHealingMissingHPMultiplierMax = 2.5f; 
 
     public float HPLevel = 10f;
@@ -39,19 +55,25 @@ public class PlayerController : MonoBehaviour
     public float BlockingSpeedLevel = 0.5f;
     public float LevelToThePowerOf = 1.1f; //level up stats will be calced to whatever + upgrade * leveltothepowerof ** oldLevel
 
-    public int MaxSeeds = 5;
+    public int MaxSeeds = 10;
     public int SeedGrenadeCost = 1;
     public Transform SeedGrenadeRelease;
     public GameObject SeedGrenadePrefab;
     public int ShieldPlantCost = 1;
     public GameObject ShieldPlantPrefab;
     public int TurretPlantCost = 1;
-    public GameObject TurretPlanPrefab;
+    public GameObject TurretPlantPrefab;
     public int SeedPlantCost = 1;
     public GameObject SeedPlantPrefab;
+    
 
+    public float PlantAnimationTime = 1f;
     public float PlantPlaceMaxDistance = 5f;
-
+    public GameObject PreviewSphere;
+    public LineRenderer PreviewLine;
+    public Material PreviewGood;
+    public Material PreviewBad;
+    private MeshRenderer PreviewRenderer;
 
     //BaseStats, will change throughout the game
     public float MaxHP = 100;
@@ -80,18 +102,23 @@ public class PlayerController : MonoBehaviour
 
     private bool previewing = false;
     private int previewNumber = 0;
-    //private bool preview1 = false; //grenade
-    //private bool preview2 = false; //shield plant
-    //private bool preview3 = false; //turret plant
-    //private bool preview4 = false; //eating seed steroid
+    private bool previewValid = false;
 
+    private float plantAnimationTimer = 0f;
+    private float MonsterXpMult = 0f;
+
+
+    private bool playerWasGrounded = false;
 
 
     void Start()
     {
         stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
-
+        PreviewSphere = Instantiate(PreviewSphere);
+        PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
+        PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
+        PreviewSphere.SetActive(false);
 
         currentHP = MaxHP;
 
@@ -143,26 +170,29 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (!previewing)
+        if (!previewing) 
         {
-            if (Input.GetMouseButton(0))
+            if (plantAnimationTimer <= Time.time)
             {
-                if (RightHand.weapon.HasRangedAttack)
+                if (Input.GetMouseButton(0))
                 {
-                    RangedAttack();
+                    if (RightHand.weapon.HasRangedAttack)
+                    {
+                        RangedAttack();
+                    }
+                    else
+                    {
+                        MeleeAttack();
+                    }
                 }
-                else
+                if (Input.GetMouseButton(1) && !isBlocking)
                 {
-                    MeleeAttack();
+                    Block();
                 }
-            }
-            if (Input.GetMouseButton(1) && !isBlocking)
-            {
-                Block();
-            }
-            else if (!Input.GetMouseButton(1) && isBlocking)
-            {
-                Unblock();
+                else if (!Input.GetMouseButton(1) && isBlocking)
+                {
+                    Unblock();
+                }
             }
         }
         else
@@ -170,45 +200,53 @@ public class PlayerController : MonoBehaviour
             if (Input.GetMouseButtonDown(1))
             {
                 previewing = false;
+                RightHand.gameObject.SetActive(true);
+                PreviewSphere.SetActive(false);
             }
             else if (Input.GetMouseButtonDown(0))
             {
-                //confirm Action
-                if (previewNumber == 1)
+                if (previewValid)
                 {
-                    ThrowGrenade();
+                    //confirm Action
+                    if (previewNumber == 1)
+                    {
+                        ThrowGrenade();
+                    }
+                    else if (previewNumber == 2)
+                    {
+                        PlaceShieldPlant();
+                    }
+                    else if (previewNumber == 3)
+                    {
+                        PlaceTurretPlant();
+                    }
+                    else if (previewNumber == 4)
+                    {
+                        PlaceSeedPlant();
+                    }
+                    previewing = false; //might be better to not go out of preview
+                    plantAnimationTimer = Time.time + PlantAnimationTime;
+                    RightHand.gameObject.SetActive(true);
+                    PreviewSphere.SetActive(false);
                 }
-                else if (previewNumber == 2)
-                {
-                    PlaceShieldPlant();
-                }
-                else if (previewNumber == 3)
-                {
-                    PlaceTurretPlant();
-                }
-                else if (previewNumber == 4)
-                {
-                    PlaceSeedPlant();
-                }
-                previewing = false; //might be better to not go out of preview
             }
             else
             {
                 if (previewNumber == 1)
                 {
-                    PreviewGrenades();
+                    previewValid = PreviewGrenades();
                 }
                 else if (previewNumber == 2)
                 {
-                    PreviewShieldPlant();
+                    previewValid = PreviewShieldPlant();
                 }
                 else if (previewNumber == 3)
                 {
-                    PreviewTurretPlant();
+                    previewValid = PreviewTurretPlant();
                 }
                 else if (previewNumber == 4)
                 {
-                    PreviewSeedPlant();
+                    previewValid = PreviewSeedPlant();
                 }
             }
         }
@@ -270,6 +308,14 @@ public class PlayerController : MonoBehaviour
 
 
         float movementDirectionY = moveDirection.y;
+
+
+        if (characterController.isGrounded && !playerWasGrounded)
+        {
+            TakeDamage((-movementDirectionY - jumpSpeed*2) * FallDamageMultiplier);
+        }
+
+
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
         if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
@@ -282,12 +328,20 @@ public class PlayerController : MonoBehaviour
         }
 
 
+
+
+
         // Apply gravity. Gravity is multiplied by deltaTime twice (once here, and once below
         // when the moveDirection is multiplied by deltaTime). This is because gravity should be applied
         // as an acceleration (ms^-2)
         if (!characterController.isGrounded)
         {
+            playerWasGrounded = false;
             moveDirection.y -= gravity * Time.deltaTime;
+        }
+        else
+        {
+            playerWasGrounded = true;
         }
 
         // Move the controller
@@ -300,8 +354,6 @@ public class PlayerController : MonoBehaviour
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
             transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
-
-            
         }
 
 
@@ -309,55 +361,104 @@ public class PlayerController : MonoBehaviour
 
     private void ThrowGrenade()
     {
-        if (currentSeeds < ShieldPlantCost)
+        SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
+        grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
+        currentSeeds -= SeedGrenadeCost;
+    }
+
+    private bool PreviewGrenades()
+    {
+        bool valid = true;
+        PlacePreviewSphere(15f);
+
+        
+        if (currentSeeds < SeedGrenadeCost)
         {
             Debug.Log("not enough seeds!");
-            return;
+            valid = false;
         }
 
-        SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
-        grenade.Throw(this, transform.forward, BaseDamage);
-
-
-    }
-    private void PreviewGrenades()
-    {
-
-        //do the line thing
-        //or maybe dont, its not the most important
-
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
     private void PlaceShieldPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+    }
+
+    private bool PreviewShieldPlant()
+    {
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position,
+                PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up,
+                ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < ShieldPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        
+        return valid;
     }
 
     private void PlaceTurretPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+    }
+
+    private bool PreviewTurretPlant()
+    {
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < TurretPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
     private void PlaceSeedPlant()
     {
-        throw new NotImplementedException();
+        Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
     }
 
-    private void PreviewSeedPlant()
+    private bool PreviewSeedPlant()
     {
-        throw new NotImplementedException();
+        bool valid = PlacePreviewSphere();
+
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+            || currentSeeds < SeedPlantCost)
+        {
+            valid = false;
+        }
+
+        PaintPreviewSphere(valid);
+        return valid;
     }
 
-    private void PreviewTurretPlant()
+
+    private void PaintPreviewSphere(bool good)
     {
-        throw new NotImplementedException();
+        if (good)
+        {
+            PreviewRenderer.sharedMaterial = PreviewGood;
+            PreviewLine.material = PreviewGood;
+        }
+        else
+        {
+            PreviewRenderer.sharedMaterial = PreviewBad;
+            PreviewLine.material = PreviewBad;
+        }
     }
 
-    private void PreviewShieldPlant()
-    {
-        throw new NotImplementedException();
-    }
 
+  
 
 
     public void LockCursor()
@@ -375,12 +476,20 @@ public class PlayerController : MonoBehaviour
     //later damage types
     public void TakeDamage(float amount)
     {
+        if (amount <= 0)
+        {
+            return;
+        }
         rageTimer = Time.time + RageDissipationTime;
         float postMitigation = amount;
 
         //apply mitigation
 
-        currentHP -= postMitigation;
+
+        if (postMitigation >= 0)
+        {
+            currentHP -= postMitigation;
+        }
 
         if (currentHP <= 0)
         {
@@ -402,7 +511,6 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        rageTimer = Time.time + RageDissipationTime;   
         nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed/ (1+(AttackSpeed/100)));
         RightHand.MeleeAttack();
         isBlocking = false;
@@ -428,9 +536,10 @@ public class PlayerController : MonoBehaviour
     public void GenerateRage(float amount)
     {
         //amount mod here
-     
-        
-        if (Rage + amount > RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
+
+        rageTimer = Time.time + RageDissipationTime;
+
+        if (Rage + amount >= RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
         {
             //conver full ragebar into hp
 
@@ -476,12 +585,94 @@ public class PlayerController : MonoBehaviour
 
     public void GetMonsterXP(int amount)
     {
-        stageManager.OnPlayerGetMonsterXP(amount);
+        stageManager.OnPlayerGetMonsterXP(Mathf.RoundToInt((float)amount * (1f + MonsterXpMult)));
     }
 
-    public void ConsumeShroom()
+    public void GetWood(int amount)
     {
+        stageManager.OnPlayerGetWood(amount);
+    }
 
+    public void ConsumeShroom(Powerup powerup)
+    {
+        switch (powerup.Type)
+        {
+            case PowerupType.BlueShroom:
+            {
+                walkingSpeed += 1f;
+                blockingSpeed += 0.5f;
+                runningSpeed += 1.5f;
+                break;
+            }
+
+            case PowerupType.GoldShroom:
+            {
+                MonsterXpMult += 0.1f;
+                break;
+            }
+
+            case PowerupType.GreenShroom:
+            {
+                RageIntoHPConversion += 0.25f;
+                break;
+            }
+
+            case PowerupType.IronShroom:
+            {
+                Armor += 1;
+                break;
+            }
+
+            case PowerupType.RedShroom:
+            {
+                AttackSpeed += 15;
+                break;
+            }
+
+            case PowerupType.StoneShroom:
+            {
+                RightHand.weapon.StunDuration += 0.25f;
+                break;
+            }
+
+            case PowerupType.WoodShroom:
+            {
+                BaseBlockAmount += 5f;
+                break;
+            }
+
+        }
+    }
+
+    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)
+    {
+        RaycastHit hit;
+        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        {
+            pos = hit.point;
+            return true;
+        }
+        else
+        {
+            pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
+            return false;
+        }
+    }
+
+    private bool PlacePreviewSphere(float maxDistance = 5f, int layerMask = ~(1 << GameConstants.PLAYERLAYER))
+    {
+        RightHand.StopAllAnimations();
+        RightHand.gameObject.SetActive(false);
+        PreviewSphere.SetActive(true);
+
+        Vector3 lookPos = new Vector3();
+        bool onGround = CrossHairLookPosition(out lookPos, maxDistance, layerMask);
+        PreviewSphere.transform.position = lookPos;
+        
+        PreviewLine.SetPosition(0, RightHand.transform.position);
+        PreviewLine.SetPosition(1, PreviewSphere.transform.position);
+
+        return onGround;
     }
 
 }

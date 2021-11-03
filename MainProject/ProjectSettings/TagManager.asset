@@ -16,11 +16,11 @@ TagManager:
   - Ground
   - Scenery
   - SceneryNoCollision
-  - 
+  - Resources
   - Camera
-  - 
+  - Enemy
   - Player
-  - 
+  - Plants
   - 
   - 
   - 

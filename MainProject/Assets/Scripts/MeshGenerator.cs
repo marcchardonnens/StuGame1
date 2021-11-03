@@ -87,7 +87,7 @@ public class MeshGenerator
         return minmax;
     }
 
-    public Vector2 CalcPotentialMinMax()
+    public Vector2 CalcPotentialMinMax(float terrainScale = 1f)
     {
         float multipliers = 0f;
         foreach (NoiseData noise in noisedata)
@@ -102,7 +102,7 @@ public class MeshGenerator
             //}
         }
 
-        return new Vector2(-multipliers, multipliers);
+        return new Vector2(-multipliers * terrainScale, multipliers * terrainScale);
     }
 
 
@@ -186,7 +186,7 @@ public class MeshGenerator
 		meshCollider.sharedMesh = mesh;
 	}
 
-
+    
 }
 
 

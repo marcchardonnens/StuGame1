@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class SeedGrenade : MonoBehaviour
 {
-
-    public float ThrowForce = 15f;
+    public float ThrowForce = 20f;
     public float ExplosionForce = 50f;
     public float Delay = 3f;
     public float ExplodeRadius = 10f;
     public float BaseDamage = 30f;
+    public bool Sticky = true;
 
     private float totalDamage;
     private PlayerController player;
@@ -18,9 +18,10 @@ public class SeedGrenade : MonoBehaviour
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         rb.AddForce(direction * ThrowForce, ForceMode.VelocityChange);
-
         totalDamage = BaseDamage + bonusDamage;
         player = pc;
+
+        StartCoroutine(Explode());
     }
 
 
@@ -35,13 +36,14 @@ public class SeedGrenade : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             Enemy enemy = collider.GetComponent<Enemy>();
-
-            bool lethal = enemy.TakeDamage(totalDamage);
-
-            if (lethal)
+            if (enemy)
             {
-                player.GetMonsterXP(enemy.RewardAmount());
-                player.GenerateRage(player.KillRageAmount);
+                bool lethal = enemy.TakeDamage(totalDamage);
+                if (lethal)
+                {
+                    player.GetMonsterXP(enemy.RewardAmount());
+                    player.GenerateRage(player.KillRageAmount);
+                }
             }
 
 
@@ -56,10 +58,30 @@ public class SeedGrenade : MonoBehaviour
         }
 
 
+        StartCoroutine(PlayEffect());
+
+
+    }
+
+    public IEnumerator PlayEffect(float effectDuration = 0.1f)
+    {
+
+        yield return new WaitForSeconds(effectDuration);
+
+
+        //visuals here
 
 
         Destroy(gameObject);
+    }
 
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (Sticky)
+        {
+            Destroy(GetComponent<Rigidbody>());
+        }
     }
     
 }

@@ -340,7 +340,7 @@ public class Enemy : MonoBehaviour
                     RangedAttack();
                 }
 
-                if (isSlowUpdate)
+                if (isSlowUpdate && agent.isOnNavMesh)
                 {
                     agent.SetDestination(player.transform.position);
                 }
@@ -356,7 +356,7 @@ public class Enemy : MonoBehaviour
                     currentState = EnemyState.Idle;
                 }
 
-                if(isSlowUpdate)
+                if(isSlowUpdate && agent.isOnNavMesh)
                 {
                     agent.SetDestination(spawnPoint);
                 }

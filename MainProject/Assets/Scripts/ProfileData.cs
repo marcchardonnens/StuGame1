@@ -10,6 +10,8 @@ public class ProfileData
     public int StoryReturnProgress = 0;
     public int StorySuccessProgress = 0;
 
+    public int HouseUpgradeLevel = 0;
+
     public bool UnlockedLightbulb = false;
 
     public int MonsterXPTotal = 0;
@@ -27,7 +29,6 @@ public class ProfileData
     public bool HasShieldUpgrade = true;
     public bool HasSeedUpgrade = true;
     public bool HasMeleeUpgrade = true;
-    public bool HasHouseUpgrade = true;
     public bool HasSeedContainerUpgrade = true;
     public bool HasWoodInventoryUpgrade = true;
 

@@ -138,7 +138,6 @@ public class StageManager : MonoBehaviour
             MonsterXPLevelUpThreshholdCurrent = Mathf.RoundToInt(MonsterXPLevelUpThreshholdBase * Mathf.Pow(MonsterXPLevelUpPower, MonsterCurrentLevel));
             MonsterCurrentLevel++;
 
-            
             //maybe level up current enemies?
 
         }

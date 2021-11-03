@@ -91,6 +91,8 @@ public class TurretPlant : MonoBehaviour
                 return dist;
             });
 
+
+            shots = System.Math.Min(shots, enemies.Count);
             for (int i = 0; i < shots; i++)
             {
                 SimpleProjectile projectile = Instantiate(ProjectilePrefab, transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();

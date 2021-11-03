@@ -23,10 +23,18 @@ public class StageManager : MonoBehaviour
     public bool autoupdate = false;
     public TerrainBuilder Terrain;
 
-    public int WoodMaxDefault = 50;
-    public int WoodMaxUpgraded = 100;
+    public const int MonsterXPLevelUpThreshholdBase = 250;
+    public int MonsterXPLevelUpThreshholdCurrent = 250;
+    public float MonsterXPLevelUpPower = 1.1f;
+    public int MonsterMaxLevel = 10;
+    public int MonsterCurrentLevel = 0;
+
+    public float BossKillRemainingTimerMultiplier = 2f;
 
     private int MonsterXpCollected = 0;
+
+    public int WoodMaxDefault = 50;
+    public int WoodMaxUpgraded = 100;
     private int WoodMax;
     private int WoodCollected = 0;
 
@@ -41,8 +49,7 @@ public class StageManager : MonoBehaviour
     void Awake()
     {
         Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
-        WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault; 
-
+        WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
         if(GameManager.ProfileData.FirstRun)
         {
 
@@ -73,9 +80,9 @@ public class StageManager : MonoBehaviour
 
     }
 
-    public void SetupPlayer(/*PlayerSafeData*/)
+    public void SetupPlayer()
     {
-
+        
     }
 
     
@@ -126,7 +133,15 @@ public class StageManager : MonoBehaviour
 
 
         //set future enemy level higher if monster xp large enough;
+        if(MonsterXpCollected >= MonsterXPLevelUpThreshholdCurrent && MonsterCurrentLevel < MonsterMaxLevel)
+        {
+            MonsterXPLevelUpThreshholdCurrent = Mathf.RoundToInt(MonsterXPLevelUpThreshholdBase * Mathf.Pow(MonsterXPLevelUpPower, MonsterCurrentLevel));
+            MonsterCurrentLevel++;
 
+            
+            //maybe level up current enemies?
+
+        }
 
     }
 
@@ -140,6 +155,16 @@ public class StageManager : MonoBehaviour
         {
             WoodCollected = WoodMax;
         }
+    }
+
+    public void OnBossKilled()
+    {
+
+        //survivor follow player
+        //double remaining timer
+
+
+
     }
 
 

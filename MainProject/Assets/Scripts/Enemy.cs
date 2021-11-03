@@ -60,7 +60,7 @@ public class Enemy : MonoBehaviour
     public float combatSpeed = 4f;
 
     public float Gravity = 20f;
-
+    public float NavMeshPosCorrectionMax = 25f;
 
 
 
@@ -156,7 +156,20 @@ public class Enemy : MonoBehaviour
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         player = FindObjectOfType<PlayerController>();
-        spawnPoint = transform.position;
+        GameObject go = new GameObject("Target");
+        Vector3 sourcePostion = transform.position;
+        NavMeshHit closestHit;
+        if (NavMesh.SamplePosition(sourcePostion, out closestHit, NavMeshPosCorrectionMax, agent.areaMask))
+        {
+            transform.position = closestHit.position;
+            spawnPoint = transform.position;
+
+        }
+        else
+        {
+            Debug.Log("Enemy Bad Spawn");
+            Destroy(gameObject);
+        }
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
         StartCoroutine(ExecuteIn(2, () => currentState = EnemyState.Idle));
@@ -209,23 +222,6 @@ public class Enemy : MonoBehaviour
                 Vector3 randompos = Random.insideUnitSphere * wanderDistance;
                 randompos += spawnPoint;
                 NavMeshHit hit;
-
-                
-                //TODO
-                //GameObject go = new GameObject("Target");
-                //Vector3 sourcePostion = new Vector3(100, 20, 100);//The position you want to place your agent
-                //NavMeshHit closestHit;
-                //if (NavMesh.SamplePosition(sourcePostion, out closestHit, 500, 1))
-                //{
-                //    go.transform.position = closestHit.position;
-                //    go.AddComponent<NavMeshAgent>();
-                //    //TODO
-                //}
-                //else
-                //{
-                //    Debug.Log("...");
-                //}
-
                 if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
                 {
                     agent.SetDestination(hit.position);

@@ -3,7 +3,42 @@ guid: f8ff0d7438dd645cd94c299c6d2373d6
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_001
+    second: {fileID: 2100000, guid: 5845386e414f54bf380c24152c2d4ed8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_002
+    second: {fileID: 2100000, guid: f2838edde04464043801465eedfa82fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_003
+    second: {fileID: 2100000, guid: 67282c1db97c34c3ea362314c3d088b3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_004
+    second: {fileID: 2100000, guid: 8e03686d0dfeb4a4694705be201ab2a5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_005
+    second: {fileID: 2100000, guid: 8fad55e6efbdb4410a4ce2b17bfb8731, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_006
+    second: {fileID: 2100000, guid: 0f449f48a5dc34b1c88712cb1663fcd6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mushroom_007
+    second: {fileID: 2100000, guid: 6ae49dbdc2ed24392957c1ff2b505b90, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

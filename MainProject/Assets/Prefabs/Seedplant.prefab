@@ -332,6 +332,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Health: 200
   Duration: 0
-  GrowTime: 60
+  GrowTime: 10
   light: {fileID: 322440246}
   bloom: {fileID: 594670126}

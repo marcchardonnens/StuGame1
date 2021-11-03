@@ -4,19 +4,19 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public enum EnemyState
-{
-    Spawning,
-    Idle,
-    Stunned,
-    Wandering,
-    EnteringCombat,
-    RangedAttacking,
-    MeleeAttacking,
-    ReturnToSpawn,
-    Dying,
-    Dead,
-}
+//public enum EnemyState
+//{
+//    Spawning,
+//    Idle,
+//    Stunned,
+//    Wandering,
+//    EnteringCombat,
+//    RangedAttacking,
+//    MeleeAttacking,
+//    ReturnToSpawn,
+//    Dying,
+//    Dead,
+//}
 
 
 
@@ -24,7 +24,7 @@ public enum EnemyState
 
 public class Enemy : MonoBehaviour
 {
-    public float MaxHP = 100f;
+    public float MaxHP = 1000f;
     public float MeleeDamage = 15f;
     public float RangedDamage = 5f;
     public float Armor = 0f;
@@ -43,10 +43,10 @@ public class Enemy : MonoBehaviour
     public float RangedAnimationTime = 0.5f;
 
     public int currentLevel = 0;
-    public int BaseRewardAmount = 50;
-    public float PlayerRageLevelRewardMultiplier = 0.25f;
-    public float EnemyLevelRewardMultiplier = 1.25f;
-    public float RandomRewardMultiplier = 0.1f;
+    public int BaseRewardAmount = 500;
+    public float PlayerRageLevelRewardMultiplier = 0.50f;
+    public float EnemyLevelRewardMultiplier = 1.75f;
+    public float RandomRewardMultiplier = 0.2f;
 
     public GameObject ProjectilePrefab;
     public float ProjectileLifetime = 10f;
@@ -61,6 +61,12 @@ public class Enemy : MonoBehaviour
 
     public float Gravity = 20f;
 
+
+
+
+
+
+
     private Vector3 spawnPoint;
 
     //AI stuff
@@ -70,7 +76,7 @@ public class Enemy : MonoBehaviour
     private const int MELEEONLYMASK = 1 << 3;
     private const int RANGEDONLYMASK = 1 << 4;
 
-    private const float SLOWUPDATETIME = 1f;
+    private const float SLOWUPDATETIME = .1f;
 
     public float AreaDefaultCost = 1f;
     public float nonPrioAreaCost = 10f;
@@ -522,13 +528,17 @@ public class Enemy : MonoBehaviour
     }
 
 
+    private bool IsDead()
+    {
+        if(currentState == EnemyState.Dying ||
+            currentState == EnemyState.Dead ||
+            currentHP <= 0)
+        {
+            return true;
+        }
 
-
-
-
-
-
-
+        return false;
+    }
 
 
 

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: fsdasdfasdf
+  m_Name: PlantShield
   m_Shader: {fileID: 4800000, guid: 51c6af674fe1fd04e9367d03f04b5314, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION
   m_LightmapFlags: 2
@@ -73,6 +73,6 @@ Material:
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:
-    - _Color: {r: 0.3996557, g: 1, b: 0, a: 0.42745098}
+    - _Color: {r: 0.34716967, g: 0.8679245, b: 0, a: 0.34117648}
     - _EmissionColor: {r: 0.06750623, g: 0.38679248, b: 0.07165285, a: 1}
   m_BuildTextureStacks: []

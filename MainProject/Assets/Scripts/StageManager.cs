@@ -23,16 +23,42 @@ public class StageManager : MonoBehaviour
     public bool autoupdate = false;
     public TerrainBuilder Terrain;
 
+    public const int MonsterXPLevelUpThreshholdBase = 250;
+    public int MonsterXPLevelUpThreshholdCurrent = 250;
+    public float MonsterXPLevelUpPower = 1.1f;
+    public int MonsterMaxLevel = 10;
+    public int MonsterCurrentLevel = 0;
 
-
+    public float BossKillRemainingTimerMultiplier = 2f;
 
     private int MonsterXpCollected = 0;
+
+    public int WoodMaxDefault = 50;
+    public int WoodMaxUpgraded = 100;
+    private int WoodMax;
     private int WoodCollected = 0;
+
+    private int CalciumCollected = 0;
+    private int LuciferinCollected = 0;
+    private int OxygenCollected = 0;
+
+    private bool BossKilled = false;
+    private bool SurvivorFound = false;
 
 
     void Awake()
     {
         Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
+        WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
+        if(GameManager.ProfileData.FirstRun)
+        {
+
+            //show tips
+        }
+
+
+        //debug only
+        new GameObject().AddComponent<GameManager>();
 
     }
 
@@ -54,25 +80,49 @@ public class StageManager : MonoBehaviour
 
     }
 
-    public void SetupPlayer(/*PlayerSafeData*/)
+    public void SetupPlayer()
     {
-
+        
     }
 
     
     public void EndStage(StageResult result)
     {
+        if (GameManager.ProfileData.FirstRun)
+        {
+            GameManager.ProfileData.FirstRun = false;
+            //show tips
+        }
         if (result == StageResult.Death || result == StageResult.TimerExpired)
         {
             //lose all except monster xp
+            GameManager.ProfileData.MonsterXPTotal += MonsterXpCollected;
+            GameManager.ProfileData.MonsterXPCurrent += MonsterXpCollected;
+
+            GameManager.ProfileData.StoryDeathProgress++;
         }
         else if (result == StageResult.EnterHomeEarly)
         {
             //keep monster xp and resources
+            GameManager.ProfileData.MonsterXPTotal += MonsterXpCollected;
+            GameManager.ProfileData.MonsterXPCurrent += MonsterXpCollected;
+            GameManager.ProfileData.WoodCurrent += WoodCollected;
+            GameManager.ProfileData.WoodTotal += WoodCollected;
+            GameManager.ProfileData.OxygenCurrent += OxygenCollected;
+            GameManager.ProfileData.OxygenTotal += OxygenCollected;
+            GameManager.ProfileData.LuciferinCurrent += LuciferinCollected;
+            GameManager.ProfileData.LuciferinTotal += LuciferinCollected;
+            GameManager.ProfileData.CalciumCurrent += CalciumCollected;
+            GameManager.ProfileData.CalciumTotal += CalciumCollected;
+
+            GameManager.ProfileData.StoryReturnProgress++;
+
         }
         else if (result == StageResult.SurvivorRescued)
         {
             //"win" aplly major upgrade etc...
+            GameManager.ProfileData.StorySuccessProgress++;
+            GameManager.ProfileData.UnlockedLightbulb = true;
         }
 
     }
@@ -83,13 +133,37 @@ public class StageManager : MonoBehaviour
 
 
         //set future enemy level higher if monster xp large enough;
+        if(MonsterXpCollected >= MonsterXPLevelUpThreshholdCurrent && MonsterCurrentLevel < MonsterMaxLevel)
+        {
+            MonsterXPLevelUpThreshholdCurrent = Mathf.RoundToInt(MonsterXPLevelUpThreshholdBase * Mathf.Pow(MonsterXPLevelUpPower, MonsterCurrentLevel));
+            MonsterCurrentLevel++;
 
+            //maybe level up current enemies?
+
+        }
 
     }
 
     public void OnPlayerGetWood(int amount)
     {
-        WoodCollected += amount;
+        if(WoodCollected + amount <= WoodMax)
+        {
+            WoodCollected += amount;
+        }
+        else
+        {
+            WoodCollected = WoodMax;
+        }
+    }
+
+    public void OnBossKilled()
+    {
+
+        //survivor follow player
+        //double remaining timer
+
+
+
     }
 
 

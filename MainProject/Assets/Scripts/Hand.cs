@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class Hand : MonoBehaviour
 {
-    public const string SWINGANIM = "Swing";
-    public const string BLOCKANIM = "Block";
-    public const string UNBLOCKANIM = "UnBlock";
+    public const string SWINGANIM = "SwingHammerAxe";
+    public const string BLOCKANIM = "BlockHammerAxe";
+    public const string UNBLOCKANIM = "UnBlockHammerAxe";
 
-    public const float SWINGTIME = 1f;
+    public const float SWINGTIME = 0.80f;
     public const float BLOCKTIME = 0.75f;
 
     public PlayerController Player;
@@ -48,7 +48,7 @@ public class Hand : MonoBehaviour
             float animationSpeed = 1f/(weapon.BaseAttackSpeed * SWINGTIME / (1f + (Player.AttackSpeed/100f)));
             anim[SWINGANIM].speed = animationSpeed;
             anim.Play(SWINGANIM);
-            weapon.MeleeAttack(animationSpeed);
+            weapon.MeleeAttack(animationSpeed * 0.6f);
         }
 
     }

@@ -23,6 +23,7 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private const int zChunks = 1;
     [SerializeField] private float yAdjustment = 0f;
     [SerializeField] private int TerrainScale = 1;
+    [SerializeField] private float TerrainYModifier = 2;
 
     public NavMeshSurface Surface;
     public NavMeshModifierVolume HighMod;
@@ -30,7 +31,7 @@ public class TerrainBuilder : MonoBehaviour
 
     [SerializeField]private NoiseData[] noisedata;
     public Material material;
-    public GameObject HousePrefab;
+    public GameObject[] HousePrefab;
     public GameObject SurvivorPrefab;
     public GameObject Water;
     [SerializeField] private bool spawnTrees = true;
@@ -81,7 +82,8 @@ public class TerrainBuilder : MonoBehaviour
 
     public void MakeTerrain()
     {
-        
+
+        Debug.Log(Time.time);
         CleanupScene();
 
 
@@ -92,12 +94,14 @@ public class TerrainBuilder : MonoBehaviour
         Scenery.tag = CLEANUPTAG;
         Scenery.transform.SetParent(transform,false);
         SceneVisibilityManager.instance.DisablePicking(Scenery, true);
+        Scenery.transform.localPosition += new Vector3(0, groundlevel, 0);
         
         
 
         Terrain = new GameObject("Terrain");
         Terrain.tag = CLEANUPTAG;
         Terrain.transform.SetParent(transform, false);
+        //Terrain.transform.localPosition += new Vector3(0, groundlevel, 0);
 
         this.gameObject.transform.position = new Vector3(-xSize * xChunks / 2, yAdjustment, -zSize * zChunks / 2);
 
@@ -124,8 +128,8 @@ public class TerrainBuilder : MonoBehaviour
         {
             toCleanUp.Add(x);
             x.transform.SetParent(Terrain.transform, false);
-            x.transform.localScale *= TerrainScale;
-            x.transform.localPosition += new Vector3(0, -groundlevel * (TerrainScale - 1), 0);
+            x.transform.localScale = new Vector3(transform.localScale.x *TerrainScale, transform.localScale.y * TerrainScale*TerrainYModifier, transform.localScale.z * TerrainScale);
+            x.transform.localPosition += new Vector3(0, -groundlevel * (TerrainScale - 1), 0) * TerrainYModifier;
         });
 
 
@@ -163,7 +167,7 @@ public class TerrainBuilder : MonoBehaviour
 
         MakeNavMesh();
 
-
+        Debug.Log(Time.time);
 
     }
 
@@ -213,7 +217,7 @@ public class TerrainBuilder : MonoBehaviour
                     found = true;
                     x = i;
                     z = j;
-                    objectivePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
+                    objectivePosition = new Vector3(x * TerrainScale, groundlevel * TerrainYModifier, z * TerrainScale);
                     i = 0;
                     j = 0;
                     break;
@@ -264,7 +268,7 @@ public class TerrainBuilder : MonoBehaviour
                     x = i;
                     z = j;
 
-                    housePosition = new Vector3(x * TerrainScale, groundlevel, z * TerrainScale);
+                    housePosition = new Vector3(x * TerrainScale, groundlevel * TerrainYModifier, z * TerrainScale);
                     i = XSize;
                     j = XSize;
                     break;
@@ -287,7 +291,7 @@ public class TerrainBuilder : MonoBehaviour
         //something like y-(Min(y of x+1, y of z +1)/2)
 
 
-        GameObject go = Instantiate(HousePrefab, transform);
+        GameObject go = Instantiate(HousePrefab[GameManager.ProfileData.HouseUpgradeLevel], transform);
         go.name = "House";
         go.transform.localPosition = housePosition;
 

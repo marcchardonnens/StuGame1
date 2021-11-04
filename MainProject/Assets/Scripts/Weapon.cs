@@ -101,19 +101,14 @@ public class Weapon : MonoBehaviour
                 bool lethal = enemy.TakeDamage(totalDamage);
                 player.GenerateRage(player.MeleeHitRageAmount);
 
-                if (lethal)
-                {
-                    player.GetMonsterXP(enemy.RewardAmount());
-                    player.GenerateRage(player.KillRageAmount);
-                }
             }
             else
             {
-                WoodResource resource = collider.transform.parent.gameObject.GetComponent<WoodResource>();
-                if (resource)
-                {
-                    resource.TakeDamage(Damage);
-                }
+                //WoodResource resource = collider.transform.parent.gameObject.GetComponent<WoodResource>();
+                //if (resource)
+                //{
+                //    resource.TakeDamage(Damage);
+                //}
             }
 
             //deal dmg to enemies and resources

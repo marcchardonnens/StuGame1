@@ -10,6 +10,7 @@ public static class GameConstants
     public const int ENEMYLAYER = 11;
     public const int PLANTSLAYER = 13;
     public const int RESOURCESLAYER = 8;
+    public const int INTERACTABLELAYER = 14;
 
 
 }

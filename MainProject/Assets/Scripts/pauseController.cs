@@ -8,7 +8,6 @@ public class pauseController : MonoBehaviour
 {
     public static bool GameIsPaused = false;
     public GameObject pauseMenuUI;
-    public PlayerController playerCon;
 
     public Button resumeButton, wakeupButton, exitButton;
 

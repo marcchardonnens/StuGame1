@@ -17,6 +17,21 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Plant_002_leaves
+    second: {fileID: 2100000, guid: 87c92359aaa694cada3bd48a1682c237, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plant_003
+    second: {fileID: 2100000, guid: 1804c673692ee4483954fdee19884509, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plant_003_leaves
+    second: {fileID: 2100000, guid: 250f9c972a9754677a2668ab13992356, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Seed_001
     second: {fileID: 2100000, guid: 0765bdf2f427e42ccbde87b20e93a49f, type: 2}
   materials:

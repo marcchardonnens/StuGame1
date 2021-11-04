@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 399239091727210087}
   - component: {fileID: 2404331561180663554}
   - component: {fileID: 4451807750734105152}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: runeSign_003
   m_TagString: Untagged
   m_Icon: {fileID: 0}

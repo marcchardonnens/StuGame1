@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+[RequireComponent(typeof(Collider))]
 public class Powerup : MonoBehaviour
 {
     public PowerupType Type;
@@ -17,6 +19,7 @@ public class Powerup : MonoBehaviour
         if (player)
         {
             player.ConsumeShroom(this);
+            Destroy(gameObject);
         }
     }
 

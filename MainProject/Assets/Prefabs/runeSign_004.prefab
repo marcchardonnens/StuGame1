@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3192435058460656169}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: runeSign_004
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1979213222661576445}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,7 +73,7 @@ GameObject:
   - component: {fileID: 2325354616964240866}
   - component: {fileID: 1645580425626102313}
   - component: {fileID: 1392262218980100069}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: runeSign_004-01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 5256550772805674620}
   - component: {fileID: 6872870369789596451}
   - component: {fileID: 9045727099584336991}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: runeSign_004
   m_TagString: Untagged
   m_Icon: {fileID: 0}

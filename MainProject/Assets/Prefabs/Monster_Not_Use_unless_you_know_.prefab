@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 811414483822204113}
   - component: {fileID: 8503418874982765324}
   - component: {fileID: 8477565119415450678}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,7 +90,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7078909738654446892}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cylinder_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7926823461406560716}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: feet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -153,7 +153,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6653338623327893587}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: tail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -185,7 +185,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4102814467381785630}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: eye_brows
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -216,7 +216,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 433200836610588925}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: eyes_Symmetry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -248,7 +248,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2382836267828732046}
   - component: {fileID: 6938471378046209378}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: monster_allAnimations
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,7 +301,7 @@ GameObject:
   - component: {fileID: 4752544659663601041}
   - component: {fileID: 7999248068544813320}
   - component: {fileID: 7615766929521121854}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: feet_right
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -395,7 +395,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3710245113192353876}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: monster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -433,7 +433,7 @@ GameObject:
   - component: {fileID: 1234423610645910237}
   - component: {fileID: 8004222292307530964}
   - component: {fileID: 6418128315153040695}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -514,7 +514,7 @@ GameObject:
   - component: {fileID: 6901379549970474119}
   - component: {fileID: 3982084126707872122}
   - component: {fileID: 2596764079458746806}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -595,7 +595,7 @@ GameObject:
   - component: {fileID: 8975438168657113856}
   - component: {fileID: 5803772802784024475}
   - component: {fileID: 5639240174247568372}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_2_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -674,7 +674,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5847955218230213316}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_Symmetry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -707,7 +707,7 @@ GameObject:
   - component: {fileID: 3585177091957974810}
   - component: {fileID: 5008514428288500390}
   - component: {fileID: 3434714303001231789}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Pyramid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -786,7 +786,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5249681124754396958}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -819,7 +819,7 @@ GameObject:
   - component: {fileID: 1774492418081258365}
   - component: {fileID: 3377994695704460655}
   - component: {fileID: 6358895294619864445}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Sweep
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -900,7 +900,7 @@ GameObject:
   - component: {fileID: 2870949682193718215}
   - component: {fileID: 3815668346746634670}
   - component: {fileID: 4505859264215416917}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_4_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -981,7 +981,7 @@ GameObject:
   - component: {fileID: 4317231969823511921}
   - component: {fileID: 8477100448569150491}
   - component: {fileID: 3910552717241624734}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_2_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1062,7 +1062,7 @@ GameObject:
   - component: {fileID: 2379035649703038088}
   - component: {fileID: 6609678148780661397}
   - component: {fileID: 4070211124595306232}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_1_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1143,7 +1143,7 @@ GameObject:
   - component: {fileID: 128286366232905708}
   - component: {fileID: 3339567902281309606}
   - component: {fileID: 657570971406116479}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: arms_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1224,7 +1224,7 @@ GameObject:
   - component: {fileID: 8214221896948847465}
   - component: {fileID: 2092160442694363730}
   - component: {fileID: 8658379722901007948}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: tail_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1303,7 +1303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8973259453114327132}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: arms_Symmetry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1337,8 +1337,8 @@ GameObject:
   - component: {fileID: 2143152805686088742}
   - component: {fileID: 448002844104447087}
   - component: {fileID: 183978894991670875}
-  m_Layer: 0
-  m_Name: Monster
+  m_Layer: 11
+  m_Name: Monster_Not_Use_unless_you_know_
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1449,7 +1449,7 @@ GameObject:
   - component: {fileID: 7316958345859603429}
   - component: {fileID: 4741552289579624001}
   - component: {fileID: 4437538033836063920}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1528,7 +1528,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5548108542023024754}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: monster_animated
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1561,7 +1561,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 358751176828793}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1592,7 +1592,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5596490684126229617}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: body_Symmetry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1626,7 +1626,7 @@ GameObject:
   - component: {fileID: 6329250352820079659}
   - component: {fileID: 5208273383245471809}
   - component: {fileID: 1368795548258234298}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cylinder_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1723,7 +1723,7 @@ GameObject:
   - component: {fileID: 9032456120479460863}
   - component: {fileID: 624698574273908263}
   - component: {fileID: 1401990472116145580}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Torus
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1804,7 +1804,7 @@ GameObject:
   - component: {fileID: 8586256930995356120}
   - component: {fileID: 3919288277569296083}
   - component: {fileID: 7447852745232495534}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1883,7 +1883,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2034376776876786813}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: arms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1915,7 +1915,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 174805430943945934}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1950,7 +1950,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5227740039009587061}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: fingers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1985,7 +1985,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7142989916901245217}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: eye_lids
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2018,7 +2018,7 @@ GameObject:
   - component: {fileID: 3464483042099018542}
   - component: {fileID: 770965454469145960}
   - component: {fileID: 7870667032251407157}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cylinder_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2100,7 +2100,7 @@ GameObject:
   - component: {fileID: 2342629053297775004}
   - component: {fileID: 3217369201284149201}
   - component: {fileID: 3774271975753126268}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: feet_left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2196,7 +2196,7 @@ GameObject:
   - component: {fileID: 5353082267673099825}
   - component: {fileID: 1577283994503900946}
   - component: {fileID: 3432820379509807425}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2275,7 +2275,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4559763465939318007}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: finger_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2308,7 +2308,7 @@ GameObject:
   - component: {fileID: 3847500753899023498}
   - component: {fileID: 474985417301571972}
   - component: {fileID: 8229392089566693617}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2389,7 +2389,7 @@ GameObject:
   - component: {fileID: 4707463643593159432}
   - component: {fileID: 1775427113823144723}
   - component: {fileID: 5699399992461970176}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: teeth_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}

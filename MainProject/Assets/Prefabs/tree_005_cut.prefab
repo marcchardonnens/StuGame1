@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7891500642930870522}
   - component: {fileID: 8559130125210471803}
   - component: {fileID: 1277858651066486055}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: tree005LowerPart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7848444030014172500}
   - component: {fileID: 8483105505225865626}
-  m_Layer: 0
+  - component: {fileID: 1845391480498575070}
+  m_Layer: 9
   m_Name: tree_005_cut
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -145,6 +146,20 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!114 &1845391480498575070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7467134138277427182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92178f70d2545394b91e370a8f09e3b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Health: 300
+  WoodAmount: 10
 --- !u!1 &9084894922922750138
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +172,7 @@ GameObject:
   - component: {fileID: 8342105792636907344}
   - component: {fileID: 4029422077157918677}
   - component: {fileID: 4568720998750320365}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: tree005UpperPart
   m_TagString: Untagged
   m_Icon: {fileID: 0}

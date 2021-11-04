@@ -144,6 +144,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             InteractWithObject();
+            Debug.Log("clicked E");
         }
         //ragedissipation
         if (rageTimer < Time.time)
@@ -542,13 +543,13 @@ public class PlayerController : MonoBehaviour
   
 
 
-    public void LockCursor()
+    public static void LockCursor()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    public void UnlockCursor()
+    public static void UnlockCursor()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

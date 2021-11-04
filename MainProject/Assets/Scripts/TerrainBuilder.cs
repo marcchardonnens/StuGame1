@@ -25,6 +25,13 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private int TerrainScale = 1;
     [SerializeField] private float TerrainYModifier = 2;
 
+    public float HouseClearRadius = 20f;
+    public float ObjectiveClearRadius = 100f;
+    public float ResourceTreesClearRadius = 10f;
+    public float SideQuestClearRadius = 5f;
+    public int ResourceTrees = 10;
+
+
     public NavMeshSurface Surface;
     public NavMeshModifierVolume HighMod;
     public NavMeshModifierVolume LowMod;
@@ -35,21 +42,43 @@ public class TerrainBuilder : MonoBehaviour
     public GameObject SurvivorPrefab;
     public GameObject Water;
     [SerializeField] private bool spawnTrees = true;
+    public int TreeDensity = 1;
+    public float TreeOverallScale = 1f;
     public RandomChoice[] TreePrefabs;
     [SerializeField] private bool spawnRocks = true;
+    public int RocksDensity = 1;
+    public float RocksOverallScale = 1f;
     public RandomChoice[] RockPrefabs;
+    public int PowerupAmount = 50;
     [SerializeField] private bool spawnPowerups = true;
     public RandomChoice[] PowerupPrefabs;
-    [SerializeField] TextureData TextureData;
+    public GameObject[] SideQuestPrefabs;
 
+
+    public GameObject ResourceTreePrefab;
+
+
+
+
+    public GameObject BossAreaLight;
+
+
+
+
+
+
+    [SerializeField] TextureData TextureData;
+    
 
     private float[,,,] combinedMap;
     private MeshGenerator MG;
     private Vector3 housePosition;
+    private Vector3 houseGlobalPosition;
     private Vector3 objectivePosition;
+    private Vector3 obejctiveGlobalPosition;
     private System.Random RNG;
     private Vector2 minmax;
-    private const float groundlevel = -7.5f;
+    private const float groundlevel = 0;// -7.5f;
     private int xSize;
     private int zSize;
 
@@ -58,6 +87,9 @@ public class TerrainBuilder : MonoBehaviour
     //to hopefully prevent spamming the object viewer
     private GameObject Scenery;
     private GameObject Terrain;
+
+    private List<Vector3> ResourceTreesPositions = new List<Vector3>();
+    private List<Vector3> SideQuestPositions = new List<Vector3>();
 
     private List<GameObject> toCleanUp = new List<GameObject>();
     
@@ -94,7 +126,7 @@ public class TerrainBuilder : MonoBehaviour
         Scenery.tag = CLEANUPTAG;
         Scenery.transform.SetParent(transform,false);
         SceneVisibilityManager.instance.DisablePicking(Scenery, true);
-        Scenery.transform.localPosition += new Vector3(0, groundlevel, 0);
+        //Scenery.transform.localPosition += new Vector3(0, groundlevel, 0);
         
         
 
@@ -152,13 +184,17 @@ public class TerrainBuilder : MonoBehaviour
 
 
         //spawn objects
+        PlaceHouse();
+        PlaceObjective(); //including boss arena
+        PlaceResourceTrees();
+        PlaceSideObjectives();
+
+        SpawnPowerups();
 
         SpawnTrees();
         SpawnRocks();
         SpawnPowerups();
 
-        PlaceHouse();
-        PlaceObjective();
 
         TextureData.ApplyToMaterial(material);
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
@@ -168,6 +204,70 @@ public class TerrainBuilder : MonoBehaviour
         MakeNavMesh();
 
         Debug.Log(Time.time);
+
+    }
+
+    private void PlaceSideObjectives()
+    {
+        const int edgedist = 1;
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, ZSize);
+        for (int i = 0; i < 3; i++)
+        {
+            float x = (float)RNG.NextDouble() * XSize;
+            float z = (float)RNG.NextDouble() * ZSize;
+
+
+            if (PointNotNearEdge((int)x, (int)z, edgedist))
+            {
+                float y = combinedMap[(int)x, (int)z, chunk.x, chunk.y];
+
+                if (IsAtGroundLevel(y))
+                {
+                    x *= TerrainScale;
+                    z *= TerrainScale;
+                    GameObject go = Instantiate(SideQuestPrefabs[i], transform);
+                    SideQuestPositions.Add(go.transform.position);
+                    go.transform.localPosition = new Vector3(x, groundlevel, z);
+                    go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
+                    toCleanUp.Add(go);
+
+                }
+            }
+        }
+    
+    }
+
+    private void PlaceResourceTrees()
+    {
+
+        const int ResourceTreeEdgeDistance = 25;
+        Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, ZSize);
+        float y = 0f;
+
+        for (int i = 0; i < ResourceTrees; i++)
+        {
+            float x = (float)RNG.NextDouble() * XSize;
+            float z = (float)RNG.NextDouble() * ZSize;
+
+
+            if (PointNotNearEdge((int)x, (int)z, ResourceTreeEdgeDistance))
+            {
+                y = combinedMap[(int)x, (int)z, chunk.x, chunk.y];
+                if (IsAtGroundLevel(y))
+                {
+                    x *= TerrainScale;
+                    z *= TerrainScale;
+                    GameObject go = Instantiate(ResourceTreePrefab, transform);
+                    ResourceTreesPositions.Add(go.transform.position);
+                    go.transform.localPosition = new Vector3(x, groundlevel, z);
+                    go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z);
+                    go.transform.localScale *= TreeOverallScale;
+                    toCleanUp.Add(go);
+                }
+            }
+        }
+
+
 
     }
 
@@ -196,8 +296,15 @@ public class TerrainBuilder : MonoBehaviour
 
     }
 
+
+    /// <summary>
+    /// !!!!!!!! includes boss arena
+    /// </summary>
     private void PlaceObjective()
     {
+
+
+
         const int objectiveEdgeDistance = 50;
         Vector2Int chunk = NoiseMapGenerator.FindChunk(new Vector2Int(1, 1), XSize, ZSize);
         
@@ -225,25 +332,22 @@ public class TerrainBuilder : MonoBehaviour
             }
         }
 
-        //CreateSmallPlatform(combinedMap, x, z, (int)SurvivorPrefab.transform.localScale.x, (int)SurvivorPrefab.transform.localScale.z, 2, chunk, false);
-
         if (!found)
         {
             Debug.Log("Bad Seed");
         }
-        
-
-
-        //TODO round edges of platform to go towards rest of terrain
-        //something like y-(Min(y of x+1, y of z +1)/2)
 
 
         GameObject go = Instantiate(SurvivorPrefab, transform);
         go.name = "Survivor";
         go.transform.localPosition = objectivePosition;
-        //go.transform.position += transform.localPosition;
-        //go.transform.position += new Vector3(go.transform.localScale.x / 2f, combinedMap[x, z, chunk.x, chunk.y] + go.transform.localScale.y / 2, go.transform.localScale.z / 2f);
+        obejctiveGlobalPosition = go.transform.position;
         toCleanUp.Add(go);
+
+        GameObject bosslight = Instantiate(BossAreaLight, transform);
+        bosslight.transform.position = go.transform.position;
+        bosslight.transform.position += new Vector3(0, 100f, 0);
+        toCleanUp.Add(bosslight);
 
     }
 
@@ -291,9 +395,13 @@ public class TerrainBuilder : MonoBehaviour
         //something like y-(Min(y of x+1, y of z +1)/2)
 
 
+
+        //RemoveObjectsInRadius(housePosition, 200f);
+
         GameObject go = Instantiate(HousePrefab[GameManager.ProfileData.HouseUpgradeLevel], transform);
         go.name = "House";
         go.transform.localPosition = housePosition;
+        houseGlobalPosition = go.transform.position;
 
         SceneVisibilityManager.instance.DisablePicking(go, true);
 
@@ -397,10 +505,10 @@ public class TerrainBuilder : MonoBehaviour
 
     public void SpawnTrees()
     {
-        const int treeDistance = 5;
-        const float heightvariance = 0.75f;
+        int treeDistance = (int) TreeDensity;
+        const float heightvariance = 0.15f;
         const float thicknessvariance = 0.15f;
-        
+        bool resourceTreeNext = false;
         
         if (TreePrefabs.Length <= 0 || !spawnTrees)
         {
@@ -419,14 +527,20 @@ public class TerrainBuilder : MonoBehaviour
                         if (IsAtGroundLevel(combinedMap[x, z, xchunk, zchunk]))
                         {
                             //if (PointIsNotNearEdge(x,z))
-                            if(PointNotNearEdge(x,z))
+                            if(PointNotNearEdge(x,z, 5))
                             {
                                 float cx = x + (float)RNG.NextDouble() * treeDistance;
                                 float cz = z + (float)RNG.NextDouble() * treeDistance;
 
                                 cx *= TerrainScale;
                                 cz *= TerrainScale;
-                            
+
+                                if(CheckImportantObjectBlocking(new Vector3(cx, groundlevel, cz)))
+                                {
+                                    continue;
+                                }
+
+
                                 GameObject go = RandomChoice.Choose(TreePrefabs, RNG);
 
                                 go = Instantiate(go, Scenery.transform);
@@ -441,6 +555,8 @@ public class TerrainBuilder : MonoBehaviour
                                     new Vector3(go.transform.localScale.x * heightScale * thickScale,
                                         go.transform.localScale.y * heightScale,
                                         go.transform.localScale.z * heightScale * thickScale);
+                                go.transform.localScale *= TreeOverallScale;
+
                                 toCleanUp.Add(go);
                             }
                         }
@@ -450,11 +566,46 @@ public class TerrainBuilder : MonoBehaviour
         }
     }
 
+    private bool CheckImportantObjectBlocking(Vector3 pos)
+    {
+        pos = new Vector3(pos.x - XSize / 2f, pos.y, pos.z - ZSize / 2f);
+        float dist = Mathf.Abs(Vector3.Distance(houseGlobalPosition, pos));
+        if (dist < HouseClearRadius)
+        {
+            return true;
+        }
+        dist = Mathf.Abs(Vector3.Distance(obejctiveGlobalPosition, pos));
+        if (dist < ObjectiveClearRadius)
+        {
+            return true;
+        }
+
+        foreach (Vector3 treepos in ResourceTreesPositions)
+        {
+            dist = Mathf.Abs(Vector3.Distance(treepos, pos));
+            if(dist < ResourceTreesClearRadius)
+            {
+                return true;
+            }
+        }
+
+        foreach (Vector3 sidequests in SideQuestPositions)
+        {
+            dist = Mathf.Abs(Vector3.Distance(sidequests, pos));
+            if (dist < SideQuestClearRadius)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void SpawnRocks()
     {
         const int edgeRadius = 1;
         const float sizeVariance = 0.15f; //percent
-        int size = (xSize + zSize) * 4;
+        int size = (xSize + zSize) * RocksDensity;
         if (RockPrefabs.Length <= 0 || !spawnRocks)
         {
             return;
@@ -479,6 +630,7 @@ public class TerrainBuilder : MonoBehaviour
                 float scale = (float)RNG.NextDouble() * sizeVariance * 2 - sizeVariance;
                 scale += 1f;
                 go.transform.localScale *= scale;
+                go.transform.localScale *= RocksOverallScale;
                 toCleanUp.Add(go);
             }
         }
@@ -487,8 +639,57 @@ public class TerrainBuilder : MonoBehaviour
 
     public void SpawnPowerups()
     {
+        const int edgeRadius = 1;
+        //const float sizeVariance = 0.15f; //percent
+        
+        if (PowerupPrefabs.Length <= 0 || !spawnPowerups)
+        {
+            return;
+        }
 
+        for (int i = 0; i < PowerupAmount; i++)
+        {
+            float x = (float)RNG.NextDouble() * XSize;
+            float z = (float)RNG.NextDouble() * ZSize;
+
+
+            if (PointNotNearEdge((int)x, (int)z, edgeRadius))
+            {
+                x *= TerrainScale;
+                z *= TerrainScale;
+                GameObject go = RandomChoice.Choose(PowerupPrefabs, RNG);
+
+                go = Instantiate(go, Scenery.transform);
+                go.name += (" " + x + " " + z);
+                go.transform.localPosition = new Vector3(x, groundlevel, z);
+                go.transform.localEulerAngles = new Vector3(go.transform.localEulerAngles.x + (float)RNG.NextDouble() * 360f, (float)RNG.NextDouble() * 360f, go.transform.localEulerAngles.z + (float)RNG.NextDouble() * 360f);
+                toCleanUp.Add(go);
+            }
+        }
     }
+
+
+
+    public void RemoveObjectsInRadius(Vector3 pos, float radius, int layermask = 1 << GameConstants.SCENERYLAYER)
+    {
+
+        Collider[] colliders = Physics.OverlapSphere(pos, radius, layermask);
+        foreach (Collider collider in colliders)
+        {
+            Destroy(collider.gameObject);
+        }
+    }
+
+    public void MoveObjectsInRadiusAway(Vector3 pos, float radius, int layermask = 1 << GameConstants.SCENERYLAYER)
+    {
+
+        Collider[] colliders = Physics.OverlapSphere(pos, radius, layermask);
+        foreach (Collider collider in colliders)
+        {
+            collider.transform.position = (collider.transform.position - pos) * radius;
+        }
+    }
+
 
     private bool IsAtGroundLevel(float y, float margin = 1f)
     {
@@ -556,10 +757,10 @@ public class TerrainBuilder : MonoBehaviour
             return;
         }
 
-        HighMod.size = new Vector3(xSize, 75f, zSize);
-        HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
-        LowMod.size = new Vector3(xSize, 75f, zSize);
-        LowMod.center = new Vector3(0, groundlevel - 1f - LowMod.size.y / 2f, 0);
+        //HighMod.size = new Vector3(xSize, 75f, zSize);
+        //HighMod.center = new Vector3(0, groundlevel + 1f + HighMod.size.y / 2f, 0);
+        //LowMod.size = new Vector3(xSize, 75f, zSize);
+        //LowMod.center = new Vector3(0, groundlevel - 1f - LowMod.size.y / 2f, 0);
 
         Surface.BuildNavMesh();
 
@@ -569,6 +770,10 @@ public class TerrainBuilder : MonoBehaviour
 
     private void CleanupScene()
     {
+
+        SideQuestPositions.Clear();
+        ResourceTreesPositions.Clear();
+
         toCleanUp.ForEach(go =>
         {
             if (Application.isEditor)

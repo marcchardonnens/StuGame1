@@ -1,7 +1,12 @@
 fileFormatVersion: 2
-guid: ab357647aaf71ea459a8a369bde76245
+<<<<<<< HEAD:MainProject/Assets/Prefabs/BossLight.prefab.meta
+guid: 183fd8f5783d4954e8dc1d7c997ce53d
+PrefabImporter:
+=======
+guid: 2c34edf2aff8e81499f323a978fdeb21
 folderAsset: yes
 DefaultImporter:
+>>>>>>> origin/ui:MainProject/Assets/Shield.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

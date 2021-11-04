@@ -34,7 +34,7 @@ Transform:
   - {fileID: 7664385373603166073}
   m_Father: {fileID: 779585543158207334}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 16.22644, y: -1.5838203, z: -10.121029}
+  m_LocalEulerAnglesHint: {x: 14.91367, y: -0.41009903, z: -10.738319}
 --- !u!111 &2769326031357918667
 Animation:
   m_ObjectHideFlags: 0
@@ -337,7 +337,6 @@ GameObject:
   - component: {fileID: 8475730018101647279}
   - component: {fileID: 7334289401069246199}
   - component: {fileID: 5414988299273762334}
-  - component: {fileID: 9138249807018465585}
   m_Layer: 12
   m_Name: Player
   m_TagString: Player
@@ -448,6 +447,7 @@ MonoBehaviour:
   playerCamera: {fileID: 3995444824172532048}
   lookSpeed: 2
   lookXLimit: 45
+  InteractionRange: 5
   Rage: 0
   RageLevel: 0
   RageMaxLevel: 10
@@ -512,22 +512,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!208 &9138249807018465585
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6966436671165702007}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 0
-  m_Extents: {x: 0.5, y: 1, z: 0.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0, z: 0}
-  m_TimeToStationary: 0.5
 --- !u!65 &6056282182682621978
 BoxCollider:
   m_ObjectHideFlags: 0

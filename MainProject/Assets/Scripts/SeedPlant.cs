@@ -39,6 +39,9 @@ public class SeedPlant : MonoBehaviour
 
     public void Interact()
     {
+
+        Debug.Log("Seedplant Interact");
+
         if (grown)
         {
             //refill seeds

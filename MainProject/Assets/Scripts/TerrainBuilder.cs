@@ -82,7 +82,8 @@ public class TerrainBuilder : MonoBehaviour
 
     public void MakeTerrain()
     {
-        
+
+        Debug.Log(Time.time);
         CleanupScene();
 
 
@@ -166,7 +167,7 @@ public class TerrainBuilder : MonoBehaviour
 
         MakeNavMesh();
 
-
+        Debug.Log(Time.time);
 
     }
 

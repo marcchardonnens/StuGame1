@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
 
     public static ProfileData ProfileData = new ProfileData();
 
+    public static Interactable currentInteractable = null;
+
     // Start is called before the first frame update
     void Start()
     {

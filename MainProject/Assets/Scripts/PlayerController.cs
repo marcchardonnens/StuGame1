@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -31,6 +29,7 @@ public class PlayerController : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
+    public float InteractionRange = 5f;
 
     public float Rage = 0f;
     public int RageLevel = 0;
@@ -128,6 +127,11 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
 
+        ScanInteractable();
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            InteractWithObject();
+        }
         //ragedissipation
         if (rageTimer < Time.time)
         {
@@ -147,6 +151,8 @@ public class PlayerController : MonoBehaviour
                 Rage = 0f;
             }
         }
+
+
 
         if (Input.GetKeyDown("1"))
         {
@@ -357,6 +363,29 @@ public class PlayerController : MonoBehaviour
         }
 
 
+    }
+
+    private void InteractWithObject()
+    {
+        if(GameManager.currentInteractable != null)
+        {
+            GameManager.currentInteractable.Interact();
+        }
+    }
+
+    private void ScanInteractable()
+    {
+        Collider collider;
+        if(CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
+        {
+            if(collider != null)
+            {
+                Interactable interactable = collider.GetComponent<Interactable>();
+                GameManager.currentInteractable = interactable;
+                return;
+            }
+        }
+        GameManager.currentInteractable = null;
     }
 
     private void ThrowGrenade()
@@ -644,7 +673,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)
+    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)
     {
         RaycastHit hit;
         if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
@@ -652,11 +681,26 @@ public class PlayerController : MonoBehaviour
             pos = hit.point;
             return true;
         }
-        else
+        else if(!hitOnly)
         {
             pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
             return false;
         }
+        pos = Vector3.zero;
+        return false;
+    }
+
+    public bool CrossHairLookPosition(out Collider collider, float maxDistance = float.MaxValue, int layermask = ~0)
+    {
+        //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
+        RaycastHit hit;
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        {
+            collider = hit.collider;
+            return true;
+        }
+        collider = null;
+        return false;
     }
 
     private bool PlacePreviewSphere(float maxDistance = 5f, int layerMask = ~(1 << GameConstants.PLAYERLAYER))

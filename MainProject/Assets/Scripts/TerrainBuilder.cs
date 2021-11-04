@@ -116,7 +116,17 @@ public class TerrainBuilder : MonoBehaviour
     {
 
         Debug.Log(Time.time);
-        CleanupScene();
+        if(!IsHubScene)
+        {
+            CleanupScene();
+        }
+        else
+        {
+            TextureData.ApplyToMaterial(material);
+            TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
+
+            return;
+        }
 
 
         xSize = XSize;
@@ -185,23 +195,27 @@ public class TerrainBuilder : MonoBehaviour
 
         //spawn objects
         PlaceHouse();
-        PlaceObjective(); //including boss arena
-        PlaceResourceTrees();
-        PlaceSideObjectives();
+        if(!IsHubScene)
+        {
+            PlaceObjective(); //including boss arena
+            PlaceResourceTrees();
+            PlaceSideObjectives();
+        }
 
         SpawnPowerups();
 
         SpawnTrees();
         SpawnRocks();
-        SpawnPowerups();
 
 
         TextureData.ApplyToMaterial(material);
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
 
-
-        MakeNavMesh();
+        if (!IsHubScene)
+        {
+            MakeNavMesh();
+        }
 
         Debug.Log(Time.time);
 

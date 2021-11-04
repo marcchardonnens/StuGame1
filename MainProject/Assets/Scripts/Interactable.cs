@@ -13,15 +13,6 @@ public class Interactable : MonoBehaviour
     private void Awake()
     {
         gameObject.layer = GameConstants.INTERACTABLELAYER;
-        Collider collider = GetComponent<Collider>();
-        if(collider)
-        {
-            if(!collider.isTrigger)
-            {
-                Debug.Log("Interactable Collider was not set to Trigger. It was set to trigger by script." + "    " + gameObject.name);
-                collider.isTrigger = true;
-            }
-        }
     }
 
     public void Interact()

@@ -30,20 +30,17 @@ public class pauseController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.K))
         {
             //playerCon.UnlockCursor();
             if (GameIsPaused)
             {
-                //playerCon.UnlockCursor();
                 //tbd better
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
                 Resume();
+                PlayerController.LockCursor();
             } else {
+                PlayerController.UnlockCursor();
                 Pause();
-                //Cursor.lockState = CursorLockMode.Locked;
-                //Cursor.visible = false;
             }
         }
 
@@ -53,8 +50,6 @@ public class pauseController : MonoBehaviour
         pauseMenuUI.SetActive(false);
         GameIsPaused = false;
         Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;        
     }
 
     public void Pause () {
@@ -66,16 +61,13 @@ public class pauseController : MonoBehaviour
     public void TaskWakeUpButton() {
         Debug.Log("Wake Up");
         //TBD Spielstand speichern
-        SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
+        PlayerController.LockCursor();
+        FindObjectOfType<StageManager>().EndStage(StageResult.Death);
     }
 
     public void TaskExitButton() {
         Debug.Log("Exit");
         Application.Quit();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        PlayerController.LockCursor();
     }
 }

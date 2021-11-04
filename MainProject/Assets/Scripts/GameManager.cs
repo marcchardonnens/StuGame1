@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
 
     public static Interactable currentInteractable = null;
 
+    private static Scene queuedScene;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,7 +31,7 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public static void ChangeScene(int scene)
+    public static void ChangeScene()
     {
         //SceneManager.LoadScene(sceneIndex);
     }

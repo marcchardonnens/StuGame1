@@ -31,7 +31,7 @@ public class MenuSceneController : MonoBehaviour
     public void TaskStartButton()
     {
         Debug.Log("start");
-        SceneManager.LoadScene("LoadingScene", LoadSceneMode.Single);
+        SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
     }
 
     public void TaskProfileButton()

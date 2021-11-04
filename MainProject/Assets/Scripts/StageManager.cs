@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public enum StageResult
 {
@@ -56,7 +57,7 @@ public class StageManager : MonoBehaviour
 
     void Awake()
     {
-        TB = Object.Instantiate(new TerrainBuilder());
+        //TB = Object.Instantiate(new TerrainBuilder());
         //Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
         //if(GameManager.ProfileData.FirstRun)
@@ -100,7 +101,7 @@ public class StageManager : MonoBehaviour
 
     private IEnumerator EnemySpawner()
     {
-        yield return new WaitForSeconds(15f);
+        //yield return new WaitForSeconds(15f);
 
         while (true)
         {
@@ -133,6 +134,8 @@ public class StageManager : MonoBehaviour
         Player.transform.position += TB.House.forward * 5;
         Player.transform.forward = TB.House.forward;
     }
+
+
 
 
 
@@ -179,6 +182,7 @@ public class StageManager : MonoBehaviour
 
 
 
+        SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
         //swap scene
 
     }

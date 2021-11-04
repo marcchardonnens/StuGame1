@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7233623099162597991}
   - component: {fileID: 7233623099162597984}
-  - component: {fileID: 7233623099162597985}
+  - component: {fileID: 8159084753454589145}
   m_Layer: 14
   m_Name: Interactable
   m_TagString: Untagged
@@ -48,8 +48,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SeedPlant, Assembly-CSharp
-        m_MethodName: 
+        m_TargetAssemblyTypeName: Door, Assembly-CSharp
+        m_MethodName: Interact
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -59,17 +59,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!136 &7233623099162597985
-CapsuleCollider:
+--- !u!64 &8159084753454589145
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7233623099162597986}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 5
-  m_Direction: 1
-  m_Center: {x: 0, y: 2.25, z: 0}
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 5779197439840542771, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}

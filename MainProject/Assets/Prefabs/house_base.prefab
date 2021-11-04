@@ -204,6 +204,7 @@ GameObject:
   - component: {fileID: 7427203115998925419}
   - component: {fileID: 5804822841746270002}
   - component: {fileID: 7476334401618958238}
+  - component: {fileID: 6051985326264227056}
   m_Layer: 0
   m_Name: door
   m_TagString: Untagged
@@ -289,6 +290,18 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 5779197439840542771, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
+--- !u!114 &6051985326264227056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1158633171041863995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c5ac1559290554c88056559656ac72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1890836087509258597
 GameObject:
   m_ObjectHideFlags: 0
@@ -481,20 +494,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -1917267448016340913, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
---- !u!64 &8159084753454589145
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2281373925686804223}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5779197439840542771, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
 --- !u!1 &2428834267351393289
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,21 +2592,9 @@ PrefabInstance:
     m_TransformParent: {fileID: 705556208799151188}
     m_Modifications:
     - target: {fileID: 7233623099162597984, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
-      propertyPath: OnInteract.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7233623099162597984, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
       propertyPath: OnInteract.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7233623099162597984, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
-      propertyPath: OnInteract.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ChangeScene
-      objectReference: {fileID: 0}
-    - target: {fileID: 7233623099162597984, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
-      propertyPath: OnInteract.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: GameManager, Assembly-CSharp
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6051985326264227056}
     - target: {fileID: 7233623099162597986, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
       propertyPath: m_Name
       value: Interactable
@@ -2656,14 +2643,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7233623099162597985, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
---- !u!1 &2281373925686804223 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7233623099162597986, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}
-  m_PrefabInstance: {fileID: 8920483648822830237}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2281373925686804218 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7233623099162597991, guid: 2a611451e881b8040bcfbd5889394e0f, type: 3}

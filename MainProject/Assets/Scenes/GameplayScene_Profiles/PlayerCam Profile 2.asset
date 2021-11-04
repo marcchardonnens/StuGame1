@@ -84,13 +84,13 @@ MonoBehaviour:
     value: 0
   intensity:
     overrideState: 1
-    value: 0.078
+    value: 0.2
   size:
     overrideState: 1
-    value: 1.52
+    value: 0.3
   lumContrib:
     overrideState: 1
-    value: 0.27
+    value: 0.5
 --- !u!114 &-3583711632977882100
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -112,19 +112,19 @@ MonoBehaviour:
     value: 0
   color:
     overrideState: 1
-    value: {r: 0, g: 0, b: 0, a: 1}
+    value: {r: 0.5754717, g: 0.2524475, b: 0.2524475, a: 1}
   center:
     overrideState: 1
     value: {x: 0.5, y: 0.5}
   intensity:
     overrideState: 1
-    value: 0.361
+    value: 0.3
   smoothness:
     overrideState: 1
-    value: 1
+    value: 0.3
   roundness:
     overrideState: 1
-    value: 0.805
+    value: 1
   rounded:
     overrideState: 0
     value: 0
@@ -156,10 +156,10 @@ MonoBehaviour:
     value: 0
   intensity:
     overrideState: 1
-    value: 0.7
+    value: 2
   color:
     overrideState: 1
-    value: {r: 0.19624421, g: 0.3648593, b: 0.3962264, a: 1}
+    value: {r: 0.024919897, g: 0.13117501, b: 0.1509434, a: 1}
   ambientOnly:
     overrideState: 0
     value: 1
@@ -180,7 +180,7 @@ MonoBehaviour:
     value: 0
   radius:
     overrideState: 1
-    value: 5
+    value: 15
   quality:
     overrideState: 1
     value: 3
@@ -323,19 +323,19 @@ MonoBehaviour:
     value: 0.344
   temperature:
     overrideState: 1
-    value: 5
+    value: -16
   tint:
     overrideState: 1
-    value: 25
+    value: 35
   colorFilter:
     overrideState: 1
-    value: {r: 0.46226418, g: 0.29000536, b: 0.29184306, a: 1}
+    value: {r: 0.43175644, g: 0.27076253, b: 0.27076253, a: 1}
   hueShift:
     overrideState: 1
     value: -4
   saturation:
     overrideState: 1
-    value: 15
+    value: 12
   brightness:
     overrideState: 1
     value: 40
@@ -1599,7 +1599,7 @@ MonoBehaviour:
     value: 1
   shutterAngle:
     overrideState: 1
-    value: 6
+    value: 55
   sampleCount:
     overrideState: 1
     value: 15
@@ -1663,10 +1663,10 @@ MonoBehaviour:
     overrideState: 1
     value: 2
   softKnee:
-    overrideState: 1
+    overrideState: 0
     value: 0.246
   clamp:
-    overrideState: 1
+    overrideState: 0
     value: 65470.77
   diffusion:
     overrideState: 0

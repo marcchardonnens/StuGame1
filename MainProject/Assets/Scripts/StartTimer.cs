@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class StartTimer : MonoBehaviour
 {
     private float timer;
+    
     void Start ()
     {
         timer = 10;

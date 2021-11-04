@@ -27,8 +27,7 @@ public class MenuSceneController : MonoBehaviour
     public void TaskStartButton()
     {
         Debug.Log("start");
-        //SceneManager.LoadScene("newSceneTest", LoadSceneMode.Single);
-        //SceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+        SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
     }
 
     public void TaskProfileButton()
@@ -44,6 +43,7 @@ public class MenuSceneController : MonoBehaviour
     public void TaskExitButton()
     {
         Debug.Log("exit");
+        Application.Quit();
     }
 
 

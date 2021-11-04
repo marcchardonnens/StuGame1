@@ -4,19 +4,19 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public enum EnemyState
-{
-    Spawning,
-    Idle,
-    Stunned,
-    Wandering,
-    EnteringCombat,
-    RangedAttacking,
-    MeleeAttacking,
-    ReturnToSpawn,
-    Dying,
-    Dead,
-}
+//public enum EnemyState
+//{
+//    Spawning,
+//    Idle,
+//    Stunned,
+//    Wandering,
+//    EnteringCombat,
+//    RangedAttacking,
+//    MeleeAttacking,
+//    ReturnToSpawn,
+//    Dying,
+//    Dead,
+//}
 
 
 
@@ -24,7 +24,7 @@ public enum EnemyState
 
 public class Enemy : MonoBehaviour
 {
-    public float MaxHP = 100f;
+    public float MaxHP = 1000f;
     public float MeleeDamage = 15f;
     public float RangedDamage = 5f;
     public float Armor = 0f;
@@ -43,10 +43,10 @@ public class Enemy : MonoBehaviour
     public float RangedAnimationTime = 0.5f;
 
     public int currentLevel = 0;
-    public int BaseRewardAmount = 50;
-    public float PlayerRageLevelRewardMultiplier = 0.25f;
-    public float EnemyLevelRewardMultiplier = 1.25f;
-    public float RandomRewardMultiplier = 0.1f;
+    public int BaseRewardAmount = 500;
+    public float PlayerRageLevelRewardMultiplier = 0.50f;
+    public float EnemyLevelRewardMultiplier = 1.75f;
+    public float RandomRewardMultiplier = 0.2f;
 
     public GameObject ProjectilePrefab;
     public float ProjectileLifetime = 10f;
@@ -60,37 +60,44 @@ public class Enemy : MonoBehaviour
     public float combatSpeed = 4f;
 
     public float Gravity = 20f;
+    public float NavMeshPosCorrectionMax = 25f;
 
-    private Vector3 spawnPoint;
+
+
+
+
+
+    protected Vector3 spawnPoint;
 
     //AI stuff
-    private const int MELEEMASK = 1 << 0  | 1 << 3;
-    private const int RANGEDMASK = 1 << 0 | 1 << 4;
-    private const int WALKABLEMASK = 1 << 0;
-    private const int MELEEONLYMASK = 1 << 3;
-    private const int RANGEDONLYMASK = 1 << 4;
+    protected const int MELEEMASK = 1 << 0  | 1 << 3;
+    protected const int RANGEDMASK = 1 << 0 | 1 << 4;
+    protected const int WALKABLEMASK = 1 << 0;
+    protected const int MELEEONLYMASK = 1 << 3;
+    protected const int RANGEDONLYMASK = 1 << 4;
 
-    private const float SLOWUPDATETIME = 1f;
+    protected const float SLOWUPDATETIME = .1f;
 
     public float AreaDefaultCost = 1f;
     public float nonPrioAreaCost = 10f;
 
     public float aiCirclingMargin = 3f; //choosing random pos within this range from target
-    private NavMeshAgent agent;
-    private EnemyState currentState;
-    private EnemyState? queuedState = null;
-    private PlayerController player;
-    private Transform currentTarget = null;
+    protected NavMeshAgent agent;
+    protected EnemyState currentState;
+    protected EnemyState? queuedState = null;
+    protected PlayerController player;
+    protected Transform currentTarget = null;
 
-    private float slowupdate = SLOWUPDATETIME;
-    private float nextMeleeCd = 0f;
-    private float nextRangedCd = 0f;
-    private float stunned = 0f;
-    [SerializeField] private float currentHP;
+    protected float slowupdate = SLOWUPDATETIME;
+    protected float nextMeleeCd = 0f;
+    protected float nextRangedCd = 0f;
+    protected float stunned = 0f;
+    [SerializeField] protected float currentHP;
 
-    private float outOfCombatTimer = 0f;
+    protected float outOfCombatTimer = 0f;
 
-
+    protected GameObject child;
+    protected Animation childAnim;
 
     public bool TakeDamage(float amount)
     {
@@ -108,6 +115,12 @@ public class Enemy : MonoBehaviour
 
 
         killingBlow = CheckDeathCondition();
+
+        if(killingBlow)
+        {
+            player.GetMonsterXP(RewardAmount());
+            player.GenerateRage(player.KillRageAmount);
+        }
 
         return killingBlow;
 
@@ -141,13 +154,42 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        child = transform.GetChild(0).gameObject;
+        childAnim = child.GetComponent<Animation>();
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         player = FindObjectOfType<PlayerController>();
-        spawnPoint = transform.position;
+        Vector3 sourcePostion = transform.position;
+        NavMeshHit closestHit;
+        if (NavMesh.SamplePosition(sourcePostion, out closestHit, NavMeshPosCorrectionMax, agent.areaMask))
+        {
+            transform.position = closestHit.position;
+            spawnPoint = transform.position;
+
+        }
+        else
+        {
+            Debug.Log("Enemy Bad Spawn");
+            Destroy(gameObject);
+        }
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
-        StartCoroutine(ExecuteIn(2, () => currentState = EnemyState.Idle));
+        StartCoroutine(Spawn());
+    }
+
+    private IEnumerator Spawn()
+    {
+        childAnim.Play("Walk");
+        float posy = child.transform.position.y - 1.5f;
+
+        for (int i = 0; i < 100; i++)
+        {
+            float newy = posy + ((1.5f / 100f) * (float)i);
+            child.transform.position = new Vector3(transform.position.x, newy, transform.position.z);
+            yield return new WaitForSeconds(1f / 100);
+        }
+        yield return new WaitForSeconds(1f);
+        currentState = EnemyState.Idle;
     }
 
     // Update is called once per frame
@@ -171,7 +213,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    private void EnemyActions(bool isSlowUpdate = false)
+    protected void EnemyActions(bool isSlowUpdate = false)
     {
 
         switch (currentState)
@@ -187,7 +229,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Idle:
             {
-
+                childAnim.Stop();
                 if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
                 {
                     currentState = EnemyState.EnteringCombat;
@@ -197,26 +239,12 @@ public class Enemy : MonoBehaviour
                 Vector3 randompos = Random.insideUnitSphere * wanderDistance;
                 randompos += spawnPoint;
                 NavMeshHit hit;
-
-                
-                //TODO
-                //GameObject go = new GameObject("Target");
-                //Vector3 sourcePostion = new Vector3(100, 20, 100);//The position you want to place your agent
-                //NavMeshHit closestHit;
-                //if (NavMesh.SamplePosition(sourcePostion, out closestHit, 500, 1))
-                //{
-                //    go.transform.position = closestHit.position;
-                //    go.AddComponent<NavMeshAgent>();
-                //    //TODO
-                //}
-                //else
-                //{
-                //    Debug.Log("...");
-                //}
-
                 if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
                 {
-                    agent.SetDestination(hit.position);
+                    if(agent.isOnNavMesh)
+                    {
+                        agent.SetDestination(hit.position);
+                    }
                     currentState = EnemyState.Wandering;
                 }
 
@@ -225,6 +253,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Wandering:
             {
+                childAnim.Play("Walk");
                 if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
                 {
                     currentState = EnemyState.EnteringCombat;
@@ -241,6 +270,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Stunned:
             {
+                childAnim.Stop();
                 //not stunned anymore
                 if (stunned <= 0)
                 {
@@ -332,7 +362,7 @@ public class Enemy : MonoBehaviour
                     RangedAttack();
                 }
 
-                if (isSlowUpdate)
+                if (isSlowUpdate && agent.isOnNavMesh)
                 {
                     agent.SetDestination(player.transform.position);
                 }
@@ -348,7 +378,7 @@ public class Enemy : MonoBehaviour
                     currentState = EnemyState.Idle;
                 }
 
-                if(isSlowUpdate)
+                if(isSlowUpdate && agent.isOnNavMesh)
                 {
                     agent.SetDestination(spawnPoint);
                 }
@@ -363,8 +393,8 @@ public class Enemy : MonoBehaviour
 
 
 
-                transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
-                transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
+                child.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
+                child.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
 
                 if (stunned <= 0)
                 {
@@ -386,7 +416,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void CalcRangedPos()
+    protected void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
         Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - attackRange);
@@ -398,7 +428,10 @@ public class Enemy : MonoBehaviour
 
         if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
         {
-            agent.SetDestination(hit.position);
+            if(agent.isOnNavMesh)
+            {
+                agent.SetDestination(hit.position);
+            }
         }
         else
         {
@@ -409,8 +442,10 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private void RangedAttack()
+    protected void RangedAttack()
     {
+        childAnim.Play("Shoot");
+        childAnim.PlayQueued("Walk");
         //cooldown check
         if (nextRangedCd > Time.time)
         {
@@ -434,8 +469,10 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private void MeleeAttack()
+    protected void MeleeAttack()
     {
+        childAnim.Play("Melee");
+        childAnim.PlayQueued("Walk");
         //cooldown check
         if (nextMeleeCd > Time.time)
         {
@@ -481,7 +518,7 @@ public class Enemy : MonoBehaviour
         
     }
 
-    private void SetMeleeAgent()
+    protected void SetMeleeAgent()
     {
         agent.areaMask = MELEEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
@@ -490,7 +527,7 @@ public class Enemy : MonoBehaviour
         //could set angular speed/radius or other agent settings here
     }
 
-    private void SetRangedAgent()
+    protected void SetRangedAgent()
     {
         agent.areaMask = RANGEDMASK;
         agent.SetAreaCost(MELEEONLYMASK, nonPrioAreaCost);
@@ -498,7 +535,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    private bool CheckDeathCondition()
+    protected bool CheckDeathCondition()
     {
         bool dead = false;
 
@@ -512,8 +549,9 @@ public class Enemy : MonoBehaviour
         return dead;
     }
 
-    private void InitializeDeath()
+    protected void InitializeDeath()
     {
+        childAnim.Play("Death");
         //initiate death
         currentState = EnemyState.Dying;
         stunned = deathTime;
@@ -522,18 +560,22 @@ public class Enemy : MonoBehaviour
     }
 
 
+    protected bool IsDead()
+    {
+        if(currentState == EnemyState.Dying ||
+            currentState == EnemyState.Dead ||
+            currentHP <= 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 
 
 
-
-
-
-
-
-
-
-    private IEnumerator ExecuteIn(float seconds, Action action)
+    protected IEnumerator ExecuteIn(float seconds, Action action)
     {
         yield return new WaitForSeconds(seconds);
         action();

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -31,6 +29,7 @@ public class PlayerController : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
+    public float InteractionRange = 5f;
 
     public float Rage = 0f;
     public int RageLevel = 0;
@@ -93,7 +92,16 @@ public class PlayerController : MonoBehaviour
     private StageManager stageManager;
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
+    //HealthBar (placing tbd)
+    public HealthBar healthBar;
 
+    //SeedUI (placing tbd)
+    public SeedUI seedUI;
+    public SeedFunctionUI seedFuncUI;
+
+    //ShroomUI (placing tbd)
+    public MushroomUI shroomUI;
+    public int shroomCounter = 0;
 
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
@@ -121,13 +129,22 @@ public class PlayerController : MonoBehaviour
         PreviewSphere.SetActive(false);
 
         currentHP = MaxHP;
+        healthBar.SetMaxHealth(MaxHP);
+
+        seedUI.SetSeedAmount(MaxSeeds); //tbd
+        seedUI.SetSeedCounter(currentSeeds);
 
         LockCursor();
+
     }
 
     void Update()
     {
-
+        ScanInteractable(InteractionRange);
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            InteractWithObject();
+        }
         //ragedissipation
         if (rageTimer < Time.time)
         {
@@ -147,6 +164,8 @@ public class PlayerController : MonoBehaviour
                 Rage = 0f;
             }
         }
+
+
 
         if (Input.GetKeyDown("1"))
         {
@@ -235,18 +254,22 @@ public class PlayerController : MonoBehaviour
                 if (previewNumber == 1)
                 {
                     previewValid = PreviewGrenades();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
+                    seedFuncUI.SetFunctionName(previewNumber);
                 }
             }
         }
@@ -359,11 +382,66 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void InteractWithObject()
+    {
+        if(GameManager.currentInteractable != null)
+        {
+            GameManager.currentInteractable.Interact();
+        }
+    }
+
+    public void ScanInteractable(float InteractionRange)
+    {
+        Collider collider;
+        if(CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
+        {
+            if(collider != null)
+            {
+                Interactable interactable = collider.GetComponent<Interactable>();
+                GameManager.currentInteractable = interactable;
+                return;
+            }
+        }
+        GameManager.currentInteractable = null;
+    }
+
+    public static String ScanInteractableNameStatic(float range, Camera cam)
+    {
+        Collider collider;
+        if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
+        {
+            if (collider != null)
+            {
+                Interactable interactable = collider.GetComponent<Interactable>();
+                if(interactable.transform.parent != null)
+                {
+                    return interactable.transform.parent.name;
+                }
+                return interactable.name;
+            }
+        }
+        return "";
+    }
+
+    public static bool CrossHairLookPositionStatic(out Collider collider, Camera cam, float maxDistance = float.MaxValue, int layermask = ~0)
+    {
+        //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
+        RaycastHit hit;
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, maxDistance, layermask))
+        {
+            collider = hit.collider;
+            return true;
+        }
+        collider = null;
+        return false;
+    }
+
     private void ThrowGrenade()
     {
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
-        grenade.Throw(this, playerCamera.transform.forward, BaseDamage);
+        grenade.Throw(this, playerCamera.transform.forward, BaseDamage, true);
         currentSeeds -= SeedGrenadeCost;
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewGrenades()
@@ -385,6 +463,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceShieldPlant()
     {
         Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewShieldPlant()
@@ -407,6 +486,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceTurretPlant()
     {
         Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewTurretPlant()
@@ -426,6 +506,7 @@ public class PlayerController : MonoBehaviour
     private void PlaceSeedPlant()
     {
         Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewSeedPlant()
@@ -489,6 +570,7 @@ public class PlayerController : MonoBehaviour
         if (postMitigation >= 0)
         {
             currentHP -= postMitigation;
+            healthBar.SetHealth(currentHP);
         }
 
         if (currentHP <= 0)
@@ -496,12 +578,15 @@ public class PlayerController : MonoBehaviour
             stageManager.EndStage(StageResult.Death);
         }
 
+        
+
     }
 
     public void Heal(float amount)
     {
         //no overheal
         currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
+        healthBar.SetHealth(currentHP);
     }
 
     public void MeleeAttack()
@@ -567,7 +652,7 @@ public class PlayerController : MonoBehaviour
         blockingSpeed += BlockingSpeedLevel;
 
 
-
+        healthBar.SetMaxHealth(MaxHP);
         
         RageLevel++;
 
@@ -595,6 +680,10 @@ public class PlayerController : MonoBehaviour
 
     public void ConsumeShroom(Powerup powerup)
     {
+
+        //Shroom UI
+        shroomCounter += 1;
+
         switch (powerup.Type)
         {
             case PowerupType.BlueShroom:
@@ -642,9 +731,11 @@ public class PlayerController : MonoBehaviour
             }
 
         }
+
+        shroomUI.SetMushroomCounter(shroomCounter);
     }
 
-    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)
+    public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)
     {
         RaycastHit hit;
         if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
@@ -652,11 +743,26 @@ public class PlayerController : MonoBehaviour
             pos = hit.point;
             return true;
         }
-        else
+        else if(!hitOnly)
         {
             pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
             return false;
         }
+        pos = Vector3.zero;
+        return false;
+    }
+
+    public bool CrossHairLookPosition(out Collider collider, float maxDistance = float.MaxValue, int layermask = ~0)
+    {
+        //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
+        RaycastHit hit;
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        {
+            collider = hit.collider;
+            return true;
+        }
+        collider = null;
+        return false;
     }
 
     private bool PlacePreviewSphere(float maxDistance = 5f, int layerMask = ~(1 << GameConstants.PLAYERLAYER))

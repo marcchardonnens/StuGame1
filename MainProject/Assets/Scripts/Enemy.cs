@@ -96,7 +96,8 @@ public class Enemy : MonoBehaviour
 
     protected float outOfCombatTimer = 0f;
 
-
+    protected GameObject child;
+    protected Animation childAnim;
 
     public bool TakeDamage(float amount)
     {
@@ -153,10 +154,11 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        child = transform.GetChild(0).gameObject;
+        childAnim = child.GetComponent<Animation>();
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         player = FindObjectOfType<PlayerController>();
-        GameObject go = new GameObject("Target");
         Vector3 sourcePostion = transform.position;
         NavMeshHit closestHit;
         if (NavMesh.SamplePosition(sourcePostion, out closestHit, NavMeshPosCorrectionMax, agent.areaMask))
@@ -172,7 +174,22 @@ public class Enemy : MonoBehaviour
         }
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
-        StartCoroutine(ExecuteIn(2, () => currentState = EnemyState.Idle));
+        StartCoroutine(Spawn());
+    }
+
+    private IEnumerator Spawn()
+    {
+        childAnim.Play("Walk");
+        float posy = child.transform.position.y - 1.5f;
+
+        for (int i = 0; i < 100; i++)
+        {
+            float newy = posy + ((1.5f / 100f) * (float)i);
+            child.transform.position = new Vector3(transform.position.x, newy, transform.position.z);
+            yield return new WaitForSeconds(1f / 100);
+        }
+        yield return new WaitForSeconds(1f);
+        currentState = EnemyState.Idle;
     }
 
     // Update is called once per frame
@@ -212,7 +229,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Idle:
             {
-
+                childAnim.Stop();
                 if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
                 {
                     currentState = EnemyState.EnteringCombat;
@@ -224,7 +241,10 @@ public class Enemy : MonoBehaviour
                 NavMeshHit hit;
                 if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
                 {
-                    agent.SetDestination(hit.position);
+                    if(agent.isOnNavMesh)
+                    {
+                        agent.SetDestination(hit.position);
+                    }
                     currentState = EnemyState.Wandering;
                 }
 
@@ -233,6 +253,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Wandering:
             {
+                childAnim.Play("Walk");
                 if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
                 {
                     currentState = EnemyState.EnteringCombat;
@@ -249,6 +270,7 @@ public class Enemy : MonoBehaviour
 
             case EnemyState.Stunned:
             {
+                childAnim.Stop();
                 //not stunned anymore
                 if (stunned <= 0)
                 {
@@ -371,8 +393,8 @@ public class Enemy : MonoBehaviour
 
 
 
-                transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
-                transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
+                child.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
+                child.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
 
                 if (stunned <= 0)
                 {
@@ -406,7 +428,10 @@ public class Enemy : MonoBehaviour
 
         if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
         {
-            agent.SetDestination(hit.position);
+            if(agent.isOnNavMesh)
+            {
+                agent.SetDestination(hit.position);
+            }
         }
         else
         {
@@ -419,6 +444,8 @@ public class Enemy : MonoBehaviour
 
     protected void RangedAttack()
     {
+        childAnim.Play("Shoot");
+        childAnim.PlayQueued("Walk");
         //cooldown check
         if (nextRangedCd > Time.time)
         {
@@ -444,6 +471,8 @@ public class Enemy : MonoBehaviour
 
     protected void MeleeAttack()
     {
+        childAnim.Play("Melee");
+        childAnim.PlayQueued("Walk");
         //cooldown check
         if (nextMeleeCd > Time.time)
         {
@@ -522,6 +551,7 @@ public class Enemy : MonoBehaviour
 
     protected void InitializeDeath()
     {
+        childAnim.Play("Death");
         //initiate death
         currentState = EnemyState.Dying;
         stunned = deathTime;

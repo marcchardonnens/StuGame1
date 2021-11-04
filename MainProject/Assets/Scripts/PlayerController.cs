@@ -93,14 +93,14 @@ public class PlayerController : MonoBehaviour
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
     //HealthBar (placing tbd)
-    public HealthBar healthBar;
+    public HealthBar healthBar = new HealthBar();
 
     //SeedUI (placing tbd)
-    public SeedUI seedUI;
-    public SeedFunctionUI seedFuncUI;
+    public SeedUI seedUI = new SeedUI();
+    public SeedFunctionUI seedFuncUI = new SeedFunctionUI();
 
     //ShroomUI (placing tbd)
-    public MushroomUI shroomUI;
+    public MushroomUI shroomUI = new MushroomUI();
     public int shroomCounter = 0;
 
     private bool isBlocking = false;

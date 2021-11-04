@@ -82,6 +82,7 @@ public class TerrainBuilder : MonoBehaviour
     private int xSize;
     private int zSize;
 
+    public Transform House;
 
     //these are for grouping objects together
     //to hopefully prevent spamming the object viewer
@@ -416,6 +417,7 @@ public class TerrainBuilder : MonoBehaviour
         go.name = "House";
         go.transform.localPosition = housePosition;
         houseGlobalPosition = go.transform.position;
+        House = go.transform;
 
         SceneVisibilityManager.instance.DisablePicking(go, true);
 

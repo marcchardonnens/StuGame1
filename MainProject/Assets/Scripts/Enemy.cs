@@ -165,7 +165,7 @@ public class Enemy : MonoBehaviour
         {
             transform.position = closestHit.position;
             spawnPoint = transform.position;
-
+            StartCoroutine(CheckDistance());
         }
         else
         {
@@ -175,6 +175,25 @@ public class Enemy : MonoBehaviour
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
         StartCoroutine(Spawn());
+    }
+
+    private IEnumerator CheckDistance()
+    {
+
+        while(true)
+        {
+
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+
+            if(distance > 300f)
+            {
+                Destroy(gameObject);
+            }
+
+            yield return new WaitForSeconds(5f);
+        }
+
+
     }
 
     private IEnumerator Spawn()

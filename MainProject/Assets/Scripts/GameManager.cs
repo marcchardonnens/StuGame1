@@ -28,8 +28,18 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void ChangeScene(int scene)
+    public static void ChangeScene(int scene)
     {
 
+    }
+
+    public static void PauseGame()
+    {
+        Time.timeScale = 0;
+    }
+
+    public static void UnPauseGame()
+    {
+        Time.timeScale = 1;
     }
 }

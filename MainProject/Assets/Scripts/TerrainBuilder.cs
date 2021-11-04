@@ -33,8 +33,7 @@ public class TerrainBuilder : MonoBehaviour
 
 
     public NavMeshSurface Surface;
-    public NavMeshModifierVolume HighMod;
-    public NavMeshModifierVolume LowMod;
+
 
     [SerializeField]private NoiseData[] noisedata;
     public Material material;

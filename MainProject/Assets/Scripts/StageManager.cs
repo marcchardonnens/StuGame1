@@ -20,6 +20,7 @@ public class StageManager : MonoBehaviour
 {
     public static PlayerController Player;
 
+    [SerializeField] private PlayerController playerInScene;
     public bool TestingOnly = false;
     public bool autoupdate = false;
     public TerrainBuilder TB;
@@ -51,7 +52,9 @@ public class StageManager : MonoBehaviour
     private bool BossKilled = false;
     private bool SurvivorFound = false;
 
-    public int EnemiesMax = 0;
+    public int EnemiesMax = 25;
+
+    public bool SurvivorFreed = false;
 
 
 
@@ -75,6 +78,12 @@ public class StageManager : MonoBehaviour
 
     }
 
+    private void Update()
+    {
+        Time.timeScale = 1;
+        //StartCoroutine(EnemySpawner());
+    }
+
 
     public void MakeStage()
     {
@@ -88,7 +97,7 @@ public class StageManager : MonoBehaviour
 
 
 
-        //SetupPlayer();
+        SetupPlayer();
 
 
         StartCoroutine(EnemySpawner());
@@ -105,34 +114,38 @@ public class StageManager : MonoBehaviour
 
         while (true)
         {
+            Player = playerInScene;
             int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
-            if(currentEnemies < EnemiesMax)
+            if(currentEnemies < EnemiesMax && Player != null)
             {
                 int spawns = System.Math.Min(10, EnemiesMax - currentEnemies);
                 for (int i = 0; i < spawns; i++)
                     {
-                    Vector3 randompos = Random.insideUnitSphere + Player.transform.position;
+                    Vector2 circle = Random.insideUnitCircle * 250f;
+                    Vector3 randompos =  new Vector3(circle.x, 0, circle.y) + Player.transform.position;
                     NavMeshHit hit;
-                    if(NavMesh.SamplePosition(randompos, out hit, 250f, 1 << GameConstants.GROUNDLAYER))
+                    if(NavMesh.SamplePosition(randompos, out hit, 250f, NavMesh.AllAreas))
                     {
-                        Instantiate(EnemyPrefab);
+                        Instantiate(EnemyPrefab, hit.position, Quaternion.identity);
                     }
                 }
             }
 
 
 
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(3f);
         }
     }
 
 
     public void SetupPlayer()
     {
-        Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
+        //Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
+        Player = FindObjectOfType<PlayerController>();
         Player.transform.position = TB.House.position;
-        Player.transform.position += TB.House.forward * 5;
+        Player.transform.position += TB.House.forward * 15f;
         Player.transform.forward = TB.House.forward;
+        Player.transform.position = new Vector3(Player.transform.position.x, 5f, Player.transform.position.z);
     }
 
 
@@ -181,8 +194,7 @@ public class StageManager : MonoBehaviour
         }
 
 
-
-        SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
+        SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
         //swap scene
 
     }
@@ -229,7 +241,7 @@ public class StageManager : MonoBehaviour
             Instantiate(SurvivorPrefab);
         }
 
-
+        SurvivorFreed = true;
 
 
 

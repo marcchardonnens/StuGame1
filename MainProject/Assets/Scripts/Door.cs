@@ -8,9 +8,18 @@ public class Door : MonoBehaviour
 
     public void Interact()
     {
+        
         if(SceneManager.GetActiveScene().name == "Gameplay")
         {
-            SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
+            StageManager stage = FindObjectOfType<StageManager>();
+            if (stage.SurvivorFreed)
+            {
+                stage.EndStage(StageResult.SurvivorRescued);
+            }
+            else
+            {
+                stage.EndStage(StageResult.EnterHomeEarly);
+            }
         }
         else
         {

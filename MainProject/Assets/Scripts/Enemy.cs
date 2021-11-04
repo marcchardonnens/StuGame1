@@ -70,11 +70,11 @@ public class Enemy : MonoBehaviour
     protected Vector3 spawnPoint;
 
     //AI stuff
-    protected const int MELEEMASK = 1 << 0  | 1 << 3;
-    protected const int RANGEDMASK = 1 << 0 | 1 << 4;
-    protected const int WALKABLEMASK = 1 << 0;
-    protected const int MELEEONLYMASK = 1 << 3;
-    protected const int RANGEDONLYMASK = 1 << 4;
+    public const int MELEEMASK = 1 << 0  | 1 << 3;
+    public const int RANGEDMASK = 1 << 0 | 1 << 4;
+    public const int WALKABLEMASK = 1 << 0;
+    public const int MELEEONLYMASK = 1 << 3;
+    public const int RANGEDONLYMASK = 1 << 4;
 
     protected const float SLOWUPDATETIME = .1f;
 
@@ -128,7 +128,7 @@ public class Enemy : MonoBehaviour
 
     public int RewardAmount()
     {
-        float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount ;
+        float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount;
 
         float ragebonus = reward * player.RageLevel * PlayerRageLevelRewardMultiplier;
 

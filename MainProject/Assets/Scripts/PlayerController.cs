@@ -587,7 +587,10 @@ public class PlayerController : MonoBehaviour
     {
         //no overheal
         currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
-        healthBar.SetHealth(currentHP);
+        if(healthBar != null)
+        {
+            healthBar.SetHealth(currentHP);
+        }
     }
 
     public void MeleeAttack()

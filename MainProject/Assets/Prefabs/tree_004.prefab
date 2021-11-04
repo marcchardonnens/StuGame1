@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 684803633374368912}
   - component: {fileID: 9014798951703953592}
   - component: {fileID: 8533199893316146400}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: tree004
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3418250398402153446}
   - component: {fileID: 186730005521186361}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: tree_004
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2610891570868212060}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -84.27714, y: -1.22, z: -95.15519}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6404972135265301169}
@@ -156,7 +156,7 @@ GameObject:
   - component: {fileID: 6025879229097424964}
   - component: {fileID: 1530399771319013806}
   - component: {fileID: 5086798987757087614}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: runeTree005
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -204,7 +204,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 823509170205513079, guid: 16d7eff2b92b5f943bffcbeb98883086, type: 3}
+  - {fileID: 2100000, guid: 5f857e4fba9474b7dbfbac4e87c7d72f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

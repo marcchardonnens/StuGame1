@@ -27,4 +27,9 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    public void ChangeScene(int scene)
+    {
+
+    }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4431272929530222412}
   - component: {fileID: 779352349410531561}
   - component: {fileID: 3257271984944049187}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: oldArchway
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -546,18 +546,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 267570306, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 604930530864542282, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
-      propertyPath: MeleeDamage
-      value: 40
-      objectReference: {fileID: 0}
-    - target: {fileID: 604930530864542282, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
-      propertyPath: RangedDamage
-      value: 15
-      objectReference: {fileID: 0}
     - target: {fileID: 977420190524282005, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
       propertyPath: m_RootOrder
       value: 1

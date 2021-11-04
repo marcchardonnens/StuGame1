@@ -93,17 +93,21 @@ public class StageManager : MonoBehaviour
         }
 
 
-        TB.MakeTerrain();
+        if (SceneManager.GetActiveScene().name == "Gameplay")
+        {
+            TB.MakeTerrain();
+            SetupPlayer();
+            StartCoroutine(EnemySpawner());
+            Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+        }
 
 
 
-        SetupPlayer();
 
 
-        StartCoroutine(EnemySpawner());
 
 
-        Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+
 
 
     }

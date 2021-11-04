@@ -130,6 +130,7 @@ public class PlayerController : MonoBehaviour
 
         currentHP = MaxHP;
         healthBar.SetMaxHealth(MaxHP);
+        healthBar.SetHealth(currentHP);
 
         seedUI.SetSeedAmount(MaxSeeds); //tbd
         seedUI.SetSeedCounter(currentSeeds);
@@ -140,6 +141,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        healthBar.SetHealth(currentHP);
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {

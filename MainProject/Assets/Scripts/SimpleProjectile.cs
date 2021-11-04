@@ -115,7 +115,7 @@ public class SimpleProjectile : MonoBehaviour
 
 
     void OnTriggerEnter(Collider collider)
-    {
+     {
         if (hitTrackedOnly)
         {
             if (collider.transform == tracked)
@@ -136,10 +136,7 @@ public class SimpleProjectile : MonoBehaviour
             pc.TakeDamage(damage);
         }
 
-        if (collider.gameObject.layer == GameConstants.PLAYERLAYER || 
-            collider.gameObject.layer == GameConstants.GROUNDLAYER ||
-            collider.gameObject.layer == GameConstants.RESOURCESLAYER ||
-            collider.gameObject.layer == GameConstants.SCENERYLAYER)
+        if (collider.gameObject.layer == GameConstants.SCENERYLAYER)
         {
             SelfDestruct();
         }

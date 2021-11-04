@@ -426,8 +426,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc119933b9a86dc488e406167080245b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowNumbers: 0
   slider: {fileID: 173326633}
-  percentage: {fileID: 0}
 --- !u!1 &242175986
 GameObject:
   m_ObjectHideFlags: 0
@@ -4205,7 +4205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b9e2d49d5b215a4698dc17ae64fb1d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Damage: 80
+  Damage: 20
   BaseAttackSpeed: 0.75
   AnimationTimeScale: 0.5
   KnockbackStrength: 0

@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 4fdb5439ae682471d89fd8f135ea410d
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Chau Philomene One
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: fafc4e498e5fd4cc99eac2b524f6e6e5, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

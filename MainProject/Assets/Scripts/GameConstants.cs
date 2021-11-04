@@ -13,4 +13,9 @@ public static class GameConstants
     public const int INTERACTABLELAYER = 14;
 
 
+    public const int MAINMENUSCNEN = 1;
+    public const int HUBSCENE = 2;
+    public const int GAMEPLAYSCENE = 3;
+
+
 }

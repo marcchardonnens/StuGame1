@@ -348,6 +348,7 @@ public class Boss : Enemy
             case EnemyState.Dead:
             {
 
+                FindObjectOfType<StageManager>().OnBossKilled();
 
                 Destroy(gameObject);
                 break;

@@ -33,8 +33,7 @@ public class TerrainBuilder : MonoBehaviour
 
 
     public NavMeshSurface Surface;
-    public NavMeshModifierVolume HighMod;
-    public NavMeshModifierVolume LowMod;
+
 
     [SerializeField]private NoiseData[] noisedata;
     public Material material;
@@ -75,13 +74,14 @@ public class TerrainBuilder : MonoBehaviour
     private Vector3 housePosition;
     private Vector3 houseGlobalPosition;
     private Vector3 objectivePosition;
-    private Vector3 obejctiveGlobalPosition;
+    public Vector3 obejctiveGlobalPosition;
     private System.Random RNG;
     private Vector2 minmax;
     private const float groundlevel = 0;// -7.5f;
     private int xSize;
     private int zSize;
 
+    public Transform House;
 
     //these are for grouping objects together
     //to hopefully prevent spamming the object viewer
@@ -98,25 +98,22 @@ public class TerrainBuilder : MonoBehaviour
     {
         MakeTerrain();
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
 
     public void MakeTerrain()
     {
 
         Debug.Log(Time.time);
-        CleanupScene();
+        if(!IsHubScene)
+        {
+            CleanupScene();
+        }
+        else
+        {
+            TextureData.ApplyToMaterial(material);
+            TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
+
+            return;
+        }
 
 
         xSize = XSize;
@@ -185,23 +182,27 @@ public class TerrainBuilder : MonoBehaviour
 
         //spawn objects
         PlaceHouse();
-        PlaceObjective(); //including boss arena
-        PlaceResourceTrees();
-        PlaceSideObjectives();
+        if(!IsHubScene)
+        {
+            PlaceObjective(); //including boss arena
+            PlaceResourceTrees();
+            PlaceSideObjectives();
+        }
 
         SpawnPowerups();
 
         SpawnTrees();
         SpawnRocks();
-        SpawnPowerups();
 
 
         TextureData.ApplyToMaterial(material);
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
 
-
-        MakeNavMesh();
+        if (!IsHubScene)
+        {
+            MakeNavMesh();
+        }
 
         Debug.Log(Time.time);
 
@@ -402,6 +403,7 @@ public class TerrainBuilder : MonoBehaviour
         go.name = "House";
         go.transform.localPosition = housePosition;
         houseGlobalPosition = go.transform.position;
+        House = go.transform;
 
         SceneVisibilityManager.instance.DisablePicking(go, true);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public enum StageResult
 {
@@ -19,9 +20,15 @@ public class StageManager : MonoBehaviour
 {
     public static PlayerController Player;
 
+    [SerializeField] private PlayerController playerInScene;
     public bool TestingOnly = false;
     public bool autoupdate = false;
-    public TerrainBuilder Terrain;
+    public TerrainBuilder TB;
+
+    public GameObject PlayerPrefab;
+    public GameObject EnemyPrefab;
+    public GameObject SurvivorPrefab;
+    public GameObject BossPrefab;
 
     public const int MonsterXPLevelUpThreshholdBase = 250;
     public int MonsterXPLevelUpThreshholdCurrent = 250;
@@ -45,21 +52,36 @@ public class StageManager : MonoBehaviour
     private bool BossKilled = false;
     private bool SurvivorFound = false;
 
+    public int EnemiesMax = 25;
+
+    public bool SurvivorFreed = false;
+
+
 
     void Awake()
     {
-        Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
+        //TB = Object.Instantiate(new TerrainBuilder());
+        //Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
-        if(GameManager.ProfileData.FirstRun)
-        {
+        //if(GameManager.ProfileData.FirstRun)
+        //{
 
-            //show tips
-        }
+        //    //show tips
+        //}
 
 
         //debug only
         new GameObject().AddComponent<GameManager>();
 
+
+        MakeStage();
+
+    }
+
+    private void Update()
+    {
+        Time.timeScale = 1;
+        //StartCoroutine(EnemySpawner());
     }
 
 
@@ -71,7 +93,17 @@ public class StageManager : MonoBehaviour
         }
 
 
-        //Terrain.MakeTerrain();
+        if (SceneManager.GetActiveScene().name == "Gameplay")
+        {
+            TB.MakeTerrain();
+            SetupPlayer();
+            StartCoroutine(EnemySpawner());
+            Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+        }
+
+
+
+
 
 
 
@@ -79,15 +111,55 @@ public class StageManager : MonoBehaviour
 
 
     }
+
+    private IEnumerator EnemySpawner()
+    {
+        //yield return new WaitForSeconds(15f);
+
+        while (true)
+        {
+            Player = playerInScene;
+            int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
+            if(currentEnemies < EnemiesMax && Player != null)
+            {
+                int spawns = System.Math.Min(10, EnemiesMax - currentEnemies);
+                for (int i = 0; i < spawns; i++)
+                    {
+                    Vector2 circle = Random.insideUnitCircle * 250f;
+                    Vector3 randompos =  new Vector3(circle.x, 0, circle.y) + Player.transform.position;
+                    NavMeshHit hit;
+                    if(NavMesh.SamplePosition(randompos, out hit, 250f, NavMesh.AllAreas))
+                    {
+                        Instantiate(EnemyPrefab, hit.position, Quaternion.identity);
+                    }
+                }
+            }
+
+
+
+            yield return new WaitForSeconds(3f);
+        }
+    }
+
 
     public void SetupPlayer()
     {
-        
+        //Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
+        Player = FindObjectOfType<PlayerController>();
+        Player.transform.position = TB.House.position;
+        Player.transform.position += TB.House.forward * 15f;
+        Player.transform.forward = TB.House.forward;
+        Player.transform.position = new Vector3(Player.transform.position.x, 5f, Player.transform.position.z);
     }
 
-    
+
+
+
+
     public void EndStage(StageResult result)
     {
+        GameManager.PauseGame();
+
         if (GameManager.ProfileData.FirstRun)
         {
             GameManager.ProfileData.FirstRun = false;
@@ -125,6 +197,10 @@ public class StageManager : MonoBehaviour
             GameManager.ProfileData.UnlockedLightbulb = true;
         }
 
+
+        SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
+        //swap scene
+
     }
 
     public void OnPlayerGetMonsterXP(int amount)
@@ -161,6 +237,15 @@ public class StageManager : MonoBehaviour
 
         //survivor follow player
         //double remaining timer
+
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(TB.obejctiveGlobalPosition, out hit, 50f, 1 << GameConstants.GROUNDLAYER))
+        {
+            Instantiate(SurvivorPrefab);
+        }
+
+        SurvivorFreed = true;
 
 
 

@@ -62,7 +62,7 @@ public class Enemy : MonoBehaviour
     public float Gravity = 20f;
     public float NavMeshPosCorrectionMax = 25f;
 
-
+    public HealthBar HealthBar;
 
 
 
@@ -70,11 +70,11 @@ public class Enemy : MonoBehaviour
     protected Vector3 spawnPoint;
 
     //AI stuff
-    protected const int MELEEMASK = 1 << 0  | 1 << 3;
-    protected const int RANGEDMASK = 1 << 0 | 1 << 4;
-    protected const int WALKABLEMASK = 1 << 0;
-    protected const int MELEEONLYMASK = 1 << 3;
-    protected const int RANGEDONLYMASK = 1 << 4;
+    public const int MELEEMASK = 1 << 0  | 1 << 3;
+    public const int RANGEDMASK = 1 << 0 | 1 << 4;
+    public const int WALKABLEMASK = 1 << 0;
+    public const int MELEEONLYMASK = 1 << 3;
+    public const int RANGEDONLYMASK = 1 << 4;
 
     protected const float SLOWUPDATETIME = .1f;
 
@@ -111,6 +111,7 @@ public class Enemy : MonoBehaviour
         if (amount > 0)
         {
             currentHP -= amount;
+            HealthBar.SetHealth(currentHP);
         }
 
 
@@ -126,9 +127,20 @@ public class Enemy : MonoBehaviour
 
     }
 
+    public void LevelUp()
+    {
+        MaxHP *= MaxHP * 1.1f;
+        currentHP += MaxHP * 0.1f;
+        ProjectileSpeed *= 1.05f;
+        wanderSpeed *= 1.1f;
+        combatSpeed *= 1.1f;
+
+
+    }
+
     public int RewardAmount()
     {
-        float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount ;
+        float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount;
 
         float ragebonus = reward * player.RageLevel * PlayerRageLevelRewardMultiplier;
 
@@ -159,13 +171,15 @@ public class Enemy : MonoBehaviour
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         player = FindObjectOfType<PlayerController>();
+        HealthBar.SetMaxHealth(MaxHP);
+        HealthBar.SetHealth(currentHP);
         Vector3 sourcePostion = transform.position;
         NavMeshHit closestHit;
         if (NavMesh.SamplePosition(sourcePostion, out closestHit, NavMeshPosCorrectionMax, agent.areaMask))
         {
             transform.position = closestHit.position;
             spawnPoint = transform.position;
-
+            StartCoroutine(CheckDistance());
         }
         else
         {
@@ -175,6 +189,25 @@ public class Enemy : MonoBehaviour
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
         StartCoroutine(Spawn());
+    }
+
+    private IEnumerator CheckDistance()
+    {
+
+        while(true)
+        {
+
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+
+            if(distance > 300f)
+            {
+                Destroy(gameObject);
+            }
+
+            yield return new WaitForSeconds(5f);
+        }
+
+
     }
 
     private IEnumerator Spawn()
@@ -292,9 +325,25 @@ public class Enemy : MonoBehaviour
             {
                 outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
                 currentTarget = player.transform;
-                currentState = (Random.Range(0, 1) > 0)
-                    ? EnemyState.MeleeAttacking
-                    : EnemyState.RangedAttacking;
+                //currentState = (Random.Range(0, 1) > 0)
+                //    ? EnemyState.MeleeAttacking
+                //    : EnemyState.RangedAttacking;
+
+                if (currentLevel < 2)
+                {
+                    currentState = EnemyState.MeleeAttacking;
+                }
+                else
+                {
+                    if (Random.Range(0, currentLevel) < 2)
+                    {
+                        currentState = EnemyState.MeleeAttacking;
+                    }
+                    else
+                    {
+                        currentState = EnemyState.RangedAttacking;
+                    }
+                }
 
                 if (currentState == EnemyState.MeleeAttacking)
                 {
@@ -444,26 +493,28 @@ public class Enemy : MonoBehaviour
 
     protected void RangedAttack()
     {
-        childAnim.Play("Shoot");
-        childAnim.PlayQueued("Walk");
+
+
         //cooldown check
         if (nextRangedCd > Time.time)
         {
             return;
         }
+        StartCoroutine(PlayAnimation(1f, "Shoot", "Walk"));
+
         nextRangedCd = Time.time + RangedAttackCooldown;
 
         SimpleProjectile projectile =
-            Instantiate(ProjectilePrefab, transform.position + transform.forward*1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
+            Instantiate(ProjectilePrefab, transform.position + Vector3.up + transform.forward*1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
         if (Random.Range(0f, 1f) <= ProjectileTrackingChance)
         {
             //simple projectile
-            projectile.SetPropertiesSimple(gameObject, currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
+            projectile.SetPropertiesSimple(gameObject, Vector3.up + currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
         }
         else
         {
             //slowtracking projectile
-            projectile.SetPropertiesTracked(gameObject, transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
+            projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
         }
 
 
@@ -471,13 +522,12 @@ public class Enemy : MonoBehaviour
 
     protected void MeleeAttack()
     {
-        childAnim.Play("Melee");
-        childAnim.PlayQueued("Walk");
         //cooldown check
         if (nextMeleeCd > Time.time)
         {
             return;
         }
+        StartCoroutine(PlayAnimation(2f, "Melee", "Walk"));
         nextMeleeCd += Time.time + MeleeAttackCooldown;
 
 
@@ -502,6 +552,22 @@ public class Enemy : MonoBehaviour
 
         }
 
+
+    }
+
+    private IEnumerator PlayAnimation(float duration, string anmin, string queued)
+    {
+
+        childAnim.Play(anmin);
+        agent.isStopped = true;
+
+        yield return new WaitForSeconds(duration);
+        childAnim.Play(queued);
+
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+        }
 
     }
 

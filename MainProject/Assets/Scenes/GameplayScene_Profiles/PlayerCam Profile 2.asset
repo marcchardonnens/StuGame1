@@ -17,14 +17,14 @@ MonoBehaviour:
     overrideState: 1
     value: 1
   spectralLut:
-    overrideState: 1
+    overrideState: 0
     value: {fileID: 0}
     defaultState: 1
   intensity:
     overrideState: 1
-    value: 0.233
+    value: 0.05
   fastMode:
-    overrideState: 1
+    overrideState: 0
     value: 0
 --- !u!114 &-5603549991928187486
 MonoBehaviour:
@@ -84,7 +84,7 @@ MonoBehaviour:
     value: 0
   intensity:
     overrideState: 1
-    value: 0.085
+    value: 0.078
   size:
     overrideState: 1
     value: 1.52
@@ -118,15 +118,15 @@ MonoBehaviour:
     value: {x: 0.5, y: 0.5}
   intensity:
     overrideState: 1
-    value: 0.542
+    value: 0.361
   smoothness:
     overrideState: 1
     value: 1
   roundness:
     overrideState: 1
-    value: 0.678
+    value: 0.805
   rounded:
-    overrideState: 1
+    overrideState: 0
     value: 0
   mask:
     overrideState: 0
@@ -156,10 +156,10 @@ MonoBehaviour:
     value: 0
   intensity:
     overrideState: 1
-    value: 4
+    value: 0.7
   color:
     overrideState: 1
-    value: {r: 0.503916, g: 0.54046434, b: 0.7169812, a: 1}
+    value: {r: 0.19624421, g: 0.3648593, b: 0.3962264, a: 1}
   ambientOnly:
     overrideState: 0
     value: 1
@@ -180,10 +180,10 @@ MonoBehaviour:
     value: 0
   radius:
     overrideState: 1
-    value: 7.6
+    value: 5
   quality:
     overrideState: 1
-    value: 4
+    value: 3
 --- !u!114 &-2488526188428661067
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -202,13 +202,13 @@ MonoBehaviour:
     value: 1
   focusDistance:
     overrideState: 1
-    value: 1.31
+    value: 1.5
   aperture:
     overrideState: 1
-    value: 12.98
+    value: 12
   focalLength:
     overrideState: 1
-    value: 48.8
+    value: 46
   kernelSize:
     overrideState: 1
     value: 3
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b77c5407dc277943b591ade9e6b18c5, type: 3}
   m_Name: LensDistortion
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   enabled:
     overrideState: 1
     value: 1
@@ -320,31 +320,31 @@ MonoBehaviour:
     defaultState: 4
   ldrLutContribution:
     overrideState: 1
-    value: 1
+    value: 0.344
   temperature:
     overrideState: 1
-    value: -19.8
+    value: 5
   tint:
     overrideState: 1
-    value: -14.6
+    value: 25
   colorFilter:
     overrideState: 1
-    value: {r: 0.7830189, g: 0.7830189, b: 0.7830189, a: 1}
+    value: {r: 0.46226418, g: 0.29000536, b: 0.29184306, a: 1}
   hueShift:
     overrideState: 1
-    value: 0
+    value: -4
   saturation:
     overrideState: 1
-    value: 46.9
+    value: 15
   brightness:
     overrideState: 1
-    value: 42.2
+    value: 40
   postExposure:
     overrideState: 0
     value: 0
   contrast:
     overrideState: 1
-    value: 17.2
+    value: 40
   mixerRedOutRedIn:
     overrideState: 0
     value: 100
@@ -1599,10 +1599,10 @@ MonoBehaviour:
     value: 1
   shutterAngle:
     overrideState: 1
-    value: 120
+    value: 6
   sampleCount:
     overrideState: 1
-    value: 32
+    value: 15
 --- !u!114 &5352741146963123738
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1621,13 +1621,13 @@ MonoBehaviour:
     value: 1
   filtering:
     overrideState: 1
-    value: {x: 1.0694695, y: 46.06946}
+    value: {x: 4.3498344, y: 69.44632}
   minLuminance:
     overrideState: 1
-    value: 1
+    value: 0.4
   maxLuminance:
     overrideState: 1
-    value: 1
+    value: 1.4
   keyValue:
     overrideState: 1
     value: 2
@@ -1636,10 +1636,10 @@ MonoBehaviour:
     value: 0
   speedUp:
     overrideState: 1
-    value: 10.13
+    value: 15
   speedDown:
     overrideState: 1
-    value: 5.83
+    value: 3
 --- !u!114 &8121103888509924747
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1658,24 +1658,24 @@ MonoBehaviour:
     value: 1
   intensity:
     overrideState: 1
-    value: 3
+    value: 1
   threshold:
     overrideState: 1
-    value: 0.93
+    value: 2
   softKnee:
     overrideState: 1
-    value: 0.29
+    value: 0.246
   clamp:
     overrideState: 1
-    value: 65472
+    value: 65470.77
   diffusion:
-    overrideState: 1
-    value: 6.1
+    overrideState: 0
+    value: 2.1
   anamorphicRatio:
-    overrideState: 1
+    overrideState: 0
     value: -0.92
   color:
-    overrideState: 1
+    overrideState: 0
     value: {r: 1, g: 1, b: 1, a: 1}
   fastMode:
     overrideState: 1

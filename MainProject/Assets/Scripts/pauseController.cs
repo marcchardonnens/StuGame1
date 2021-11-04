@@ -5,13 +5,22 @@ using UnityEngine.UI;
 
 public class pauseController : MonoBehaviour
 {
-    private Canvas CanvasObject; // Assign in inspector
+    public static bool GameIsPaused = false;
+    public GameObject pauseMenuUI;
 
+    public Button resumeButton, wakeupButton, exitButton;
 
     // Start is called before the first frame update
     void Start()
     {
-        CanvasObject = GetComponent<Canvas> ();
+        //CanvasObject = GetComponent<Canvas> ();
+        //CanvasObject.enabled = false;
+        pauseMenuUI.SetActive(false);
+
+        resumeButton.onClick.AddListener(Resume);
+        //settingsButton.onClick.AddListener(TaskSettingsButton);
+        wakeupButton.onClick.AddListener(TaskWakeUpButton);
+        exitButton.onClick.AddListener(TaskExitButton);
     }
 
     // Update is called once per frame
@@ -19,14 +28,36 @@ public class pauseController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Debug.Log("Escape key was pressed");
+            if (GameIsPaused)
+            {
+                Resume();
+            } else {
+                Pause();
+            }
         }
 
-        if (Input.GetKeyUp(KeyCode.Escape))
-        {
-            Debug.Log("Escape key was released");
-            CanvasObject.enabled = !CanvasObject.enabled;
-        }
+    }
 
+    public void Resume () {
+        pauseMenuUI.SetActive(false);
+        GameIsPaused = false;
+        Time.timeScale = 1f;
+        
+    }
+
+    public void Pause () {
+        pauseMenuUI.SetActive(true);
+        GameIsPaused = true;
+        Time.timeScale = 0f;
+        
+    }
+
+    public void TaskWakeUpButton() {
+        Debug.Log("Wake Up");
+    }
+
+    public void TaskExitButton() {
+        Debug.Log("Exit");
+        Application.Quit();
     }
 }

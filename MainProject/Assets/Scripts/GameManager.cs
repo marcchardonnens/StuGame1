@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 //this class ist responsible for the whole flow of the game.
@@ -26,5 +27,10 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ChangeScene(int sceneIndex)
+    {
+        //SceneManager.LoadScene(sceneIndex);
     }
 }

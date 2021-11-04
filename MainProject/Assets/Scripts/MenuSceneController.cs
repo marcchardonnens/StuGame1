@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class MenuSceneController : MonoBehaviour
 {
     public Button startButton, profileButton, settingsButton, exitButton;
+    public Canvas CanvasObject;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +18,8 @@ public class MenuSceneController : MonoBehaviour
         profileButton.onClick.AddListener(TaskProfileButton);
         settingsButton.onClick.AddListener(TaskSettingsButton);
         exitButton.onClick.AddListener(TaskExitButton);
+        
+        CanvasObject = GetComponent<Canvas> ();
     }
 
     // Update is called once per frame
@@ -27,7 +31,7 @@ public class MenuSceneController : MonoBehaviour
     public void TaskStartButton()
     {
         Debug.Log("start");
-        SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
+        SceneManager.LoadScene("LoadingScene", LoadSceneMode.Single);
     }
 
     public void TaskProfileButton()

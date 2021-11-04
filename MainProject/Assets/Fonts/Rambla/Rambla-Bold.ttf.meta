@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: b69ba5a9bc53d49ce9f584ea99d7fc5d
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Rambla
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 13e6c171e87404ec69a2c64a5e590cd3, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

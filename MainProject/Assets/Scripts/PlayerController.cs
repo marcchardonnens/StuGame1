@@ -140,10 +140,6 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if(playerCamera)
-        {
-            Debug.Log(ScanInteractableNameStatic(InteractionRange, playerCamera));
-        }
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {

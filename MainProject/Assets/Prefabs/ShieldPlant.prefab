@@ -366,9 +366,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outerCollider: {fileID: 4466425914787858624}
+  Bubble: {fileID: 3076849579416126346}
   Radius: 10
   PeriodicDamage: 8
   PulseTimer: 0.5
   ProjectileDamage: 40
   Duration: 0
   GrowTime: 1
+  UpgradeSlowMultiplier: 0.5

@@ -6,7 +6,32 @@ ModelImporter:
   - first:
       74: -1498010087492872569
     second: CINEMA_4D_Main
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: alas
+    second: {fileID: 2100000, guid: e4133f9fdd8ba4db2aa41c80d6c1f22d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bones_shadows
+    second: {fileID: 2100000, guid: 15b309cefcc77406d81589f8cc60fa1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: rueda adentro
+    second: {fileID: 2100000, guid: 5c9657c1237e34ed49438cedc4745da7, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: interior_wall_01_normal
+    second: {fileID: 2800000, guid: dcc1e2eb9956b4585a0e2bc9d769b61a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: interior_wall_01_roughness
+    second: {fileID: 2800000, guid: 4115b04f0f11f4d98a4c80bd5835aa69, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

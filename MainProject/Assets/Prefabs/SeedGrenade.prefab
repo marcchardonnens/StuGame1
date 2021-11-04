@@ -131,3 +131,9 @@ MonoBehaviour:
   Delay: 3
   ExplodeRadius: 10
   BaseDamage: 30
+  Sticky: 1
+  upgraded: 0
+  LingerField: {fileID: 7067951675278323737, guid: 5487631f113cf0f43bd345aace4ede13, type: 3}
+  LingerCicles: 10
+  LingerDamage: 10
+  LingerPulseDelay: 1

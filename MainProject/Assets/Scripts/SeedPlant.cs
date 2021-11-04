@@ -7,6 +7,7 @@ public class SeedPlant : MonoBehaviour
     public float Health = 200f;
     public float Duration = 0f; // 0 = infinite
     public float GrowTime = 60f;
+    public float UpgradeGrowtimeMultiplier = 0.5f;
 
     public Light light;
     public GameObject bloom;
@@ -17,6 +18,10 @@ public class SeedPlant : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if(GameManager.ProfileData.HasSeedUpgrade)
+        {
+            GrowTime *= UpgradeGrowtimeMultiplier;
+        }
         player = StageManager.Player;
         if (GrowTime > 0)
         {
@@ -34,6 +39,9 @@ public class SeedPlant : MonoBehaviour
 
     public void Interact()
     {
+
+        Debug.Log("Seedplant Interact");
+
         if (grown)
         {
             //refill seeds

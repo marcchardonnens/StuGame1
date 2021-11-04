@@ -5,6 +5,7 @@ using UnityEngine;
 public class ShieldPlant : MonoBehaviour
 {
     public Collider outerCollider;
+    public GameObject Bubble;
     public float Radius = 10f;
     public float PeriodicDamage = 10f;
     public float PulseTimer = 1f;
@@ -12,6 +13,7 @@ public class ShieldPlant : MonoBehaviour
     public float Duration = 0f;
     public float GrowTime = 0f;
 
+    public float UpgradeSlowMultiplier = 0.5f;
 
     //private bool grown = false;
     private Vector3 finalScale;
@@ -71,9 +73,9 @@ public class ShieldPlant : MonoBehaviour
                     bool lethal = enemy.TakeDamage(PeriodicDamage);
                     if (lethal)
                     {
-                        player.GetMonsterXP(enemy.RewardAmount());
                         toRemove.Add(collider);
                     }
+                    StartCoroutine(Pulse());
                 }
                 else
                 {
@@ -88,6 +90,7 @@ public class ShieldPlant : MonoBehaviour
                                 toRemove.Add(collider);
                             }
                         }
+                        StartCoroutine(Pulse());
                     }
                 }
             }
@@ -98,20 +101,79 @@ public class ShieldPlant : MonoBehaviour
     }
 
 
-    private void Pulse()
+    public IEnumerator Pulse()
     {
+        GameObject pulse = Instantiate(Bubble);
+        pulse.transform.position = transform.position;
+        pulse.transform.localScale *= 0;
+        for (int i = 0; i < 50; i++)
+        {
+            pulse.transform.localScale = Vector3.one * (Bubble.transform.localScale.x / 50f) * i;
 
+            yield return new WaitForSeconds(PulseTimer / 500f);
+        }
+
+        Destroy(pulse);
     }
-    
+
 
     void OnTriggerEnter(Collider other)
     {
-        affectedColliders.Add(other);
+        Enemy enemy = other.GetComponent<Enemy>();
+        if (enemy)
+        {
+            affectedColliders.Add(other);
+            if (GameManager.ProfileData.HasShieldUpgrade)
+            {
+                enemy.combatSpeed *= UpgradeSlowMultiplier;
+                enemy.wanderSpeed *= UpgradeSlowMultiplier;
+            }
+        }
+        else
+        {
+            SimpleProjectile projectile = other.GetComponent<SimpleProjectile>();
+            if (projectile)
+            {
+                if (projectile.gameObject.layer != GameConstants.PLAYERLAYER)
+                {
+                    affectedColliders.Add(other);
+                    if (GameManager.ProfileData.HasShieldUpgrade)
+                    {
+                        projectile.speed *= UpgradeSlowMultiplier;
+                    }
+
+                }
+            }
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
         affectedColliders.Remove(other);
+        Enemy enemy = other.GetComponent<Enemy>();
+        if (enemy)
+        {
+            if (GameManager.ProfileData.HasShieldUpgrade)
+            {
+                enemy.combatSpeed /= UpgradeSlowMultiplier;
+                enemy.wanderSpeed /= UpgradeSlowMultiplier;
+            }
+        }
+        else
+        {
+            SimpleProjectile projectile = other.GetComponent<SimpleProjectile>();
+            if (projectile)
+            {
+                if (projectile.gameObject.layer != GameConstants.PLAYERLAYER)
+                {
+                    if (GameManager.ProfileData.HasShieldUpgrade)
+                    {
+                        projectile.speed /= UpgradeSlowMultiplier;
+                    }
+
+                }
+            }
+        }
     }
 
 

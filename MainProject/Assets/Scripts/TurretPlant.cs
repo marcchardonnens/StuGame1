@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,11 +18,17 @@ public class TurretPlant : MonoBehaviour
     public float Duration = 0f; // 0 = infinite
     public float GrowTime = 10f;
 
+    //public int AttackSalveSpreadAngle = 30;
+    public int UpgradeAttackSalveAmount = 3;
+
 
 
     private bool grown = false;
     private Vector3 finalScale;
     private PlayerController player;
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,32 +65,39 @@ public class TurretPlant : MonoBehaviour
         yield return new WaitForSeconds(GrowTime);
         while (true)
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, Range, 1 << GameConstants.ENEMYLAYER);
+            int shots = GameManager.ProfileData.HasTurretUpgrade ? UpgradeAttackSalveAmount : 1;
 
-            float closestDistance = float.MaxValue;
-            Enemy closestEnemy = null;
-
-            //find closest target
-            foreach (Collider hit in hits)
+            List<Enemy> enemies = new List<Enemy>();
+            for (int i = 0; i < shots; i++)
             {
-                Enemy enemy = hit.GetComponent<Enemy>();
-                if (enemy)
+
+                Collider[] hits = Physics.OverlapSphere(transform.position, Range, 1 << GameConstants.ENEMYLAYER);
+
+                //find closest target
+                foreach (Collider hit in hits)
                 {
-                    float dist = Mathf.Abs(Vector3.Distance(transform.position, enemy.transform.position));
-                    if (dist < closestDistance)
+                    Enemy enemy = hit.GetComponent<Enemy>();
+                    if (enemy)
                     {
-                        closestDistance = dist;
-                        closestEnemy = enemy;
+                        enemies.Add(enemy);
+
                     }
                 }
             }
 
-            if (closestEnemy != null)
+            enemies.OrderBy(x =>
+            {
+                float dist = Mathf.Abs(Vector3.Distance(transform.position, x.transform.position));
+                return dist;
+            });
+
+
+            shots = System.Math.Min(shots, enemies.Count);
+            for (int i = 0; i < shots; i++)
             {
                 SimpleProjectile projectile = Instantiate(ProjectilePrefab, transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();
-                projectile.SetPropertiesTracked(gameObject, (closestEnemy.transform.position - transform.position) + new Vector3(0,3f,0), ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, closestEnemy.transform, true);
+                projectile.SetPropertiesTracked(gameObject, (enemies[i].transform.position - transform.position) + new Vector3(0, 3f, 0), ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, enemies[i].transform, true, true);
             }
-
 
             yield return new WaitForSeconds(CoolDown);
         }

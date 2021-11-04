@@ -126,8 +126,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-
-        ScanInteractable();
+        if(playerCamera)
+        {
+            Debug.Log(ScanInteractableNameStatic(InteractionRange, playerCamera));
+        }
+        ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
             InteractWithObject();
@@ -373,7 +376,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void ScanInteractable()
+    public void ScanInteractable(float InteractionRange)
     {
         Collider collider;
         if(CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
@@ -386,6 +389,37 @@ public class PlayerController : MonoBehaviour
             }
         }
         GameManager.currentInteractable = null;
+    }
+
+    public static String ScanInteractableNameStatic(float range, Camera cam)
+    {
+        Collider collider;
+        if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
+        {
+            if (collider != null)
+            {
+                Interactable interactable = collider.GetComponent<Interactable>();
+                if(interactable.transform.parent != null)
+                {
+                    return interactable.transform.parent.name;
+                }
+                return interactable.name;
+            }
+        }
+        return "";
+    }
+
+    public static bool CrossHairLookPositionStatic(out Collider collider, Camera cam, float maxDistance = float.MaxValue, int layermask = ~0)
+    {
+        //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
+        RaycastHit hit;
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, maxDistance, layermask))
+        {
+            collider = hit.collider;
+            return true;
+        }
+        collider = null;
+        return false;
     }
 
     private void ThrowGrenade()

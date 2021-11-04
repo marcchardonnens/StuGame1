@@ -8,7 +8,7 @@ public class HealthBar : MonoBehaviour
 {
 
     public Slider slider;
-    private TextMeshProUGUI percentage; //tbd
+    public TextMeshProUGUI percentage; //tbd
 
     public void SetMaxHealth(float health) {
         slider.maxValue = health;

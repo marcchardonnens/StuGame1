@@ -17,7 +17,7 @@ public class RageBar : MonoBehaviour
 
     public void SetRage(float rage) {
         slider.value = rage;
-        percentage.text = rage + ""; //tb
+        //percentage.text = rage + ""; //tb
     }
 
 }

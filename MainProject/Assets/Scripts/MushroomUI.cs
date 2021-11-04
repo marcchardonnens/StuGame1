@@ -16,6 +16,10 @@ public class MushroomUI : MonoBehaviour
     }
 
     void Update() {
+        /*if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            mushroomCounter += 1;
+        }*/
         mushroomCounterText.text = "" + mushroomCounter; //tbd
     }
 

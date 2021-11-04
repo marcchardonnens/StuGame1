@@ -100,6 +100,10 @@ public class PlayerController : MonoBehaviour
     public SeedUI seedUI;
     public SeedFunctionUI seedFuncUI;
 
+    //ShroomUI (placing tbd)
+    public MushroomUI shroomUI;
+    public int shroomCounter = 0;
+
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
     private float rageTimer = 0f;
@@ -617,6 +621,10 @@ public class PlayerController : MonoBehaviour
 
     public void ConsumeShroom(Powerup powerup)
     {
+
+        //Shroom UI
+        shroomCounter += 1;
+
         switch (powerup.Type)
         {
             case PowerupType.BlueShroom:
@@ -664,6 +672,8 @@ public class PlayerController : MonoBehaviour
             }
 
         }
+
+        shroomUI.SetMushroomCounter(shroomCounter);
     }
 
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue,int layermask = ~0)

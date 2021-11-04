@@ -13,11 +13,11 @@ public class TerrainBuilderEditor : Editor
         {
             terrainBuilder.MakeTerrain();
         }
-        if (DrawDefaultInspector() && terrainBuilder.autoupdate)
-        {
-            terrainBuilder.MakeTerrain();
-        }
+        //if (terrainBuilder.autoupdate)
+        //{
+        //    terrainBuilder.MakeTerrain();
+        //}
 
-
+        base.OnInspectorGUI();
     }
 }

@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 9024790147327886027}
   - component: {fileID: 4476967730275731796}
   - component: {fileID: 9138800558406968717}
-  m_Layer: 0
+  - component: {fileID: 8186159235114394693}
+  - component: {fileID: 5485437849993072383}
+  m_Layer: 15
   m_Name: Mushroom_003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,3 +83,30 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &8186159235114394693
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6973727057115477831}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.0031490847, y: 0.0035590006, z: 0.003346466}
+  m_Center: {x: -0.00040938036, y: -0.0007250575, z: 0.001673233}
+--- !u!114 &5485437849993072383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6973727057115477831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b32633c94f44034889980a6c3809b1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 4
+  EffectScale: 1

@@ -50,7 +50,8 @@ public class StageManager : MonoBehaviour
     private bool BossKilled = false;
     private bool SurvivorFound = false;
 
-    public int EnemyCounter = 0;
+    public int EnemiesMax = 0;
+
 
 
     void Awake()
@@ -89,22 +90,35 @@ public class StageManager : MonoBehaviour
         //SetupPlayer();
 
 
+        StartCoroutine(EnemySpawner());
+
+
+        Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+
 
     }
 
     private IEnumerator EnemySpawner()
     {
+        yield return new WaitForSeconds(15f);
 
         while (true)
         {
-
-
-            Vector3 randompos = Random.insideUnitSphere + Player.transform.position;
-            NavMeshHit hit;
-            if(NavMesh.SamplePosition(randompos, out hit, 250f, 1 << GameConstants.GROUNDLAYER))
+            int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
+            if(currentEnemies < EnemiesMax)
             {
-                //spawn enemy
+                int spawns = System.Math.Min(10, EnemiesMax - currentEnemies);
+                for (int i = 0; i < spawns; i++)
+                    {
+                    Vector3 randompos = Random.insideUnitSphere + Player.transform.position;
+                    NavMeshHit hit;
+                    if(NavMesh.SamplePosition(randompos, out hit, 250f, 1 << GameConstants.GROUNDLAYER))
+                    {
+                        Instantiate(EnemyPrefab);
+                    }
+                }
             }
+
 
 
             yield return new WaitForSeconds(10f);
@@ -163,6 +177,10 @@ public class StageManager : MonoBehaviour
             GameManager.ProfileData.UnlockedLightbulb = true;
         }
 
+
+
+        //swap scene
+
     }
 
     public void OnPlayerGetMonsterXP(int amount)
@@ -199,7 +217,15 @@ public class StageManager : MonoBehaviour
 
         //survivor follow player
         //double remaining timer
-        Instantiate(SurvivorPrefab);
+
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(TB.obejctiveGlobalPosition, out hit, 50f, 1 << GameConstants.GROUNDLAYER))
+        {
+            Instantiate(SurvivorPrefab);
+        }
+
+
 
 
 

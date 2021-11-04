@@ -75,7 +75,7 @@ public class TerrainBuilder : MonoBehaviour
     private Vector3 housePosition;
     private Vector3 houseGlobalPosition;
     private Vector3 objectivePosition;
-    private Vector3 obejctiveGlobalPosition;
+    public Vector3 obejctiveGlobalPosition;
     private System.Random RNG;
     private Vector2 minmax;
     private const float groundlevel = 0;// -7.5f;

@@ -8,8 +8,9 @@ public class Door : MonoBehaviour
 
     public void Interact()
     {
-        
-        if(SceneManager.GetActiveScene().name == "Gameplay")
+
+        Debug.Log("loading level");
+        if(SceneManager.GetActiveScene().name == "GameplayFinal")
         {
             StageManager stage = FindObjectOfType<StageManager>();
             if (stage.SurvivorFreed)
@@ -23,7 +24,9 @@ public class Door : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene("LoadingScene2", LoadSceneMode.Single);
+            FindObjectOfType<StageManager>().ShowLoadingScreen();
+
+            //SceneManager.LoadScene("GameplayFinal", LoadSceneMode.Single);
         }
     }
 }

@@ -7,7 +7,7 @@ using TMPro;
 public class TimeCountdown : MonoBehaviour
 {
 
-    public float timeValue = 90; //tbd
+    public float timeValue = 1500; //tbd
     public TextMeshProUGUI countdown;
 
     // Start is called before the first frame update
@@ -23,7 +23,7 @@ public class TimeCountdown : MonoBehaviour
             timeValue -= Time.deltaTime;
         } else {
             timeValue = 0;
-            Debug.Log("time's up");
+            FindObjectOfType<StageManager>().EndStage(StageResult.TimerExpired);
         }
 
         DisplayTime(timeValue);

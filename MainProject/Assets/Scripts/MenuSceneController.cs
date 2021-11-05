@@ -8,6 +8,10 @@ public class MenuSceneController : MonoBehaviour
 {
     public Button startButton, profileButton, settingsButton, exitButton;
     public Canvas CanvasObject;
+
+    public TMPro.TextMeshProUGUI profileText;
+
+    public bool UnlockedProfile = false;
     
 
     // Start is called before the first frame update
@@ -20,6 +24,9 @@ public class MenuSceneController : MonoBehaviour
         exitButton.onClick.AddListener(TaskExitButton);
         
         CanvasObject = GetComponent<Canvas> ();
+
+
+        //profileText.text = "Toggle: Fresh Profile";
     }
 
     // Update is called once per frame
@@ -31,11 +38,24 @@ public class MenuSceneController : MonoBehaviour
     public void TaskStartButton()
     {
         Debug.Log("start");
-        SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
+        SceneManager.LoadScene("HubSceneFinal", LoadSceneMode.Single);
     }
 
     public void TaskProfileButton()
     {
+        UnlockedProfile = !UnlockedProfile;
+        
+        if(UnlockedProfile)
+        {
+            //profileText.text = "Toggle: Unlocked Profile";
+            GameManager.UnlockEverything();
+        }
+        else
+        {
+
+            //profileText.text = "Toggle: Fresh Profile";
+            GameManager.NewProfile();
+        }
         Debug.Log("profile");
     }
     

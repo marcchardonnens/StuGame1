@@ -20,9 +20,14 @@ public class StageManager : MonoBehaviour
 {
     public static PlayerController Player;
 
+
+    public GameObject pauseMenuUI;
     [SerializeField] private PlayerController playerInScene;
     public bool TestingOnly = false;
     public bool autoupdate = false;
+    
+    public LoadingScene1 Loadingscreen;
+    
     public TerrainBuilder TB;
 
     public GameObject PlayerPrefab;
@@ -57,9 +62,15 @@ public class StageManager : MonoBehaviour
     public bool SurvivorFreed = false;
 
 
+    //public bool GameIsPaused = true;
+
+
 
     void Awake()
     {
+        //PlayerController.UnlockCursor();
+        playerInScene.gameObject.SetActive(false);
+        Time.timeScale = 0;
         //TB = Object.Instantiate(new TerrainBuilder());
         //Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
@@ -71,19 +82,99 @@ public class StageManager : MonoBehaviour
 
 
         //debug only
-        new GameObject().AddComponent<GameManager>();
+        //new GameObject().AddComponent<GameManager>();
 
+
+        pauseMenuUI.SetActive(false);
 
         MakeStage();
+
 
     }
 
     private void Update()
     {
-        Time.timeScale = 1;
+        //if(TB.IsHubScene && Input.GetKeyDown(KeyCode.E))
+        //{
+        //    Loadingscreen.gameObject.SetActive(true);
+        //    StartCoroutine(loagGameplay());
+        //}
+
+        //Time.timeScale = 1;
         //StartCoroutine(EnemySpawner());
+
+        if(Loadingscreen.start)
+        {
+            Loadingscreen.start = false;
+            Loadingscreen.ready = false;
+            Loadingscreen.text.text = "Generating Level .....";
+            PlayerController.UnlockCursor();
+            Time.timeScale = 1;
+            //IsPaused = false;
+            Loadingscreen.gameObject.SetActive(false);
+            playerInScene.gameObject.SetActive(true);
+            if (SceneManager.GetActiveScene().name == "GameplayFinal" && TB.finished)
+            {
+                TB.finished = false;
+                SetupPlayer();
+                StartCoroutine(EnemySpawner());
+                Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+
+            if(pauseMenuUI.activeSelf)
+            {
+                pauseMenuUI.SetActive(false);
+                playerInScene.canMove = true;
+                Time.timeScale = 1;
+                PlayerController.LockCursor();
+            }
+            else
+            {
+                pauseMenuUI.SetActive(true);
+                playerInScene.canMove = false;
+                Time.timeScale = 0;
+
+                PlayerController.UnlockCursor();
+            }
+
+            Debug.Log("k");
+
+            //if (pauseController.pauseMenuUI.gameObject.activeSelf)
+            //{
+            //    //unpause
+            //    pauseController.pauseMenuUI.gameObject.SetActive(false);
+            //    PlayerController.LockCursor();
+            //    Time.timeScale = 0;
+            //    //playerInScene.gameObject.SetActive(true);
+            //    playerInScene.canMove = true;
+            //    //pauseController.Resume();
+            //}
+            //else
+            //{
+            //    //pause
+            //    pauseController.pauseMenuUI.gameObject.SetActive(true);
+            //    PlayerController.UnlockCursor();
+            //    Time.timeScale = 0;
+            //    //playerInScene.gameObject.SetActive(false);
+            //    playerInScene.canMove = false;
+            //    //pauseController.Pause();
+            //}
+
+        }
+
     }
 
+    private IEnumerator loagGameplay()
+    {
+        Debug.Log("changing scene in 1f");
+        yield return new WaitForSeconds(1f);
+        SceneManager.LoadScene("GameplayFinal");
+        Debug.Log("loading newsdsadf");
+    }
 
     public void MakeStage()
     {
@@ -93,19 +184,16 @@ public class StageManager : MonoBehaviour
         }
 
 
-        if (SceneManager.GetActiveScene().name == "Gameplay")
+        if (SceneManager.GetActiveScene().name == "GameplayFinal")
         {
             TB.MakeTerrain();
-            SetupPlayer();
-            StartCoroutine(EnemySpawner());
-            Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
         }
 
 
 
 
 
-
+        Loadingscreen.Ready();
 
 
 
@@ -158,6 +246,11 @@ public class StageManager : MonoBehaviour
 
     public void EndStage(StageResult result)
     {
+
+        Debug.Log("end stage");
+        Loadingscreen.text.text = "Loading Scene";
+        Loadingscreen.gameObject.SetActive(true);
+
         GameManager.PauseGame();
 
         if (GameManager.ProfileData.FirstRun)
@@ -198,9 +291,24 @@ public class StageManager : MonoBehaviour
         }
 
 
-        SceneManager.LoadScene("LoadingScene1", LoadSceneMode.Single);
+        SceneManager.LoadScene("HubsceneFinal", LoadSceneMode.Single);
         //swap scene
 
+    }
+
+    public void LoadGameplay()
+    {
+        Debug.Log("loadgameplay");
+        Loadingscreen.gameObject.SetActive(true);
+        PlayerController.UnlockCursor();
+        SceneManager.LoadScene("GameplayFinal");
+    }
+
+    public void ShowLoadingScreen()
+    {
+
+        //Loadingscreen = new LoadingScene1();
+        Loadingscreen.gameObject.SetActive(true);
     }
 
     public void OnPlayerGetMonsterXP(int amount)

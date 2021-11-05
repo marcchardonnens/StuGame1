@@ -13,11 +13,24 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
 
-    public static ProfileData ProfileData = new ProfileData();
+    public static ProfileData ProfileData = new ProfileData(false);
 
     public static Interactable currentInteractable = null;
 
-    private static Scene queuedScene;
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
+    public static void UnlockEverything()
+    {
+        ProfileData = new ProfileData(true);
+    }
+
+    public static void NewProfile()
+    {
+        ProfileData = new ProfileData(false);
+    }
 
     // Start is called before the first frame update
     void Start()

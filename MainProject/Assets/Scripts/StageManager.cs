@@ -288,6 +288,8 @@ public class StageManager : MonoBehaviour
             //"win" aplly major upgrade etc...
             GameManager.ProfileData.StorySuccessProgress++;
             GameManager.ProfileData.UnlockedLightbulb = true;
+
+            SceneManager.LoadScene("EndScreenScene", LoadSceneMode.Single);
         }
 
 

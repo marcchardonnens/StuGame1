@@ -18,6 +18,7 @@ public enum PowerupType
 
 public class PlayerController : MonoBehaviour
 {
+
     public Hand RightHand;
     //public Hand LeftHand;
     public float walkingSpeed = 7.5f;
@@ -93,14 +94,14 @@ public class PlayerController : MonoBehaviour
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
     //HealthBar (placing tbd)
-    public HealthBar healthBar = new HealthBar();
+    public HealthBar healthBar;
 
     //SeedUI (placing tbd)
-    public SeedUI seedUI = new SeedUI();
-    public SeedFunctionUI seedFuncUI = new SeedFunctionUI();
+    public SeedUI seedUI;
+    public SeedFunctionUI seedFuncUI;
 
     //ShroomUI (placing tbd)
-    public MushroomUI shroomUI = new MushroomUI();
+    public MushroomUI shroomUI;
     public int shroomCounter = 0;
 
     private bool isBlocking = false;
@@ -141,6 +142,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+
 
         healthBar.SetHealth(currentHP);
         ScanInteractable(InteractionRange);

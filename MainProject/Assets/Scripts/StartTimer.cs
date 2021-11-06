@@ -2,14 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class StartTimer : MonoBehaviour
 {
-    private float timer;
+    public float timer;
+    public Slider slider;
     
     void Start ()
     {
-        timer = 10;
+        timer = 5;
+        slider.maxValue = timer;
     }
  
     void Update ()
@@ -17,6 +20,8 @@ public class StartTimer : MonoBehaviour
         if( timer > 0 )
         {
             timer -= Time.deltaTime;
+            slider.value = timer;
+
 
             if( timer <= 0 )
             {

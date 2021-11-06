@@ -1,7 +1,26 @@
+<<<<<<< Updated upstream
 fileFormatVersion: 2
 guid: 73311552c950078469431fcb99aac3b4
+=======
+<<<<<<<< Updated upstream:MainProject/Assets/Models/backup/tree_001.fbx@20211104_215849.meta
+fileFormatVersion: 2
+guid: c4efc8edaeee84b3d89afd8c9843e4cc
+>>>>>>> Stashed changes
 DefaultImporter:
   externalObjects: {}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+<<<<<<< Updated upstream
+=======
+========
+fileFormatVersion: 2
+guid: a3aa0cc8cc7bc4ab3b346b8dfde37578
+folderAsset: yes
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+>>>>>>>> Stashed changes:MainProject/Assets/Models/Materials.meta
+>>>>>>> Stashed changes

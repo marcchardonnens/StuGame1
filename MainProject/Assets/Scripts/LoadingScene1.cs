@@ -7,6 +7,10 @@ using UnityEngine.UI;
 public class LoadingScene1 : MonoBehaviour
 {
     public Button confirmButton;
+    public TMPro.TextMeshProUGUI text;
+
+    public bool ready = false;
+    public bool start = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,12 +23,33 @@ public class LoadingScene1 : MonoBehaviour
         
     }
 
+
+
+    public bool Ready()
+    {
+        //confirmButton.name = ready;
+        text.text = "Ready";
+
+        PlayerController.UnlockCursor();
+
+        ready = true;
+        return ready;
+    }
+
     public void TaskConfirmButton()
     {
-        Debug.Log("start");
+
+
+        if(ready)
+        {
+            start = true;
+            gameObject.SetActive(false);
+            //Destroy(gameObject);
+            Debug.Log("start");
+        }
 
         //if im MenuScene gewesen
-            SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
+            //SceneManager.LoadScene("HubScene", LoadSceneMode.Single);
         
     }
 }

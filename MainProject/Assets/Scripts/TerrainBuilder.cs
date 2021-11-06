@@ -16,6 +16,7 @@ public class TerrainBuilder : MonoBehaviour
 
     public bool IsHubScene = false;
 
+    public bool finished = false;
     [SerializeField] private int seed = 0;
     [SerializeField] private const int XSize = 200;
     [SerializeField] private const int ZSize = 200;
@@ -181,15 +182,15 @@ public class TerrainBuilder : MonoBehaviour
 
 
         //spawn objects
-        PlaceHouse();
         if(!IsHubScene)
         {
+            PlaceHouse();
             PlaceObjective(); //including boss arena
             PlaceResourceTrees();
             PlaceSideObjectives();
-        }
 
         SpawnPowerups();
+        }
 
         SpawnTrees();
         SpawnRocks();
@@ -204,6 +205,8 @@ public class TerrainBuilder : MonoBehaviour
             MakeNavMesh();
         }
 
+
+        finished = true;
         Debug.Log(Time.time);
 
     }

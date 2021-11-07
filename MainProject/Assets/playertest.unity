@@ -486,7 +486,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 779585543158207334, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.224644
+      value: -60.83
       objectReference: {fileID: 0}
     - target: {fileID: 779585543158207334, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -494,7 +494,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 779585543158207334, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -26.977463
+      value: -84.52
       objectReference: {fileID: 0}
     - target: {fileID: 779585543158207334, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -522,6 +522,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 779585543158207334, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6704943185414157841, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6704943185414157841, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6966436671165702007, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
@@ -745,14 +753,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f33c9dbe8c67f0b4aa78821f99fdcb64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerInScene: {fileID: 0}
-  TestingOnly: 0
+  PlayerSpawnFromHouseOffset: 15
+  playerInScene: {fileID: 2062003818}
+  TestingOnly: 1
   autoupdate: 0
+  Loadingscreen: {fileID: 0}
   TB: {fileID: 0}
   PlayerPrefab: {fileID: 0}
   EnemyPrefab: {fileID: 0}
   SurvivorPrefab: {fileID: 0}
   BossPrefab: {fileID: 0}
+  PreSpawnEnemies: 1
+  EnemySpawnInitialDelay: 15
+  EnemyRespawnDelay: 10
+  EnemySpawnRange: 250
+  EnemiesSpawnedPerCycle: 10
+  MonsterXPLevelUpThreshholdBase: 250
   MonsterXPLevelUpThreshholdCurrent: 250
   MonsterXPLevelUpPower: 1.1
   MonsterMaxLevel: 10
@@ -1335,3 +1351,14 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2062003818 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7334289401069246199, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+  m_PrefabInstance: {fileID: 470296132}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 382482980d4ef7047986c5c3035ef9d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

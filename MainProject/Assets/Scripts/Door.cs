@@ -11,25 +11,17 @@ public class Door : MonoBehaviour, IInteractable
     public void Interact()
     {
 
-        Debug.Log("loading level");
-        if(SceneManager.GetActiveScene().name == "GameplayFinal")
+
+        StageManager stage = FindObjectOfType<StageManager>();
+        if (stage.SurvivorFreed)
         {
-            StageManager stage = FindObjectOfType<StageManager>();
-            if (stage.SurvivorFreed)
-            {
-                stage.EndStage(StageResult.SurvivorRescued);
-            }
-            else
-            {
-                stage.EndStage(StageResult.EnterHomeEarly);
-            }
+            stage.EndStage(StageResult.SurvivorRescued);
         }
         else
         {
-            FindObjectOfType<StageManager>().ShowLoadingScreen();
-
-            //SceneManager.LoadScene("GameplayFinal", LoadSceneMode.Single);
+            stage.EndStage(StageResult.EnterHomeEarly);
         }
+
     }
 
     public string UiText()

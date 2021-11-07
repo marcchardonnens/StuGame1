@@ -24,10 +24,10 @@ public class StageManager : MonoBehaviour
     public bool TestingOnly = false;
     public bool autoupdate = false;
 
-    public LoadingScene1 Loadingscreen;
+    public TerrainBuilder GameplayTB;
+    public TerrainBuilder HubTB;
 
-    public TerrainBuilder TB;
-
+    public NavMeshSurface Surface;
     public GameObject PlayerPrefab;
     public GameObject EnemyPrefab;
     public GameObject SurvivorPrefab;
@@ -67,7 +67,8 @@ public class StageManager : MonoBehaviour
 
     private GameManager GameManager;
 
-    public bool TerrainReady { get; private set; } = false;
+    public bool TerrainReady = false;
+    public bool NavMeshBaked = false;
 
     void Awake()
     {
@@ -94,34 +95,14 @@ public class StageManager : MonoBehaviour
 
         MakeStage();
         StartCoroutine(OnTerrainReady());
-
-
     }
 
     private void Update()
     {
-        //Time.timeScale = 1;
-        //StartCoroutine(EnemySpawner());
 
-        // if(Loadingscreen.start)
-        // {
-        //     Loadingscreen.start = false;
-        //     Loadingscreen.ready = false;
-        //     Loadingscreen.text.text = "Generating Level .....";
-        //     PlayerController.UnlockCursor();
-        //     Time.timeScale = 1;
-        //     //IsPaused = false;
-        //     Loadingscreen.gameObject.SetActive(false);
-        //     playerInScene.gameObject.SetActive(true);
-        //     if (SceneManager.GetActiveScene().name == "GameplayFinal" && TB.finished)
-        //     {
-        //         TB.finished = false;
-        //         SetupPlayer();
-        //         StartCoroutine(EnemySpawner());
-        //         Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
-        //     }
-        // }
     }
+
+
 
     public void MakeStage()
     {
@@ -130,18 +111,26 @@ public class StageManager : MonoBehaviour
             return;
         }
 
-
-        TB.MakeTerrain();
-
+        GameplayTB.MakeTerrain();
         TerrainReady = true;
+
+
     }
 
     private IEnumerator OnTerrainReady()
     {
         yield return new WaitUntil(() => TerrainReady);
-
+        StartCoroutine(BakeNavMesh());
         SetupPlayer();
         StartCoroutine(EnemySpawner());
+
+    }
+
+    private IEnumerator BakeNavMesh()
+    {
+        Surface.BuildNavMesh();
+        NavMeshBaked = true;
+        yield return null;
 
     }
 
@@ -179,10 +168,8 @@ public class StageManager : MonoBehaviour
     {
         //Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
         Player = FindObjectOfType<PlayerController>();
-        Player.transform.position = TB.House.position;
-        Player.transform.position += -TB.House.forward * PlayerSpawnFromHouseOffset;
-        Player.transform.forward = TB.House.forward;
-        Player.transform.position = new Vector3(Player.transform.position.x, 5f, Player.transform.position.z);
+        Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
+        Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
     }
 
 
@@ -246,16 +233,7 @@ public class StageManager : MonoBehaviour
     public void LoadGameplay()
     {
         Debug.Log("loadgameplay");
-        Loadingscreen.gameObject.SetActive(true);
         PlayerController.UnlockCursor();
-        SceneManager.LoadScene("GameplayFinal");
-    }
-
-    public void ShowLoadingScreen()
-    {
-
-        //Loadingscreen = new LoadingScene1();
-        Loadingscreen.gameObject.SetActive(true);
     }
 
     public void OnPlayerGetMonsterXP(int amount)
@@ -295,7 +273,7 @@ public class StageManager : MonoBehaviour
 
 
         NavMeshHit hit;
-        if (NavMesh.SamplePosition(TB.obejctiveGlobalPosition, out hit, 50f, 1 << GameConstants.GROUNDLAYER))
+        if (NavMesh.SamplePosition(GameplayTB.obejctiveGlobalPosition, out hit, 50f, 1 << GameConstants.GROUNDLAYER))
         {
             Instantiate(SurvivorPrefab);
         }

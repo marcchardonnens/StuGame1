@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(StageManager))]
 public class StageManagerEditor : Editor
 {
@@ -24,3 +27,5 @@ public class StageManagerEditor : Editor
 
     }
 }
+
+#endif

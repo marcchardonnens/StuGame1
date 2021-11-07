@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+
+
+#if UNITY_EDITOR 
+
 [CustomEditor(typeof(TerrainBuilder))]
 public class TerrainBuilderEditor : Editor
 {
@@ -11,7 +15,14 @@ public class TerrainBuilderEditor : Editor
         TerrainBuilder terrainBuilder = (TerrainBuilder)target;
         if (GUILayout.Button("Generate"))
         {
-            terrainBuilder.MakeTerrain();
+            if (terrainBuilder.IsHubMode)
+            {
+                terrainBuilder.MakeHub();
+            }
+            else
+            {
+                terrainBuilder.MakeTerrain();
+            }
         }
         //if (terrainBuilder.autoupdate)
         //{
@@ -21,3 +32,4 @@ public class TerrainBuilderEditor : Editor
         base.OnInspectorGUI();
     }
 }
+#endif

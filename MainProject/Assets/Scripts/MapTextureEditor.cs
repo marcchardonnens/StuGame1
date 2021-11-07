@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+
+#if UNITY_EDITOR
 [CustomEditor (typeof(MapTexture))]
 public class MapTextureEditor : Editor 
 {
@@ -22,3 +24,4 @@ public class MapTextureEditor : Editor
         }
     }
 }
+#endif

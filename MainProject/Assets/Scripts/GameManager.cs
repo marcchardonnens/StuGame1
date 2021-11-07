@@ -15,8 +15,6 @@ public class GameManager : MonoBehaviour
 
     public static ProfileData ProfileData = new ProfileData(false);
 
-    public static Interactable currentInteractable = null;
-
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);

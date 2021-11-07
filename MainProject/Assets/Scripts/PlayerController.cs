@@ -1,3 +1,4 @@
+using System.Threading;
 using System;
 using UnityEngine;
 
@@ -18,7 +19,6 @@ public enum PowerupType
 
 public class PlayerController : MonoBehaviour
 {
-
     public Hand RightHand;
     //public Hand LeftHand;
     public float walkingSpeed = 7.5f;
@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour
     public float RageDissipationTime = 15f;
     public float RageDissipationRatePerSecond = 0.5f;
     public float RageIntoHPConversion = 1f;
-    public float RageHealingMissingHPMultiplierMax = 2.5f; 
+    public float RageHealingMissingHPMultiplierMax = 2.5f;
 
     public float HPLevel = 10f;
     public float BaseDamageLevel = 2f;
@@ -58,6 +58,8 @@ public class PlayerController : MonoBehaviour
     public int MaxSeeds = 10;
     public int SeedGrenadeCost = 1;
     public Transform SeedGrenadeRelease;
+    public float GrenadePreviewDistance = 15f;
+    public float Radius = 0.8f;
     public GameObject SeedGrenadePrefab;
     public int ShieldPlantCost = 1;
     public GameObject ShieldPlantPrefab;
@@ -65,7 +67,7 @@ public class PlayerController : MonoBehaviour
     public GameObject TurretPlantPrefab;
     public int SeedPlantCost = 1;
     public GameObject SeedPlantPrefab;
-    
+
 
     public float PlantAnimationTime = 1f;
     public float PlantPlaceMaxDistance = 5f;
@@ -102,7 +104,7 @@ public class PlayerController : MonoBehaviour
 
     //ShroomUI (placing tbd)
     public MushroomUI shroomUI;
-    public int shroomCounter = 0;
+    private int shroomCounter = 0;
 
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
@@ -120,6 +122,8 @@ public class PlayerController : MonoBehaviour
     private bool playerWasGrounded = false;
 
 
+    private IInteractable currentInteractable = null;
+
     void Start()
     {
         stageManager = FindObjectOfType<StageManager>();
@@ -130,8 +134,7 @@ public class PlayerController : MonoBehaviour
         PreviewSphere.SetActive(false);
 
         currentHP = MaxHP;
-        healthBar.SetMaxHealth(MaxHP);
-        healthBar.SetHealth(currentHP);
+
 
         seedUI.SetSeedAmount(MaxSeeds); //tbd
         seedUI.SetSeedCounter(currentSeeds);
@@ -144,13 +147,12 @@ public class PlayerController : MonoBehaviour
     {
 
 
-
+        healthBar.SetMaxHealth(MaxHP);
         healthBar.SetHealth(currentHP);
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
             InteractWithObject();
-            Debug.Log("clicked E");
         }
         //ragedissipation
         if (rageTimer < Time.time)
@@ -196,7 +198,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (!previewing) 
+        if (!previewing)
         {
             if (plantAnimationTimer <= Time.time)
             {
@@ -283,7 +285,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-        
+
 
 
 
@@ -342,7 +344,7 @@ public class PlayerController : MonoBehaviour
 
         if (characterController.isGrounded && !playerWasGrounded)
         {
-            TakeDamage((-movementDirectionY - jumpSpeed*2) * FallDamageMultiplier);
+            TakeDamage((-movementDirectionY - jumpSpeed * 2) * FallDamageMultiplier);
         }
 
 
@@ -391,44 +393,58 @@ public class PlayerController : MonoBehaviour
 
     private void InteractWithObject()
     {
-        if(GameManager.currentInteractable != null)
+        if (currentInteractable != null)
         {
-            GameManager.currentInteractable.Interact();
+            currentInteractable.Interact();
         }
     }
 
     public void ScanInteractable(float InteractionRange)
     {
         Collider collider;
-        if(CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
+        if (CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
         {
-            if(collider != null)
+            //give prio to interactables
+            CheckColliderInteractable(collider);
+            return;
+        }
+        else if (CrossHairLookPosition(out collider, InteractionRange))
+        {
+            CheckColliderInteractable(collider);
+            return;
+        }
+        currentInteractable = null;
+    }
+
+    private void CheckColliderInteractable(Collider collider)
+    {
+        if (collider != null)
+        {
+            if (collider.TryGetComponent(out IInteractable interactable))
             {
-                Interactable interactable = collider.GetComponent<Interactable>();
-                GameManager.currentInteractable = interactable;
+                currentInteractable = interactable;
                 return;
             }
         }
-        GameManager.currentInteractable = null;
     }
 
-    public static String ScanInteractableNameStatic(float range, Camera cam)
-    {
-        Collider collider;
-        if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
-        {
-            if (collider != null)
-            {
-                Interactable interactable = collider.GetComponent<Interactable>();
-                if(interactable.transform.parent != null)
-                {
-                    return interactable.transform.parent.name;
-                }
-                return interactable.name;
-            }
-        }
-        return "";
-    }
+    // public static String ScanInteractableNameStatic(float range, Camera cam)
+    // {
+    //     Collider collider;
+    //     if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
+    //     {
+    //         if (collider != null)
+    //         {
+    //             Interactable interactable = collider.GetComponent<Interactable>();
+    //             if(interactable.transform.parent != null)
+    //             {
+    //                 return interactable.transform.parent.name;
+    //             }
+    //             return interactable.name;
+    //         }
+    //     }
+    //     return "";
+    // }
 
     public static bool CrossHairLookPositionStatic(out Collider collider, Camera cam, float maxDistance = float.MaxValue, int layermask = ~0)
     {
@@ -454,9 +470,9 @@ public class PlayerController : MonoBehaviour
     private bool PreviewGrenades()
     {
         bool valid = true;
-        PlacePreviewSphere(15f);
+        PlacePreviewSphere(GrenadePreviewDistance);
 
-        
+
         if (currentSeeds < SeedGrenadeCost)
         {
             Debug.Log("not enough seeds!");
@@ -478,7 +494,7 @@ public class PlayerController : MonoBehaviour
         bool valid = PlacePreviewSphere();
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position,
-                PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up,
+                PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up,
                 ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < ShieldPlantCost)
         {
@@ -486,7 +502,7 @@ public class PlayerController : MonoBehaviour
         }
 
         PaintPreviewSphere(valid);
-        
+
         return valid;
     }
 
@@ -500,7 +516,7 @@ public class PlayerController : MonoBehaviour
     {
         bool valid = PlacePreviewSphere();
 
-        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < TurretPlantCost)
         {
             valid = false;
@@ -520,7 +536,7 @@ public class PlayerController : MonoBehaviour
     {
         bool valid = PlacePreviewSphere();
 
-        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < SeedPlantCost)
         {
             valid = false;
@@ -546,7 +562,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-  
+
 
 
     public static void LockCursor()
@@ -577,7 +593,6 @@ public class PlayerController : MonoBehaviour
         if (postMitigation >= 0)
         {
             currentHP -= postMitigation;
-            healthBar.SetHealth(currentHP);
         }
 
         if (currentHP <= 0)
@@ -585,7 +600,7 @@ public class PlayerController : MonoBehaviour
             stageManager.EndStage(StageResult.Death);
         }
 
-        
+
 
     }
 
@@ -593,10 +608,6 @@ public class PlayerController : MonoBehaviour
     {
         //no overheal
         currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
-        if(healthBar != null)
-        {
-            healthBar.SetHealth(currentHP);
-        }
     }
 
     public void MeleeAttack()
@@ -606,7 +617,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed/ (1+(AttackSpeed/100)));
+        nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed / (1 + (AttackSpeed / 100)));
         RightHand.MeleeAttack();
         isBlocking = false;
     }
@@ -661,9 +672,6 @@ public class PlayerController : MonoBehaviour
         runningSpeed += RunningSpeedLevel;
         blockingSpeed += BlockingSpeedLevel;
 
-
-        healthBar.SetMaxHealth(MaxHP);
-        
         RageLevel++;
 
         RageLevelThreshholdCurrent =
@@ -697,48 +705,48 @@ public class PlayerController : MonoBehaviour
         switch (powerup.Type)
         {
             case PowerupType.BlueShroom:
-            {
-                walkingSpeed += 1f;
-                blockingSpeed += 0.5f;
-                runningSpeed += 1.5f;
-                break;
-            }
+                {
+                    walkingSpeed += 1f;
+                    blockingSpeed += 0.5f;
+                    runningSpeed += 1.5f;
+                    break;
+                }
 
             case PowerupType.GoldShroom:
-            {
-                MonsterXpMult += 0.1f;
-                break;
-            }
+                {
+                    MonsterXpMult += 0.1f;
+                    break;
+                }
 
             case PowerupType.GreenShroom:
-            {
-                RageIntoHPConversion += 0.25f;
-                break;
-            }
+                {
+                    RageIntoHPConversion += 0.25f;
+                    break;
+                }
 
             case PowerupType.IronShroom:
-            {
-                Armor += 1;
-                break;
-            }
+                {
+                    Armor += 1;
+                    break;
+                }
 
             case PowerupType.RedShroom:
-            {
-                AttackSpeed += 15;
-                break;
-            }
+                {
+                    AttackSpeed += 15;
+                    break;
+                }
 
             case PowerupType.StoneShroom:
-            {
-                RightHand.weapon.StunDuration += 0.25f;
-                break;
-            }
+                {
+                    RightHand.weapon.StunDuration += 0.25f;
+                    break;
+                }
 
             case PowerupType.WoodShroom:
-            {
-                BaseBlockAmount += 5f;
-                break;
-            }
+                {
+                    BaseBlockAmount += 5f;
+                    break;
+                }
 
         }
 
@@ -748,14 +756,14 @@ public class PlayerController : MonoBehaviour
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)
     {
         RaycastHit hit;
-        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
         {
             pos = hit.point;
             return true;
         }
-        else if(!hitOnly)
+        else if (!hitOnly)
         {
-            pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
+            pos = playerCamera.transform.position + playerCamera.transform.forward * maxDistance;
             return false;
         }
         pos = Vector3.zero;
@@ -784,7 +792,7 @@ public class PlayerController : MonoBehaviour
         Vector3 lookPos = new Vector3();
         bool onGround = CrossHairLookPosition(out lookPos, maxDistance, layerMask);
         PreviewSphere.transform.position = lookPos;
-        
+
         PreviewLine.SetPosition(0, RightHand.transform.position);
         PreviewLine.SetPosition(1, PreviewSphere.transform.position);
 

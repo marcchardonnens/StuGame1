@@ -14,8 +14,6 @@ public class MapTexture : MonoBehaviour
 
     public NoiseData[] noisedata;
 
-
-
     public void Generate()
     {
 

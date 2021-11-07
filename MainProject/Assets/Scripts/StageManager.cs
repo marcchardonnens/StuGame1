@@ -19,15 +19,13 @@ public enum StageResult
 public class StageManager : MonoBehaviour
 {
     public static PlayerController Player;
-
-
-    public GameObject pauseMenuUI;
+    public float PlayerSpawnFromHouseOffset = 15f;
     [SerializeField] private PlayerController playerInScene;
     public bool TestingOnly = false;
     public bool autoupdate = false;
-    
+
     public LoadingScene1 Loadingscreen;
-    
+
     public TerrainBuilder TB;
 
     public GameObject PlayerPrefab;
@@ -35,7 +33,12 @@ public class StageManager : MonoBehaviour
     public GameObject SurvivorPrefab;
     public GameObject BossPrefab;
 
-    public const int MonsterXPLevelUpThreshholdBase = 250;
+    public bool PreSpawnEnemies = true;
+    public float EnemySpawnInitialDelay = 15f;
+    public float EnemyRespawnDelay = 10f;
+    public float EnemySpawnRange = 250f;
+    public int EnemiesSpawnedPerCycle = 10;
+    public int MonsterXPLevelUpThreshholdBase = 250;
     public int MonsterXPLevelUpThreshholdCurrent = 250;
     public float MonsterXPLevelUpPower = 1.1f;
     public int MonsterMaxLevel = 10;
@@ -62,118 +65,62 @@ public class StageManager : MonoBehaviour
     public bool SurvivorFreed = false;
 
 
-    //public bool GameIsPaused = true;
+    private GameManager GameManager;
 
-
+    public bool TerrainReady { get; private set; } = false;
 
     void Awake()
     {
-        //PlayerController.UnlockCursor();
-        playerInScene.gameObject.SetActive(false);
-        Time.timeScale = 0;
-        //TB = Object.Instantiate(new TerrainBuilder());
-        //Player = (PlayerController) GameObject.FindObjectOfType(typeof(PlayerController), false);
+        GameManager findgamemanager = FindObjectOfType<GameManager>();
+        if (findgamemanager)
+        {
+            GameManager = findgamemanager;
+        }
+        else
+        {
+            GameManager = Instantiate(new GameObject()).AddComponent<GameManager>();
+        }
+        PlayerController findplayer = FindObjectOfType<PlayerController>();
+        if (findplayer)
+        {
+            Player = findplayer;
+        }
+        else
+        {
+            Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
+        }
+
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
-        //if(GameManager.ProfileData.FirstRun)
-        //{
-
-        //    //show tips
-        //}
-
-
-        //debug only
-        //new GameObject().AddComponent<GameManager>();
-
-
-        pauseMenuUI.SetActive(false);
 
         MakeStage();
+        StartCoroutine(OnTerrainReady());
 
 
     }
 
     private void Update()
     {
-        //if(TB.IsHubScene && Input.GetKeyDown(KeyCode.E))
-        //{
-        //    Loadingscreen.gameObject.SetActive(true);
-        //    StartCoroutine(loagGameplay());
-        //}
-
         //Time.timeScale = 1;
         //StartCoroutine(EnemySpawner());
 
-        if(Loadingscreen.start)
-        {
-            Loadingscreen.start = false;
-            Loadingscreen.ready = false;
-            Loadingscreen.text.text = "Generating Level .....";
-            PlayerController.UnlockCursor();
-            Time.timeScale = 1;
-            //IsPaused = false;
-            Loadingscreen.gameObject.SetActive(false);
-            playerInScene.gameObject.SetActive(true);
-            if (SceneManager.GetActiveScene().name == "GameplayFinal" && TB.finished)
-            {
-                TB.finished = false;
-                SetupPlayer();
-                StartCoroutine(EnemySpawner());
-                Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-
-            if(pauseMenuUI.activeSelf)
-            {
-                pauseMenuUI.SetActive(false);
-                playerInScene.canMove = true;
-                Time.timeScale = 1;
-                PlayerController.LockCursor();
-            }
-            else
-            {
-                pauseMenuUI.SetActive(true);
-                playerInScene.canMove = false;
-                Time.timeScale = 0;
-
-                PlayerController.UnlockCursor();
-            }
-
-            Debug.Log("k");
-
-            //if (pauseController.pauseMenuUI.gameObject.activeSelf)
-            //{
-            //    //unpause
-            //    pauseController.pauseMenuUI.gameObject.SetActive(false);
-            //    PlayerController.LockCursor();
-            //    Time.timeScale = 0;
-            //    //playerInScene.gameObject.SetActive(true);
-            //    playerInScene.canMove = true;
-            //    //pauseController.Resume();
-            //}
-            //else
-            //{
-            //    //pause
-            //    pauseController.pauseMenuUI.gameObject.SetActive(true);
-            //    PlayerController.UnlockCursor();
-            //    Time.timeScale = 0;
-            //    //playerInScene.gameObject.SetActive(false);
-            //    playerInScene.canMove = false;
-            //    //pauseController.Pause();
-            //}
-
-        }
-
-    }
-
-    private IEnumerator loagGameplay()
-    {
-        Debug.Log("changing scene in 1f");
-        yield return new WaitForSeconds(1f);
-        SceneManager.LoadScene("GameplayFinal");
-        Debug.Log("loading newsdsadf");
+        // if(Loadingscreen.start)
+        // {
+        //     Loadingscreen.start = false;
+        //     Loadingscreen.ready = false;
+        //     Loadingscreen.text.text = "Generating Level .....";
+        //     PlayerController.UnlockCursor();
+        //     Time.timeScale = 1;
+        //     //IsPaused = false;
+        //     Loadingscreen.gameObject.SetActive(false);
+        //     playerInScene.gameObject.SetActive(true);
+        //     if (SceneManager.GetActiveScene().name == "GameplayFinal" && TB.finished)
+        //     {
+        //         TB.finished = false;
+        //         SetupPlayer();
+        //         StartCoroutine(EnemySpawner());
+        //         Instantiate(BossPrefab, TB.obejctiveGlobalPosition, Quaternion.identity);
+        //     }
+        // }
     }
 
     public void MakeStage()
@@ -184,39 +131,37 @@ public class StageManager : MonoBehaviour
         }
 
 
-        if (SceneManager.GetActiveScene().name == "GameplayFinal")
-        {
-            TB.MakeTerrain();
-        }
+        TB.MakeTerrain();
 
+        TerrainReady = true;
+    }
 
+    private IEnumerator OnTerrainReady()
+    {
+        yield return new WaitUntil(() => TerrainReady);
 
-
-
-        Loadingscreen.Ready();
-
-
-
+        SetupPlayer();
+        StartCoroutine(EnemySpawner());
 
     }
 
     private IEnumerator EnemySpawner()
     {
-        //yield return new WaitForSeconds(15f);
+        yield return new WaitForSeconds(EnemySpawnInitialDelay);
 
         while (true)
         {
             Player = playerInScene;
             int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
-            if(currentEnemies < EnemiesMax && Player != null)
+            if (currentEnemies < EnemiesMax && Player != null)
             {
-                int spawns = System.Math.Min(10, EnemiesMax - currentEnemies);
+                int spawns = System.Math.Min(EnemiesSpawnedPerCycle, EnemiesMax - currentEnemies);
                 for (int i = 0; i < spawns; i++)
-                    {
-                    Vector2 circle = Random.insideUnitCircle * 250f;
-                    Vector3 randompos =  new Vector3(circle.x, 0, circle.y) + Player.transform.position;
+                {
+                    Vector2 circle = Random.insideUnitCircle * EnemySpawnRange;
+                    Vector3 randompos = new Vector3(circle.x, 0, circle.y) + Player.transform.position;
                     NavMeshHit hit;
-                    if(NavMesh.SamplePosition(randompos, out hit, 250f, NavMesh.AllAreas))
+                    if (NavMesh.SamplePosition(randompos, out hit, EnemySpawnRange, NavMesh.AllAreas))
                     {
                         Instantiate(EnemyPrefab, hit.position, Quaternion.identity);
                     }
@@ -225,7 +170,7 @@ public class StageManager : MonoBehaviour
 
 
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(EnemyRespawnDelay);
         }
     }
 
@@ -235,7 +180,7 @@ public class StageManager : MonoBehaviour
         //Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
         Player = FindObjectOfType<PlayerController>();
         Player.transform.position = TB.House.position;
-        Player.transform.position += TB.House.forward * 15f;
+        Player.transform.position += -TB.House.forward * PlayerSpawnFromHouseOffset;
         Player.transform.forward = TB.House.forward;
         Player.transform.position = new Vector3(Player.transform.position.x, 5f, Player.transform.position.z);
     }
@@ -247,9 +192,9 @@ public class StageManager : MonoBehaviour
     public void EndStage(StageResult result)
     {
 
-        Debug.Log("end stage");
-        Loadingscreen.text.text = "Loading Scene";
-        Loadingscreen.gameObject.SetActive(true);
+        // Debug.Log("end stage");
+        // Loadingscreen.text.text = "Loading Scene";
+        // Loadingscreen.gameObject.SetActive(true);
 
         GameManager.PauseGame();
 
@@ -293,7 +238,7 @@ public class StageManager : MonoBehaviour
         }
 
 
-        SceneManager.LoadScene("HubsceneFinal", LoadSceneMode.Single);
+        // SceneManager.LoadScene("HubsceneFinal", LoadSceneMode.Single);
         //swap scene
 
     }
@@ -319,7 +264,7 @@ public class StageManager : MonoBehaviour
 
 
         //set future enemy level higher if monster xp large enough;
-        if(MonsterXpCollected >= MonsterXPLevelUpThreshholdCurrent && MonsterCurrentLevel < MonsterMaxLevel)
+        if (MonsterXpCollected >= MonsterXPLevelUpThreshholdCurrent && MonsterCurrentLevel < MonsterMaxLevel)
         {
             MonsterXPLevelUpThreshholdCurrent = Mathf.RoundToInt(MonsterXPLevelUpThreshholdBase * Mathf.Pow(MonsterXPLevelUpPower, MonsterCurrentLevel));
             MonsterCurrentLevel++;
@@ -332,7 +277,7 @@ public class StageManager : MonoBehaviour
 
     public void OnPlayerGetWood(int amount)
     {
-        if(WoodCollected + amount <= WoodMax)
+        if (WoodCollected + amount <= WoodMax)
         {
             WoodCollected += amount;
         }

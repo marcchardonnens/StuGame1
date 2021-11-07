@@ -6,14 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class pauseController : MonoBehaviour
 {
-    public static bool GameIsPaused = false;
-    public GameObject pauseMenuUI;
+    // public static bool GameIsPaused = false;
+    // public GameObject pauseMenuUI;
 
     public Button resumeButton, wakeupButton, exitButton;
 
     // Start is called before the first frame update
     void Start()
     {
+        gameObject.SetActive(false);
         //CanvasObject = GetComponent<Canvas> ();
         //CanvasObject.enabled = false;
         //pauseMenuUI.SetActive(false);
@@ -58,16 +59,16 @@ public class pauseController : MonoBehaviour
     //    Time.timeScale = 0f;        
     //}
 
-    public void TaskWakeUpButton() {
-        Debug.Log("Wake Up");
-        //TBD Spielstand speichern
-        PlayerController.LockCursor();
-        FindObjectOfType<StageManager>().EndStage(StageResult.Death);
-    }
+    // public void TaskWakeUpButton() {
+    //     Debug.Log("Wake Up");
+    //     //TBD Spielstand speichern
+    //     PlayerController.LockCursor();
+    //     FindObjectOfType<StageManager>().EndStage(StageResult.Death);
+    // }
 
-    public void TaskExitButton() {
-        Debug.Log("Exit");
-        Application.Quit();
-        PlayerController.LockCursor();
-    }
+    // public void TaskExitButton() {
+    //     Debug.Log("Exit");
+    //     Application.Quit();
+    //     PlayerController.LockCursor();
+    // }
 }

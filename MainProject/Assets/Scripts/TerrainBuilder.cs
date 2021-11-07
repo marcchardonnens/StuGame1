@@ -94,12 +94,10 @@ public class TerrainBuilder : MonoBehaviour
 
     private List<GameObject> toCleanUp = new List<GameObject>();
     
-
     private void Awake()
     {
         MakeTerrain();
     }
-
     public void MakeTerrain()
     {
 
@@ -513,7 +511,6 @@ public class TerrainBuilder : MonoBehaviour
         int treeDistance = (int) TreeDensity;
         const float heightvariance = 0.15f;
         const float thicknessvariance = 0.15f;
-        bool resourceTreeNext = false;
         
         if (TreePrefabs.Length <= 0 || !spawnTrees)
         {

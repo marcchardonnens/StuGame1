@@ -21,4 +21,9 @@ public class HealthBar : MonoBehaviour
         //percentage.text = health + ""; //tb
     }
 
+    // private void SetText()
+    // {
+    //     percentage.text = slider.value + "/" + slider.maxValue; //tb
+    // }
+
 }

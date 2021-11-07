@@ -1,4 +1,5 @@
-using System;using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -70,7 +71,7 @@ public class Enemy : MonoBehaviour
     protected Vector3 spawnPoint;
 
     //AI stuff
-    public const int MELEEMASK = 1 << 0  | 1 << 3;
+    public const int MELEEMASK = 1 << 0 | 1 << 3;
     public const int RANGEDMASK = 1 << 0 | 1 << 4;
     public const int WALKABLEMASK = 1 << 0;
     public const int MELEEONLYMASK = 1 << 3;
@@ -91,7 +92,7 @@ public class Enemy : MonoBehaviour
     protected float slowupdate = SLOWUPDATETIME;
     protected float nextMeleeCd = 0f;
     protected float nextRangedCd = 0f;
-    protected float stunned = 0f;
+    protected float stunnedTimer = 0f;
     [SerializeField] protected float currentHP;
 
     protected float outOfCombatTimer = 0f;
@@ -99,10 +100,58 @@ public class Enemy : MonoBehaviour
     protected GameObject child;
     protected Animation childAnim;
 
+
+    // Start is called before the first frame update
+    protected void Start()
+    {
+        child = transform.GetChild(0).gameObject;
+        childAnim = child.GetComponent<Animation>();
+        currentHP = MaxHP;
+        agent = GetComponent<NavMeshAgent>();
+        player = FindObjectOfType<PlayerController>();
+
+        Vector3 sourcePostion = transform.position;
+        if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
+        {
+            transform.position = closestHit.position;
+            spawnPoint = transform.position;
+            StartCoroutine(CheckDistance());
+        }
+        else
+        {
+            Debug.Log("Enemy Bad Spawn");
+            Destroy(gameObject);
+        }
+        currentState = EnemyState.Spawning;
+        //agent.areaMask = WALKABLEMASK;
+        StartCoroutine(Spawn());
+    }
+
+    // Update is called once per frame
+    protected void Update()
+    {
+        HealthBar.SetMaxHealth(MaxHP);
+        HealthBar.SetHealth(currentHP);
+        slowupdate -= Time.deltaTime;
+        stunnedTimer -= Time.deltaTime;
+
+        //if killing blow from something else
+        CheckDeathCondition();
+
+        if (slowupdate <= 0)
+        {
+            EnemyActions(true);
+        }
+        else
+        {
+            EnemyActions(false);
+        }
+
+    }
+
+
     public bool TakeDamage(float amount)
     {
-        bool killingBlow = false;
-
         amount -= Armor;
 
         //TODO mittigation
@@ -111,13 +160,11 @@ public class Enemy : MonoBehaviour
         if (amount > 0)
         {
             currentHP -= amount;
-            HealthBar.SetHealth(currentHP);
         }
 
 
-        killingBlow = CheckDeathCondition();
-
-        if(killingBlow)
+        bool killingBlow = CheckDeathCondition();
+        if (killingBlow)
         {
             player.GetMonsterXP(RewardAmount());
             player.GenerateRage(player.KillRageAmount);
@@ -156,6 +203,8 @@ public class Enemy : MonoBehaviour
 
     public void Stun(float duration, EnemyState? nextState = null)
     {
+        stunnedTimer += duration;
+        queuedState = nextState;
         if (currentState != EnemyState.Dying && currentState != EnemyState.Dead)
         {
             currentState = EnemyState.Stunned;
@@ -165,43 +214,16 @@ public class Enemy : MonoBehaviour
 
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        child = transform.GetChild(0).gameObject;
-        childAnim = child.GetComponent<Animation>();
-        currentHP = MaxHP;
-        agent = GetComponent<NavMeshAgent>();
-        player = FindObjectOfType<PlayerController>();
-        HealthBar.SetMaxHealth(MaxHP);
-        HealthBar.SetHealth(currentHP);
-        Vector3 sourcePostion = transform.position;
-        NavMeshHit closestHit;
-        if (NavMesh.SamplePosition(sourcePostion, out closestHit, NavMeshPosCorrectionMax, agent.areaMask))
-        {
-            transform.position = closestHit.position;
-            spawnPoint = transform.position;
-            StartCoroutine(CheckDistance());
-        }
-        else
-        {
-            Debug.Log("Enemy Bad Spawn");
-            Destroy(gameObject);
-        }
-        currentState = EnemyState.Spawning;
-        //agent.areaMask = WALKABLEMASK;
-        StartCoroutine(Spawn());
-    }
 
-    private IEnumerator CheckDistance()
+    protected IEnumerator CheckDistance()
     {
 
-        while(true)
+        while (true)
         {
 
             float distance = Vector3.Distance(transform.position, player.transform.position);
 
-            if(distance > 300f)
+            if (distance > 300f)
             {
                 Destroy(gameObject);
             }
@@ -212,7 +234,7 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private IEnumerator Spawn()
+    protected IEnumerator Spawn()
     {
         childAnim.Play("Walk");
         float posy = child.transform.position.y - 1.5f;
@@ -227,25 +249,7 @@ public class Enemy : MonoBehaviour
         currentState = EnemyState.Idle;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        slowupdate -= Time.deltaTime;
-        stunned -= Time.deltaTime;
 
-        //if killing blow from something else
-        CheckDeathCondition();
-
-        if (slowupdate <= 0)
-        {
-            EnemyActions(true);
-        }
-        else
-        {
-            EnemyActions(false);
-        }
-
-    }
 
 
     protected void EnemyActions(bool isSlowUpdate = false)
@@ -254,215 +258,214 @@ public class Enemy : MonoBehaviour
         switch (currentState)
         {
             case EnemyState.Spawning:
-            {
-                //play animation
+                {
+                    //play animation
 
 
-                //state changed in start method
-                break;
-            }
+                    //state changed in start method
+                    break;
+                }
 
             case EnemyState.Idle:
-            {
-                childAnim.Stop();
-                if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
                 {
-                    currentState = EnemyState.EnteringCombat;
+                    childAnim.Stop();
+                    if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
+                    {
+                        currentState = EnemyState.EnteringCombat;
+                        break;
+                    }
+
+                    Vector3 randompos = Random.insideUnitSphere * wanderDistance;
+                    randompos += spawnPoint;
+                    if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, wanderDistance, agent.areaMask))
+                    {
+                        if (agent.isOnNavMesh)
+                        {
+                            agent.SetDestination(hit.position);
+                        }
+                        currentState = EnemyState.Wandering;
+                    }
+
                     break;
                 }
-
-                Vector3 randompos = Random.insideUnitSphere * wanderDistance;
-                randompos += spawnPoint;
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
-                {
-                    if(agent.isOnNavMesh)
-                    {
-                        agent.SetDestination(hit.position);
-                    }
-                    currentState = EnemyState.Wandering;
-                }
-
-                break;
-            }
 
             case EnemyState.Wandering:
-            {
-                childAnim.Play("Walk");
-                if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
                 {
-                    currentState = EnemyState.EnteringCombat;
+                    childAnim.Play("Walk");
+                    if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
+                    {
+                        currentState = EnemyState.EnteringCombat;
+                        break;
+                    }
+
+                    if (!agent.hasPath)
+                    {
+                        currentState = EnemyState.Idle;
+                    }
+
                     break;
                 }
 
-                if (!agent.hasPath)
-                {
-                    currentState = EnemyState.Idle;
-                }
-
-                break;
-            }
-
             case EnemyState.Stunned:
-            {
-                childAnim.Stop();
-                //not stunned anymore
-                if (stunned <= 0)
                 {
-                    if (queuedState.HasValue)
+                    childAnim.Stop();
+                    //not stunned anymore
+                    if (stunnedTimer <= 0)
                     {
-                        currentState = queuedState.Value;
-                        queuedState = null;
+                        if (queuedState.HasValue)
+                        {
+                            currentState = queuedState.Value;
+                            queuedState = null;
+                        }
+                        else
+                        {
+                            //no state given, figure it out again
+                            currentState = EnemyState.Idle;
+                        }
                     }
-                    else
-                    {
-                        //no state given, figure it out again
-                        currentState = EnemyState.Idle;
-                    }
+                    break;
                 }
-                break;
-            }
 
             case EnemyState.EnteringCombat:
-            {
-                outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-                currentTarget = player.transform;
-                //currentState = (Random.Range(0, 1) > 0)
-                //    ? EnemyState.MeleeAttacking
-                //    : EnemyState.RangedAttacking;
+                {
+                    outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
+                    currentTarget = player.transform;
+                    //currentState = (Random.Range(0, 1) > 0)
+                    //    ? EnemyState.MeleeAttacking
+                    //    : EnemyState.RangedAttacking;
 
-                if (currentLevel < 2)
-                {
-                    currentState = EnemyState.MeleeAttacking;
-                }
-                else
-                {
-                    if (Random.Range(0, currentLevel) < 2)
+                    if (currentLevel < 2)
                     {
                         currentState = EnemyState.MeleeAttacking;
                     }
                     else
                     {
-                        currentState = EnemyState.RangedAttacking;
+                        if (Random.Range(0, currentLevel) < 2)
+                        {
+                            currentState = EnemyState.MeleeAttacking;
+                        }
+                        else
+                        {
+                            currentState = EnemyState.RangedAttacking;
+                        }
                     }
-                }
 
-                if (currentState == EnemyState.MeleeAttacking)
-                {
-                    SetMeleeAgent();
-                }
-                else
-                {
-                    SetRangedAgent();
-                }
-                
-                break;
-            }
+                    if (currentState == EnemyState.MeleeAttacking)
+                    {
+                        SetMeleeAgent();
+                    }
+                    else
+                    {
+                        SetRangedAgent();
+                    }
 
-            case EnemyState.RangedAttacking:
-            {
-                float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
-                if (distToPlayer > PlayerLoseRange && outOfCombatTimer <= Time.time)
-                {
-                    currentState = EnemyState.ReturnToSpawn;
                     break;
                 }
-                else if (distToPlayer < meleeRange)
-                {
-                    outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-                    MeleeAttack();
-                    break;  
-                }
-                else if (distToPlayer < attackRange)
-                {
-                    if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
-                    {
-                        outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
-                    }
-                    RangedAttack();
-                }
 
-                //movement
-                if (isSlowUpdate)
+            case EnemyState.RangedAttacking:
                 {
-                    CalcRangedPos();
+                    float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
+                    if (distToPlayer > PlayerLoseRange && outOfCombatTimer <= Time.time)
+                    {
+                        currentState = EnemyState.ReturnToSpawn;
+                        break;
+                    }
+                    else if (distToPlayer < meleeRange)
+                    {
+                        outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
+                        MeleeAttack();
+                        break;
+                    }
+                    else if (distToPlayer < attackRange)
+                    {
+                        if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
+                        {
+                            outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
+                        }
+                        RangedAttack();
+                    }
+
+                    //movement
+                    if (isSlowUpdate)
+                    {
+                        CalcRangedPos();
+                    }
+
+                    break;
                 }
-                
-                break;
-            }
 
             case EnemyState.MeleeAttacking:
-            {
-                float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
-                if (distToPlayer > PlayerLoseRange)
                 {
-                    currentState = EnemyState.ReturnToSpawn;
-                }
-                else if (distToPlayer < meleeRange)
-                {
-                    outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-                    MeleeAttack();
-                    agent.SetDestination(player.transform.position);
-                    }
-                else if (distToPlayer < attackRange)
-                {
-                    if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
+                    float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
+                    if (distToPlayer > PlayerLoseRange)
                     {
-                        outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
+                        currentState = EnemyState.ReturnToSpawn;
                     }
-                    RangedAttack();
+                    else if (distToPlayer < meleeRange)
+                    {
+                        outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
+                        MeleeAttack();
+                        agent.SetDestination(player.transform.position);
+                    }
+                    else if (distToPlayer < attackRange)
+                    {
+                        if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
+                        {
+                            outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
+                        }
+                        RangedAttack();
+                    }
+
+                    if (isSlowUpdate && agent.isOnNavMesh)
+                    {
+                        agent.SetDestination(player.transform.position);
+                    }
+
+
+                    break;
                 }
-
-                if (isSlowUpdate && agent.isOnNavMesh)
-                {
-                    agent.SetDestination(player.transform.position);
-                }
-
-
-                break;
-            }
 
             case EnemyState.ReturnToSpawn:
-            {
-                if (Mathf.Abs(Vector3.Distance(spawnPoint, transform.position)) < spawnReturnDistance)
                 {
-                    currentState = EnemyState.Idle;
-                }
+                    if (Mathf.Abs(Vector3.Distance(spawnPoint, transform.position)) < spawnReturnDistance)
+                    {
+                        currentState = EnemyState.Idle;
+                    }
 
-                if(isSlowUpdate && agent.isOnNavMesh)
-                {
-                    agent.SetDestination(spawnPoint);
-                }
+                    if (isSlowUpdate && agent.isOnNavMesh)
+                    {
+                        agent.SetDestination(spawnPoint);
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             case EnemyState.Dying:
-            {
-
-                //play death animation
-
-
-
-                child.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
-                child.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
-
-                if (stunned <= 0)
                 {
-                    currentState = EnemyState.Dead;
+
+                    //play death animation
+
+
+
+                    child.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
+                    child.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
+
+                    if (stunnedTimer <= 0)
+                    {
+                        currentState = EnemyState.Dead;
+                    }
+
+
+                    break;
                 }
 
-                    
-                break;
-            }
-
             case EnemyState.Dead:
-            {
+                {
 
 
-                Destroy(gameObject);
-                break;
-            }
+                    Destroy(gameObject);
+                    break;
+                }
 
         }
     }
@@ -475,11 +478,10 @@ public class Enemy : MonoBehaviour
         //randomize pos slightly
         Vector3 randompos = Random.insideUnitSphere * aiCirclingMargin;
         randompos += pos;
-        NavMeshHit hit;
 
-        if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
+        if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, wanderDistance, agent.areaMask))
         {
-            if(agent.isOnNavMesh)
+            if (agent.isOnNavMesh)
             {
                 agent.SetDestination(hit.position);
             }
@@ -490,7 +492,6 @@ public class Enemy : MonoBehaviour
             SetMeleeAgent();
             currentState = EnemyState.MeleeAttacking;
         }
-
     }
 
     protected void RangedAttack()
@@ -507,7 +508,7 @@ public class Enemy : MonoBehaviour
         nextRangedCd = Time.time + RangedAttackCooldown;
 
         SimpleProjectile projectile =
-            Instantiate(ProjectilePrefab, transform.position + Vector3.up + transform.forward*1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
+            Instantiate(ProjectilePrefab, transform.position + Vector3.up + transform.forward * 1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
         if (Random.Range(0f, 1f) <= ProjectileTrackingChance)
         {
             //simple projectile
@@ -516,7 +517,7 @@ public class Enemy : MonoBehaviour
         else
         {
             //slowtracking projectile
-            projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward*0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
+            projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward * 0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform, false);
         }
 
 
@@ -544,7 +545,7 @@ public class Enemy : MonoBehaviour
             //do damage to player
             PlayerController pc = hit.collider.GetComponent<PlayerController>();
             if (pc)
-            {   
+            {
                 pc.TakeDamage(MeleeDamage);
             }
 
@@ -557,7 +558,7 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private IEnumerator PlayAnimation(float duration, string anmin, string queued)
+    protected IEnumerator PlayAnimation(float duration, string anmin, string queued)
     {
 
         childAnim.Play(anmin);
@@ -573,7 +574,7 @@ public class Enemy : MonoBehaviour
 
     }
 
-    void OnDrawGizmosSelected()
+    protected void OnDrawGizmosSelected()
     {
         float meleeAttackHeight = 0.25f;
         Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, meleeRange);
@@ -583,7 +584,7 @@ public class Enemy : MonoBehaviour
 
         Gizmos.DrawWireSphere(p1, meleeRange);
         Gizmos.DrawWireSphere(p2, meleeRange);
-        
+
     }
 
     protected void SetMeleeAgent()
@@ -591,7 +592,7 @@ public class Enemy : MonoBehaviour
         agent.areaMask = MELEEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
         agent.SetAreaCost(RANGEDONLYMASK, nonPrioAreaCost);
-        
+
         //could set angular speed/radius or other agent settings here
     }
 
@@ -622,7 +623,7 @@ public class Enemy : MonoBehaviour
         childAnim.Play("Death");
         //initiate death
         currentState = EnemyState.Dying;
-        stunned = deathTime;
+        stunnedTimer = deathTime;
         GetComponent<NavMeshAgent>().enabled = false;
         GetComponent<Collider>().enabled = false;
     }
@@ -630,7 +631,7 @@ public class Enemy : MonoBehaviour
 
     protected bool IsDead()
     {
-        if(currentState == EnemyState.Dying ||
+        if (currentState == EnemyState.Dying ||
             currentState == EnemyState.Dead ||
             currentHP <= 0)
         {

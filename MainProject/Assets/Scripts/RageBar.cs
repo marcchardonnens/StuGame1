@@ -7,7 +7,7 @@ using TMPro;
 public class RageBar : MonoBehaviour
 {
     public Slider slider;
-    //private TextMeshProUGUI percentage; //tbd
+    private TextMeshProUGUI percentage; //tbd
 
     public PlayerController player;
 
@@ -24,13 +24,15 @@ public class RageBar : MonoBehaviour
 
     public void SetMaxRage(float rage) {
         slider.maxValue = rage;
-        //slider.value = rage;
-        //percentage.text = health + ""; //tb
     }
 
     public void SetRage(float rage) {
         slider.value = rage;
-        //percentage.text = rage + ""; //tb
+    }
+
+    private void SetText()
+    {
+        percentage.text = slider.value + "/" + slider.maxValue; //tb
     }
 
 }

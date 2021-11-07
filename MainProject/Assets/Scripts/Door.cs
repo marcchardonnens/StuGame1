@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Door : MonoBehaviour
+
+[RequireComponent(typeof(Collider))]
+public class Door : MonoBehaviour, IInteractable
 {
 
     public void Interact()
@@ -28,5 +30,10 @@ public class Door : MonoBehaviour
 
             //SceneManager.LoadScene("GameplayFinal", LoadSceneMode.Single);
         }
+    }
+
+    public string UiText()
+    {
+        return "";
     }
 }

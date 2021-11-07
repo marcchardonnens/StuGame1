@@ -106,37 +106,17 @@ public class Boss : Enemy
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        currentHP = MaxHP;
-        agent = GetComponent<NavMeshAgent>();
-        player = FindObjectOfType<PlayerController>();
-        spawnPoint = transform.position;
-        currentState = EnemyState.Spawning;
-        //agent.areaMask = WALKABLEMASK;
-        StartCoroutine(ExecuteIn(2, () => currentState = EnemyState.Idle));
+        base.Start();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        slowupdate -= Time.deltaTime;
-        stunned -= Time.deltaTime;
+        base.Update();
         StartCoroutine(MeteorAttack());
         SummonAdds();
-        //if killing blow from something else
-        CheckDeathCondition();
-
-        if (slowupdate <= 0)
-        {
-            EnemyActions(true);
-        }
-        else
-        {
-            EnemyActions(false);
-        }
-
-
 
     }
 
@@ -212,7 +192,7 @@ public class Boss : Enemy
             case EnemyState.Stunned:
             {
                 //not stunned anymore
-                if (stunned <= 0)
+                if (stunnedTimer <= 0)
                 {
                     if (queuedState.HasValue)
                     {
@@ -336,7 +316,7 @@ public class Boss : Enemy
                 transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
                 transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
 
-                if (stunned <= 0)
+                if (stunnedTimer <= 0)
                 {
                     currentState = EnemyState.Dead;
                 }
@@ -514,7 +494,7 @@ public class Boss : Enemy
     {
         //initiate death
         currentState = EnemyState.Dying;
-        stunned = deathTime;
+        stunnedTimer = deathTime;
         GetComponent<NavMeshAgent>().enabled = false;
         GetComponent<Collider>().enabled = false;
     }

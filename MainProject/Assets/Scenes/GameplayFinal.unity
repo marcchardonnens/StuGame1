@@ -269,7 +269,7 @@ MonoBehaviour:
   HubTB: {fileID: 0}
   Surface: {fileID: 679463725}
   NavMeshBakRepeatTimer: 5
-  localNavMesh: 1
+  localNavMesh: 0
   PlayerPrefab: {fileID: 6966436671165702007, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
   EnemyPrefab: {fileID: 4022036406902719952, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
   SurvivorPrefab: {fileID: 4247225949845245642, guid: 4719d5671f24cd94680e4baed57b8354, type: 3}
@@ -497,7 +497,7 @@ MonoBehaviour:
   HubHouseLocalPos: {x: 0, y: 0, z: 0}
   PlayerHubEnterLocalPos: {x: 0, y: 0, z: 0}
   PlayerHubWakeUpLocalPos: {x: 0, y: 0, z: 0}
-  finished: 0
+  finished: 1
   Seed: 0
   yAdjustment: 0
   TerrainScale: 5
@@ -851,14 +851,18 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
   material: {fileID: 2100000, guid: cb2e2483ddd3c0849bc3e0fde0aa889e, type: 2}
-  HousePrefab: []
+  HousePrefab:
+  - {fileID: 715905249282418908, guid: 45eed20c730719049a7db6a5bb29b02d, type: 3}
+  - {fileID: 7663177446062328610, guid: b40504c25b3b3eb4e87a5a1ab1544749, type: 3}
+  - {fileID: 900374441695950899, guid: 62c59ed035f0fe542ae23769067bfb68, type: 3}
+  - {fileID: 475630404428713357, guid: 0ce61f44e02a3e64f89ca7e4ce56fcda, type: 3}
   PlayerSpawnOutsideHouseOffsetPos: {x: 1, y: 8, z: -6}
   PlayerSpawnOutsideHouseRotationEuler: {x: 0, y: 180, z: 0}
   SurvivorPrefab: {fileID: 4254141587217500248, guid: bff7aa862101ae240817d5a0e7357e42, type: 3}
   Water: {fileID: 4280240914679992784}
   spawnTrees: 1
-  TreeDensity: 1
-  TreeOverallScale: 1
+  TreeDensity: 50
+  TreeOverallScale: 4
   TreePrefabs:
   - prefab: {fileID: 7297583925699596485, guid: 5535933a90272493bb583440a85baa87, type: 3}
     SpawnWeight: 50
@@ -867,8 +871,8 @@ MonoBehaviour:
   - prefab: {fileID: 2610891570868212060, guid: 1a511f2a96dc79a43bfab52f8b1488af, type: 3}
     SpawnWeight: 2
   spawnRocks: 1
-  RocksDensity: 1
-  RocksOverallScale: 1
+  RocksDensity: 100
+  RocksOverallScale: 4
   RockPrefabs:
   - prefab: {fileID: 8701302192679013780, guid: c260e4ef70d704df8943b7fa104dbf77, type: 3}
     SpawnWeight: 1
@@ -876,8 +880,8 @@ MonoBehaviour:
     SpawnWeight: 5
   - prefab: {fileID: 7233618484334843155, guid: 50726f5f08f364f628edb8ef8cc97241, type: 3}
     SpawnWeight: 50
-  PowerupDensity: 50
-  MushroomOverallScale: 2
+  PowerupDensity: 15
+  MushroomOverallScale: 3
   spawnPowerups: 1
   PowerupPrefabs:
   - prefab: {fileID: 4036946568686139731, guid: 92f76e7e27c284543b4d4b2430dacc50, type: 3}
@@ -894,9 +898,12 @@ MonoBehaviour:
     SpawnWeight: 1
   - prefab: {fileID: 2018903233681602824, guid: bc880d418494e40fda0320c17c513e13, type: 3}
     SpawnWeight: 1
-  SideQuestPrefabs: []
-  ResourceTreePrefab: {fileID: 0}
-  BossAreaLight: {fileID: 0}
+  SideQuestPrefabs:
+  - {fileID: 8237304073132461758, guid: a4606276b03365f41a0e4eb6f6467668, type: 3}
+  - {fileID: 4591676181349186806, guid: 418a294af8b95794798942e2b5e4c85e, type: 3}
+  - {fileID: 7045907100818247743, guid: 6ca8a545edc8b484eb313eafdcdec2f0, type: 3}
+  ResourceTreePrefab: {fileID: 7467134138277427182, guid: 53efb95692437411ea56eb5c0244f604, type: 3}
+  BossAreaLight: {fileID: 3539575069507365686, guid: 183fd8f5783d4954e8dc1d7c997ce53d, type: 3}
   TextureData:
     baseColours:
     - {r: 0, g: 0.015245914, b: 1, a: 0}
@@ -920,5 +927,5 @@ MonoBehaviour:
     - 0.6
     - 0.99
     - 1
-  houseGlobalPosition: {x: 0, y: 0, z: 0}
-  obejctiveGlobalPosition: {x: 0, y: 0, z: 0}
+  houseGlobalPosition: {x: -350, y: 0, z: -350}
+  obejctiveGlobalPosition: {x: 150, y: 0, z: 150}

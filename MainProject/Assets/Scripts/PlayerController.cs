@@ -98,14 +98,7 @@ public class PlayerController : MonoBehaviour
 
 
     public PlayerUIController playerUI;
-    public HealthBar healthBar;
 
-    //SeedUI (placing tbd)
-    public SeedUI seedUI;
-    public SeedFunctionUI seedFuncUI;
-
-    //ShroomUI (placing tbd)
-    public MushroomUI shroomUI;
     private int shroomCounter = 0;
 
 
@@ -140,19 +133,11 @@ public class PlayerController : MonoBehaviour
         PreviewSphere.SetActive(false);
 
         currentHP = MaxHP;
-
-
-        seedUI.SetSeedAmount(MaxSeeds);
-        seedUI.SetSeedCounter(currentSeeds);
-
     }
 
     void Update()
     {
-
-
-        healthBar.SetMaxHealth(MaxHP);
-        healthBar.SetHealth(currentHP);
+        UpdateGameplayHUD();
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -177,8 +162,6 @@ public class PlayerController : MonoBehaviour
                 Rage = 0f;
             }
         }
-
-
 
         if (Input.GetKeyDown("1"))
         {
@@ -267,22 +250,24 @@ public class PlayerController : MonoBehaviour
                 if (previewNumber == 1)
                 {
                     previewValid = PreviewGrenades();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                }
+                else
+                {
+                    playerUI.UpdateSeedSelectionText("");
                 }
             }
         }
@@ -395,6 +380,15 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void UpdateGameplayHUD()
+    {
+        playerUI.UpdateHealth(currentHP, MaxHP);
+        playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
+        playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
+        playerUI.UpdateMushroomCount(shroomCounter);
+        playerUI.UpdateTime(StageManager.StageTimer);
+    }
+
     private void InteractWithObject()
     {
         if (currentInteractable != null)
@@ -431,6 +425,7 @@ public class PlayerController : MonoBehaviour
                 return;
             }
         }
+        currentInteractable = null;
         playerUI.SetInteractText("");
     }
 
@@ -470,7 +465,6 @@ public class PlayerController : MonoBehaviour
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
         grenade.Throw(this, playerCamera.transform.forward, BaseDamage, true);
         currentSeeds -= SeedGrenadeCost;
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewGrenades()
@@ -492,7 +486,6 @@ public class PlayerController : MonoBehaviour
     private void PlaceShieldPlant()
     {
         Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewShieldPlant()
@@ -515,7 +508,6 @@ public class PlayerController : MonoBehaviour
     private void PlaceTurretPlant()
     {
         Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewTurretPlant()
@@ -535,7 +527,6 @@ public class PlayerController : MonoBehaviour
     private void PlaceSeedPlant()
     {
         Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewSeedPlant()
@@ -746,7 +737,6 @@ public class PlayerController : MonoBehaviour
 
         }
 
-        shroomUI.SetMushroomCounter(shroomCounter);
     }
 
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)

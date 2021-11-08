@@ -73,6 +73,9 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator MainMenuToHub(float fadeOutDuration, float fadeInDuration)
     {
+        GameManager.Instance.PlayerHasControl = false;
+        GameManager.instance.SceneLoaded = false;
+        GameManager.instance.SceneCompletelyRady = false;
         UIController.InstructionsScreen.interactable = false;
         UIController.SetLoadingScreenText(".....Cozyfying House.....");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE, LoadSceneMode.Additive);
@@ -113,22 +116,28 @@ public class GameManager : MonoBehaviour
         }
         UIController.InstructionsScreen.interactable = false;
         instructionsOKPressed = false;
+        GameManager.instance.LockCursor();
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         UIController.InstructionsScreen.interactable = false;
         SceneCompletelyRady = true;
+        GameManager.Instance.PlayerHasControl = true;
 
     }
 
     public IEnumerator HubToGameplay(float fadeOutDuration, float fadeInDuration)
     {
+        GameManager.Instance.PlayerHasControl = false;
+        GameManager.instance.SceneLoaded = false;
+        GameManager.instance.SceneCompletelyRady = false;
         UIController.InstructionsScreen.interactable = false;
+        GameManager.instance.LockCursor();
         UIController.SetLoadingScreenText(".....Creating Magical World.....");
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE);
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(true);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE, LoadSceneMode.Additive);
         while (!asyncLoad.isDone)
         {
             yield return null;
@@ -137,11 +146,12 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
-        SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
-        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.GAMEPLAYSCENE));
-        GameManager.instance.UnlockCursor();
+        GameManager.instance.SceneLoaded = true;
         UIController.InstructionsScreen.interactable = true;
         UIController.SetLoadingScreenText("I must save the Survivor!");
+        GameManager.instance.UnlockCursor();
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.GAMEPLAYSCENE));
+        SceneManager.UnloadSceneAsync(GameConstants.HUBSCENE);
         while (!instructionsOKPressed)
         {
             yield return null;
@@ -149,23 +159,30 @@ public class GameManager : MonoBehaviour
         UIController.InstructionsScreen.interactable = false;
         instructionsOKPressed = false;
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        GameManager.instance.LockCursor();
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+        SceneCompletelyRady = true;
+        GameManager.Instance.PlayerHasControl = true;
     }
 
     //TODO show credits
     public IEnumerator GameplayToHub(float fadeOutDuration, float fadeInDuration, bool ShowCredits)
     {
+        GameManager.Instance.PlayerHasControl = false;
+        GameManager.instance.SceneLoaded = false;
+        GameManager.instance.SceneCompletelyRady = false;
         UIController.InstructionsScreen.interactable = false;
         UIController.SetLoadingScreenText(".....Lighting Firepit.....");
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE);
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE);
         UIController.LoadingScreen.SetActive(true);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         while (!asyncLoad.isDone)
         {
             yield return null;
         }
+        GameManager.instance.SceneLoaded = true;
         SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.HUBSCENE));
         GameManager.instance.UnlockCursor();
@@ -180,6 +197,8 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+        SceneCompletelyRady = true;
+        GameManager.Instance.PlayerHasControl = true;
     }
 
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 //public enum EnemyState
@@ -63,11 +64,6 @@ public class Enemy : MonoBehaviour
     public float Gravity = 20f;
     public float NavMeshPosCorrectionMax = 25f;
 
-    public HealthBar HealthBar;
-
-
-
-
     protected Vector3 spawnPoint;
 
     //AI stuff
@@ -94,7 +90,7 @@ public class Enemy : MonoBehaviour
     protected float nextRangedCd = 0f;
     protected float stunnedTimer = 0f;
     [SerializeField] protected float currentHP;
-
+    public Slider HealthSlider;
     protected float outOfCombatTimer = 0f;
 
     protected GameObject child;
@@ -130,8 +126,13 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     protected void Update()
     {
-        HealthBar.SetMaxHealth(MaxHP);
-        HealthBar.SetHealth(currentHP);
+
+        HealthSlider.minValue = 0;
+        HealthSlider.maxValue = MaxHP;
+        HealthSlider.value = currentHP;
+        HealthSlider.gameObject.transform.LookAt(player.playerCamera.transform.position);
+        HealthSlider.gameObject.transform.eulerAngles += new Vector3(0,180f,0);
+
         slowupdate -= Time.deltaTime;
         stunnedTimer -= Time.deltaTime;
 

@@ -20,6 +20,7 @@ public enum StageResult
 public class StageManager : MonoBehaviour
 {
     public static PlayerController Player;
+    public static float StageTimer = 1500f;
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
     public bool autoupdate = false;
@@ -73,18 +74,7 @@ public class StageManager : MonoBehaviour
 
     void Awake()
     {
-
-        PlayerController findplayer = FindObjectOfType<PlayerController>();
-        if (findplayer)
-        {
-            Player = findplayer;
-        }
-        else
-        {
-            Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
-        }
         GameManager.Instance.PlayerHasControl = false;
-        Player.playerCamera.enabled = true;
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
 
         MakeStage();
@@ -93,10 +83,24 @@ public class StageManager : MonoBehaviour
 
     private void Update()
     {
-        if(doorPressed)
+
+        if (GameManager.Instance.SceneLoaded)
+        {
+            SetupPlayer();
+            StartCoroutine(EnemySpawner());
+            GameManager.Instance.SceneLoaded = false;
+            return;
+        }
+
+        StageTimer -= Time.deltaTime;
+        if (StageTimer <= 0)
+        {
+            EndStage(StageResult.TimerExpired);
+        }
+        if (doorPressed)
         {
             doorPressed = false;
-            if(SurvivorFreed)
+            if (SurvivorFreed)
             {
                 EndStage(StageResult.SurvivorRescued);
             }
@@ -128,8 +132,7 @@ public class StageManager : MonoBehaviour
             StartCoroutine(BakeNavMeshGlobal());
         }
 
-        SetupPlayer();
-        StartCoroutine(EnemySpawner());
+
 
     }
 
@@ -172,20 +175,17 @@ public class StageManager : MonoBehaviour
 
     public void SetupPlayer()
     {
-        Player = Instantiate(PlayerPrefab, GameplayTB.PlayerSpawnOutsideHouseOffsetPos, Quaternion.Euler(GameplayTB.PlayerSpawnOutsideHouseRotationEuler)).GetComponent<PlayerController>();
+        // Player = Instantiate(PlayerPrefab, GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos, Quaternion.Euler(GameplayTB.PlayerSpawnOutsideHouseRotationEuler)).GetComponent<PlayerController>();
+        Player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
         Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
         Player.playerUI.ShowGameplayHud();
-        GameManager.Instance.PlayerHasControl = true;
-        GameManager.Instance.LockCursor();
 
         if (localNavMesh)
         {
             StartCoroutine(BakeNavMeshLocal(NavMeshBakRepeatTimer));
             NavMeshBaked = true;
         }
-
-
     }
 
     public IEnumerator BakeNavMeshLocal(float delay)
@@ -258,13 +258,6 @@ public class StageManager : MonoBehaviour
 
         StartCoroutine(GameManager.Instance.GameplayToHub(2f, 2f, showCredits));
     }
-
-    public void LoadGameplay()
-    {
-        Debug.Log("loadgameplay");
-        GameManager.Instance.UnlockCursor();
-    }
-
     public void OnPlayerGetMonsterXP(int amount)
     {
         MonsterXpCollected += amount;

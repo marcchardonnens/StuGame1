@@ -19,7 +19,6 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : MonoBehaviour
 {
-    public GameObject PlyerPrefab;
     public static PlayerController Player;
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;

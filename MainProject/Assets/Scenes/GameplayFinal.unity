@@ -262,19 +262,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f33c9dbe8c67f0b4aa78821f99fdcb64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlyerPrefab: {fileID: 0}
   PlayerSpawnFromHouseOffset: 15
   TestingOnly: 0
   autoupdate: 0
-  GameplayTB: {fileID: 0}
+  GameplayTB: {fileID: 4280240915689885985}
   HubTB: {fileID: 0}
-  Surface: {fileID: 0}
+  Surface: {fileID: 679463725}
   NavMeshBakRepeatTimer: 5
   localNavMesh: 1
-  PlayerPrefab: {fileID: 0}
-  EnemyPrefab: {fileID: 0}
-  SurvivorPrefab: {fileID: 0}
-  BossPrefab: {fileID: 0}
+  PlayerPrefab: {fileID: 6966436671165702007, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+  EnemyPrefab: {fileID: 4022036406902719952, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
+  SurvivorPrefab: {fileID: 4247225949845245642, guid: 4719d5671f24cd94680e4baed57b8354, type: 3}
+  BossPrefab: {fileID: 4022036406902719952, guid: a2d5288ba23df1040b20e94a05bfb145, type: 3}
   PreSpawnEnemies: 1
   EnemySpawnInitialDelay: 15
   EnemyRespawnDelay: 10

@@ -5,7 +5,10 @@ using UnityEngine.UI;
 
 public class PlayerUIController : MonoBehaviour
 {
+    public const string InteractPrefix = "E - ";
     public Button BackToGameButton, SettingsButton, WakeupButton, ExitGameButton;
+    public GameObject PauseScreen, GameplayHUD, HubHUD;
+    public TMPro.TextMeshProUGUI interactText;
 
     void Awake()
     {
@@ -15,6 +18,33 @@ public class PlayerUIController : MonoBehaviour
         ExitGameButton.onClick.AddListener(OnExitGameButtonClicked);
     }
 
+
+    public void ShowGameplayHud()
+    {
+
+    }
+
+    //TODO Hub hud
+    public void ShowHubHud()
+    {
+
+    }
+
+    public void HideHud()
+    {
+
+    }
+
+    public void ShowMenu()
+    {
+
+    }
+
+
+    public void HideMenu()
+    {
+
+    }
 
     private void OnBackToGameButtonClicked()
     {
@@ -34,6 +64,11 @@ public class PlayerUIController : MonoBehaviour
     private void OnExitGameButtonClicked()
     {
         Debug.Log("exit game from game");
+    }
+
+    public void SetInteractText(string text)
+    {
+        interactText.text = text;
     }
 
 }

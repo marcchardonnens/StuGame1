@@ -30,7 +30,7 @@ public class LoadingScene1 : MonoBehaviour
         //confirmButton.name = ready;
         text.text = "Ready";
 
-        PlayerController.UnlockCursor();
+        GameManager.Instance.UnlockCursor();
 
         ready = true;
         return ready;

@@ -1749,9 +1749,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b4a2b3873582e4bb6cbff371a3c80c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SkipIntro: 1
   UIController: {fileID: 1600630958}
   UnlockedProfile: 0
   instructionsOKPressed: 0
+  PlayerHasControl: 0
+  InGamePlayScene: 0
+  SceneLoaded: 0
+  SceneCompletelyRady: 0
 --- !u!4 &849795306
 Transform:
   m_ObjectHideFlags: 0
@@ -1784,7 +1789,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &863208791
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1800,7 +1805,7 @@ RectTransform:
   - {fileID: 1963808187}
   - {fileID: 295983567}
   m_Father: {fileID: 1600630957}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -1815,7 +1820,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 863208790}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -2158,7 +2163,7 @@ RectTransform:
   m_Children:
   - {fileID: 1427979161}
   m_Father: {fileID: 1600630957}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -3097,8 +3102,8 @@ RectTransform:
   m_Children:
   - {fileID: 631794249}
   - {fileID: 864480837}
-  - {fileID: 863208791}
   - {fileID: 949566030}
+  - {fileID: 863208791}
   - {fileID: 1937628170}
   m_Father: {fileID: 849795306}
   m_RootOrder: 1
@@ -3125,6 +3130,7 @@ MonoBehaviour:
   SettingsButtonMainMenu: {fileID: 1515354831}
   ExitButtonMainMenu: {fileID: 562362686}
   profileText: {fileID: 2120034249}
+  loadingScreenText: {fileID: 1949201872}
   ReadyButton: {fileID: 295983568}
   FadePannel: {fileID: 1937628167}
   InstructionsScreen: {fileID: 863208792}
@@ -3674,7 +3680,7 @@ GameObject:
   - component: {fileID: 1949201873}
   - component: {fileID: 1949201872}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: LoadingScreenText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4446,7 +4452,7 @@ GameObject:
   - component: {fileID: 2120034250}
   - component: {fileID: 2120034249}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: ProfileButtonText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

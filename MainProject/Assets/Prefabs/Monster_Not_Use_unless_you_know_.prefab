@@ -288,7 +288,7 @@ Animation:
   m_WrapMode: 0
   m_PlayAutomatically: 0
   m_AnimatePhysics: 0
-  m_CullingType: 0
+  m_CullingType: 1
 --- !u!1 &1340884963709299078
 GameObject:
   m_ObjectHideFlags: 0
@@ -1434,6 +1434,7 @@ MonoBehaviour:
   combatSpeed: 4
   Gravity: 20
   NavMeshPosCorrectionMax: 25
+  HealthBar: {fileID: 0}
   AreaDefaultCost: 1
   nonPrioAreaCost: 10
   aiCirclingMargin: 3

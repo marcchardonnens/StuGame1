@@ -89,14 +89,15 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController; //unitys "improved rigidbody" for characters
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
-    [HideInInspector] public bool canMove = true;
     [SerializeField] private float currentHP;
     [SerializeField] private int currentSeeds = 5;
     [SerializeField] private float currentShield = 0f;
     private StageManager stageManager;
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
-    //HealthBar (placing tbd)
+
+
+    public PlayerUIController playerUI;
     public HealthBar healthBar;
 
     //SeedUI (placing tbd)
@@ -106,6 +107,9 @@ public class PlayerController : MonoBehaviour
     //ShroomUI (placing tbd)
     public MushroomUI shroomUI;
     private int shroomCounter = 0;
+
+
+    //TODO display swing timer
 
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
@@ -138,10 +142,8 @@ public class PlayerController : MonoBehaviour
         currentHP = MaxHP;
 
 
-        seedUI.SetSeedAmount(MaxSeeds); //tbd
+        seedUI.SetSeedAmount(MaxSeeds);
         seedUI.SetSeedCounter(currentSeeds);
-
-        LockCursor();
 
     }
 
@@ -298,7 +300,7 @@ public class PlayerController : MonoBehaviour
         // Press Left Shift to run
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX;
-        if (canMove)
+        if (GameManager.Instance.PlayerHasControl)
             if (isBlocking)
             {
                 curSpeedX = blockingSpeed;
@@ -320,7 +322,7 @@ public class PlayerController : MonoBehaviour
 
 
         float curSpeedY;
-        if (canMove)
+        if (GameManager.Instance.PlayerHasControl)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -352,7 +354,7 @@ public class PlayerController : MonoBehaviour
 
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
+        if (Input.GetButton("Jump") && GameManager.Instance.PlayerHasControl && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
         }
@@ -382,7 +384,7 @@ public class PlayerController : MonoBehaviour
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
-        if (canMove)
+        if (GameManager.Instance.PlayerHasControl)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
@@ -425,9 +427,11 @@ public class PlayerController : MonoBehaviour
             if (collider.TryGetComponent(out IInteractable interactable))
             {
                 currentInteractable = interactable;
+                playerUI.SetInteractText(interactable.UiText());
                 return;
             }
         }
+        playerUI.SetInteractText("");
     }
 
     // public static String ScanInteractableNameStatic(float range, Camera cam)
@@ -567,17 +571,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public static void LockCursor()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
 
-    public static void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
 
     //later damage types
     public void TakeDamage(float amount)

@@ -10,22 +10,19 @@ public class Door : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-
-
-        StageManager stage = FindObjectOfType<StageManager>();
-        if (stage.SurvivorFreed)
-        {
-            stage.EndStage(StageResult.SurvivorRescued);
-        }
-        else
-        {
-            stage.EndStage(StageResult.EnterHomeEarly);
-        }
-
+        GameManager.Instance.DoorInteract();
     }
 
     public string UiText()
     {
-        return "";
+        if(GameManager.Instance.InGamePlayScene)
+        {
+            return PlayerUIController.InteractPrefix + "Return Home Safely";
+        }
+        else
+        {
+            return PlayerUIController.InteractPrefix + "Start Run";
+        }
     }
+
 }

@@ -8,7 +8,7 @@ public class UIController : MonoBehaviour
     //main menu
     public Button StartButton, ProfileButton, SettingsButtonMainMenu, ExitButtonMainMenu;
 
-    public TMPro.TextMeshProUGUI profileText;
+    public TMPro.TextMeshProUGUI profileText, loadingScreenText;
 
     //Loading screen
     public Button ReadyButton;
@@ -26,14 +26,26 @@ public class UIController : MonoBehaviour
         ExitButtonMainMenu.onClick.AddListener(OnExitButtonClicked);
         ReadyButton.onClick.AddListener(OnReadyButtonClicked);
 
-        StartCoroutine(Intro());
+        if(!GameManager.Instance.SkipIntro)
+        {
+            StartCoroutine(Intro());
+        }
+        else
+        {
+        MainMenu.SetActive(true);
+        LoadingScreen.SetActive(false);
+        CreditsScreen.SetActive(false);
+        SplashScreen.SetActive(false);
+        FadePannel.gameObject.SetActive(true);
+        FadePannel.alpha = 0;
+        }
     }
 
     private IEnumerator Intro()
     {
-        const int loops = 100;
         const float fadeDur = 2f;
         const float lingerDur = 3f;
+        const float startingDelay = 1f;
         
         MainMenu.SetActive(false);
         LoadingScreen.SetActive(false);
@@ -41,32 +53,24 @@ public class UIController : MonoBehaviour
         SplashScreen.SetActive(true);
         FadePannel.gameObject.SetActive(true);
         FadePannel.alpha = 1;
-        for (int i = loops - 1; i >= 0; i--)
-        {
-            FadePannel.alpha = fadeDur/loops * i;
-            yield return new WaitForSecondsRealtime(fadeDur/loops);
-        }
+        yield return new WaitForSecondsRealtime(startingDelay);
+        yield return StartCoroutine(GameManager.Instance.FadeSceneToTransparent(fadeDur));
         yield return new WaitForSecondsRealtime(lingerDur);
-        
-        for (int i = 0; i < loops; i++)
-        {
-            FadePannel.alpha = fadeDur/loops * i;
-            yield return new WaitForSecondsRealtime(fadeDur/loops);
-        }
+        yield return StartCoroutine(GameManager.Instance.FadeSceneToBlack(fadeDur));
         SplashScreen.SetActive(false);
         MainMenu.SetActive(true);
-        
-        for (int i = loops - 1; i >= 0; i--)
-        {
-            FadePannel.alpha = fadeDur/loops * i;
-            yield return new WaitForSecondsRealtime(fadeDur/loops);
-        }
+        yield return StartCoroutine(GameManager.Instance.FadeSceneToTransparent(fadeDur));
+    }
+
+    public void SetLoadingScreenText(string text)
+    {
+        loadingScreenText.text = text;
     }
 
     private void OnStartButtonClicked()
     {
         Debug.Log("start button");
-        StartCoroutine(GameManager.Instance.MainMenuToHub(1f,1f));
+        StartCoroutine(GameManager.Instance.MainMenuToHub(1.5f,1.5f));
     }
 
     private void OnProfileButtonClicked()

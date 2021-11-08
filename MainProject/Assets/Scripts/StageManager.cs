@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
@@ -18,9 +19,9 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : MonoBehaviour
 {
+    public GameObject PlyerPrefab;
     public static PlayerController Player;
     public float PlayerSpawnFromHouseOffset = 15f;
-    [SerializeField] private PlayerController playerInScene;
     public bool TestingOnly = false;
     public bool autoupdate = false;
 
@@ -61,28 +62,19 @@ public class StageManager : MonoBehaviour
 
     private bool BossKilled = false;
     private bool SurvivorFound = false;
+    private static bool doorPressed = false;
 
     public int EnemiesMax = 25;
 
     public bool SurvivorFreed = false;
 
 
-    private GameManager GameManager;
-
-    public bool TerrainReady = false;
-    public bool NavMeshBaked = false;
+    public static bool TerrainReady = false;
+    public static bool NavMeshBaked = false;
 
     void Awake()
     {
-        GameManager findgamemanager = FindObjectOfType<GameManager>();
-        if (findgamemanager)
-        {
-            GameManager = findgamemanager;
-        }
-        else
-        {
-            GameManager = Instantiate(new GameObject()).AddComponent<GameManager>();
-        }
+
         PlayerController findplayer = FindObjectOfType<PlayerController>();
         if (findplayer)
         {
@@ -92,7 +84,8 @@ public class StageManager : MonoBehaviour
         {
             Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
         }
-
+        GameManager.Instance.PlayerHasControl = false;
+        Player.playerCamera.enabled = true;
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
 
         MakeStage();
@@ -101,7 +94,18 @@ public class StageManager : MonoBehaviour
 
     private void Update()
     {
-
+        if(doorPressed)
+        {
+            doorPressed = false;
+            if(SurvivorFreed)
+            {
+                EndStage(StageResult.SurvivorRescued);
+            }
+            else
+            {
+                EndStage(StageResult.EnterHomeEarly);
+            }
+        }
     }
 
     public void MakeStage()
@@ -144,7 +148,6 @@ public class StageManager : MonoBehaviour
 
         while (true)
         {
-            Player = playerInScene;
             int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
             if (currentEnemies < EnemiesMax && Player != null)
             {
@@ -170,10 +173,12 @@ public class StageManager : MonoBehaviour
 
     public void SetupPlayer()
     {
-        //Player = Instantiate(PlayerPrefab).GetComponent<PlayerController>();
-        Player = FindObjectOfType<PlayerController>();
+        Player = Instantiate(PlayerPrefab, GameplayTB.PlayerSpawnOutsideHouseOffsetPos, Quaternion.Euler(GameplayTB.PlayerSpawnOutsideHouseRotationEuler)).GetComponent<PlayerController>();
         Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
+        Player.playerUI.ShowGameplayHud();
+        GameManager.Instance.PlayerHasControl = true;
+        GameManager.Instance.LockCursor();
 
         if (localNavMesh)
         {
@@ -196,21 +201,27 @@ public class StageManager : MonoBehaviour
 
 
 
+    public static void DoorPressed()
+    {
+        doorPressed = true;
+    }
 
     public void EndStage(StageResult result)
     {
-
+        bool showCredits = false;
         // Debug.Log("end stage");
         // Loadingscreen.text.text = "Loading Scene";
         // Loadingscreen.gameObject.SetActive(true);
 
-        GameManager.PauseGame();
+        GameManager.Instance.PauseGame();
 
-        if (GameManager.ProfileData.FirstRun)
-        {
-            GameManager.ProfileData.FirstRun = false;
-            //show tips
-        }
+        // if (GameManager.ProfileData.FirstRun)
+        // {
+        //     GameManager.ProfileData.FirstRun = false;
+        //     //show tips
+        // }
+
+
         if (result == StageResult.Death || result == StageResult.TimerExpired)
         {
             //lose all except monster xp
@@ -242,19 +253,17 @@ public class StageManager : MonoBehaviour
             GameManager.ProfileData.StorySuccessProgress++;
             GameManager.ProfileData.UnlockedLightbulb = true;
 
-            SceneManager.LoadScene("EndScreenScene", LoadSceneMode.Single);
+            showCredits = true;
         }
 
 
-        // SceneManager.LoadScene("HubsceneFinal", LoadSceneMode.Single);
-        //swap scene
-
+        StartCoroutine(GameManager.Instance.GameplayToHub(2f, 2f, showCredits));
     }
 
     public void LoadGameplay()
     {
         Debug.Log("loadgameplay");
-        PlayerController.UnlockCursor();
+        GameManager.Instance.UnlockCursor();
     }
 
     public void OnPlayerGetMonsterXP(int amount)
@@ -268,7 +277,7 @@ public class StageManager : MonoBehaviour
             MonsterXPLevelUpThreshholdCurrent = Mathf.RoundToInt(MonsterXPLevelUpThreshholdBase * Mathf.Pow(MonsterXPLevelUpPower, MonsterCurrentLevel));
             MonsterCurrentLevel++;
 
-            //maybe level up current enemies?
+            //TODO level up current enemies
 
         }
 
@@ -293,10 +302,9 @@ public class StageManager : MonoBehaviour
         //double remaining timer
 
 
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(GameplayTB.obejctiveGlobalPosition, out hit, 50f, 1 << GameConstants.GROUNDLAYER))
+        if (NavMesh.SamplePosition(GameplayTB.obejctiveGlobalPosition, out NavMeshHit hit, 50f, 1 << GameConstants.GROUNDLAYER))
         {
-            Instantiate(SurvivorPrefab);
+            Instantiate(SurvivorPrefab, hit.position, Quaternion.identity);
         }
 
         SurvivorFreed = true;

@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public bool SkipIntro = false;
     private static GameManager instance;
 
     public static GameManager Instance { get { return instance; } }
@@ -21,7 +22,11 @@ public class GameManager : MonoBehaviour
     public bool UnlockedProfile = false;
 
     public bool instructionsOKPressed = false;
-    private bool sceneLoaded = false;
+    public bool PlayerHasControl = false;
+
+    public bool InGamePlayScene = false;
+    public bool SceneLoaded = false;
+    public bool SceneCompletelyRady = false;
 
     private void Awake()
     {
@@ -42,157 +47,184 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public IEnumerator FadeToSceneBlack(float fadeOutDuration, float fadeInDuration, int nextScene, LoadSceneMode mode)
+    public IEnumerator FadeSceneToBlack(float fadeOutDuration)
     {
-        const int loops = 100;
         UIController.FadePannel.alpha = 0;
-        for (int i = 0; i < loops; i++)
-        {
-            UIController.FadePannel.alpha = fadeOutDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeOutDuration / loops);
-        }
-        // SceneManager.LoadScene(SceneManager.)
-        SceneManager.LoadScene(nextScene, mode);
 
-        for (int i = loops - 1; i >= 0; i--)
+        for (float i = 0; i <= 1; i += Time.unscaledDeltaTime / fadeOutDuration)
         {
-            UIController.FadePannel.alpha = fadeInDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeInDuration / loops);
+            UIController.FadePannel.alpha = i;
+            yield return null;
+        }
+
+        UIController.FadePannel.alpha = 1;
+    }
+
+    public IEnumerator FadeSceneToTransparent(float fadeInDuration)
+    {
+        UIController.FadePannel.alpha = 1;
+        for (float i = 1; i >= 0; i -= Time.unscaledDeltaTime / fadeInDuration)
+        {
+            UIController.FadePannel.alpha = i;
+            yield return null;
         }
         UIController.FadePannel.alpha = 0;
     }
 
     public IEnumerator MainMenuToHub(float fadeOutDuration, float fadeInDuration)
     {
-        UIController.LoadingScreen.SetActive(true);
-        const int loops = 100;
-        UIController.InstructionsScreen.alpha = 0;
         UIController.InstructionsScreen.interactable = false;
+        UIController.SetLoadingScreenText(".....Cozyfying House.....");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE, LoadSceneMode.Additive);
-        for (int i = 0; i < loops; i++)
-        {
-            UIController.InstructionsScreen.alpha = fadeOutDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeOutDuration / loops);
-        }
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(true);
+        UIController.MainMenu.SetActive(false);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         while (!asyncLoad.isDone)
         {
             yield return null;
         }
         SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
-        UIController.MainMenu.SetActive(false);
-        PlayerController.UnlockCursor();
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.HUBSCENE));
+
+
+
+
+        //! Wait for a bit longer to make person stare at instructions at least a little bit
+        //sounds really stupid, but heres why its useful
+        //loading probably doesnt take 5 seconds, but in those 2 seconds the person looks at the screen,
+        //and has the time to realize that the instructions are there, after which they might take more time to full read them
+        //this is the first loading screen they see, so it makes sense here
+        //on a side effect - loading times feel like something important is happening, if they are not too long
+        //its also a good minibreak for water/something else
+        //tbd if the others should have it but as of now, they do not
+        //TODO Loading screen animation (gif)
+        if (!GameManager.instance.SkipIntro)
+            yield return new WaitForSecondsRealtime(5f);
+
+
+        GameManager.instance.UnlockCursor();
         UIController.InstructionsScreen.interactable = true;
+        UIController.SetLoadingScreenText("Start Journey");
+        SceneLoaded = true;
         while (!instructionsOKPressed)
         {
             yield return null;
         }
-        PlayerController.LockCursor();
-        GameManager.UnPauseGame();
-        instructionsOKPressed = false;
         UIController.InstructionsScreen.interactable = false;
-        for (int i = loops - 1; i >= 0; i--)
-        {
-            UIController.InstructionsScreen.alpha = fadeInDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeInDuration / loops);
-        }
-        UIController.InstructionsScreen.alpha = 0;
+        instructionsOKPressed = false;
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(false);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+        UIController.InstructionsScreen.interactable = false;
+        SceneCompletelyRady = true;
 
     }
 
     public IEnumerator HubToGameplay(float fadeOutDuration, float fadeInDuration)
     {
-        const int loops = 100;
-        UIController.InstructionsScreen.alpha = 0;
         UIController.InstructionsScreen.interactable = false;
+        UIController.SetLoadingScreenText(".....Creating Magical World.....");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE);
-        for (int i = 0; i < loops; i++)
-        {
-            UIController.FadePannel.alpha = fadeOutDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeOutDuration / loops);
-        }
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(true);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         while (!asyncLoad.isDone)
         {
             yield return null;
         }
-
-        StageManager stageManager = FindObjectOfType<StageManager>();
-
-        while (!stageManager.NavMeshBaked && !stageManager.TerrainReady)
+        while (!StageManager.NavMeshBaked && !StageManager.TerrainReady)
         {
             yield return null;
         }
-
+        SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.GAMEPLAYSCENE));
+        GameManager.instance.UnlockCursor();
         UIController.InstructionsScreen.interactable = true;
+        UIController.SetLoadingScreenText("I must save the Survivor!");
         while (!instructionsOKPressed)
         {
             yield return null;
         }
-        instructionsOKPressed = false;
-
-        for (int i = loops - 1; i >= 0; i--)
-        {
-            UIController.InstructionsScreen.alpha = fadeInDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeInDuration / loops);
-        }
-        UIController.InstructionsScreen.alpha = 0;
-    }
-
-    public IEnumerator GameplayToHub(float fadeOutDuration, float fadeInDuration)
-    {
-        const int loops = 100;
-        UIController.InstructionsScreen.alpha = 0;
         UIController.InstructionsScreen.interactable = false;
+        instructionsOKPressed = false;
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(false);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+    }
+
+    //TODO show credits
+    public IEnumerator GameplayToHub(float fadeOutDuration, float fadeInDuration, bool ShowCredits)
+    {
+        UIController.InstructionsScreen.interactable = false;
+        UIController.SetLoadingScreenText(".....Lighting Firepit.....");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE);
-        for (int i = 0; i < loops; i++)
-        {
-            UIController.FadePannel.alpha = fadeOutDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeOutDuration / loops);
-        }
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(true);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         while (!asyncLoad.isDone)
         {
             yield return null;
         }
-
+        SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.HUBSCENE));
+        GameManager.instance.UnlockCursor();
         UIController.InstructionsScreen.interactable = true;
+        UIController.SetLoadingScreenText("Home sweet Home");
         while (!instructionsOKPressed)
         {
             yield return null;
         }
+        UIController.InstructionsScreen.interactable = false;
         instructionsOKPressed = false;
-
-        for (int i = loops - 1; i >= 0; i--)
-        {
-            UIController.InstructionsScreen.alpha = fadeInDuration / loops * i;
-            yield return new WaitForSecondsRealtime(fadeInDuration / loops);
-        }
-        UIController.InstructionsScreen.alpha = 0;
+        yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
+        UIController.LoadingScreen.SetActive(false);
+        yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
     }
 
 
-    public static void UnlockEverything()
+    public void UnlockEverything()
     {
         ProfileData = new ProfileData(true);
     }
 
-    public static void NewProfile()
+    public void NewProfile()
     {
         ProfileData = new ProfileData(false);
     }
 
-    public static void ChangeScene()
+    public void DoorInteract()
     {
-
+        if (InGamePlayScene)
+        {
+            StageManager.DoorPressed();
+        }
+        else
+        {
+            StartCoroutine(HubToGameplay(2f, 2f));
+        }
+        InGamePlayScene = !InGamePlayScene;
     }
 
 
-
-    public static void PauseGame()
+    public void PauseGame()
     {
-        Time.timeScale = 0;
+        // Time.timeScale = 0;
     }
 
-    public static void UnPauseGame()
+    public void UnPauseGame()
     {
-        Time.timeScale = 1;
+        // Time.timeScale = 1;
+    }
+    public void LockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    public void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

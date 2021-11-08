@@ -15,9 +15,9 @@ public static class GameConstants
 
 
     //scenes
-    public const int MAINMENUSCNEN = 1;
-    public const int HUBSCENE = 2;
-    public const int GAMEPLAYSCENE = 3;
+    public const int MAINMENUSCNEN = 0;
+    public const int HUBSCENE = 1;
+    public const int GAMEPLAYSCENE = 2;
 
 
     //tags

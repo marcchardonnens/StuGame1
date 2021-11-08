@@ -148,6 +148,7 @@ public class MeshGenerator
                 MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();
                 meshRenderer.sharedMaterial = material;
                 meshRenderer.material = material;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
                 MeshCollider meshCollider = terrainChunk.AddComponent<MeshCollider>();
                 
                 mesh.vertices = vertices;

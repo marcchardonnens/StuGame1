@@ -28,6 +28,8 @@ public class StageManager : MonoBehaviour
     public TerrainBuilder HubTB;
 
     public NavMeshSurface Surface;
+    public float NavMeshBakRepeatTimer = 5f;
+    public bool localNavMesh = true;
     public GameObject PlayerPrefab;
     public GameObject EnemyPrefab;
     public GameObject SurvivorPrefab;
@@ -102,8 +104,6 @@ public class StageManager : MonoBehaviour
 
     }
 
-
-
     public void MakeStage()
     {
         if (TestingOnly)
@@ -120,13 +120,17 @@ public class StageManager : MonoBehaviour
     private IEnumerator OnTerrainReady()
     {
         yield return new WaitUntil(() => TerrainReady);
-        StartCoroutine(BakeNavMesh());
+        if (!localNavMesh)
+        {
+            StartCoroutine(BakeNavMeshGlobal());
+        }
+
         SetupPlayer();
         StartCoroutine(EnemySpawner());
 
     }
 
-    private IEnumerator BakeNavMesh()
+    private IEnumerator BakeNavMeshGlobal()
     {
         Surface.BuildNavMesh();
         NavMeshBaked = true;
@@ -170,6 +174,23 @@ public class StageManager : MonoBehaviour
         Player = FindObjectOfType<PlayerController>();
         Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
+
+        if (localNavMesh)
+        {
+            StartCoroutine(BakeNavMeshLocal(NavMeshBakRepeatTimer));
+            NavMeshBaked = true;
+        }
+
+
+    }
+
+    public IEnumerator BakeNavMeshLocal(float delay)
+    {
+        while (true)
+        {
+            Player.Surface.BuildNavMesh();
+            yield return new WaitForSeconds(delay);
+        }
     }
 
 

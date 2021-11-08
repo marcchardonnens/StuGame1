@@ -17,12 +17,10 @@ public class MenuSceneController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Started");
         startButton.onClick.AddListener(TaskStartButton);
         profileButton.onClick.AddListener(TaskProfileButton);
         settingsButton.onClick.AddListener(TaskSettingsButton);
         exitButton.onClick.AddListener(TaskExitButton);
-        
         CanvasObject = GetComponent<Canvas> ();
 
 

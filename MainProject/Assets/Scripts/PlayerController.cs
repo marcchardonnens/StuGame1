@@ -1,7 +1,7 @@
 using System.Threading;
 using System;
 using UnityEngine;
-
+using Unity.AI.Navigation;
 
 public enum PowerupType
 {
@@ -85,9 +85,10 @@ public class PlayerController : MonoBehaviour
     public float Armor = 0;
 
 
-    CharacterController characterController; //unitys "improved rigidbody" for characters
-    Vector3 moveDirection = Vector3.zero;
-    float rotationX = 0;
+    public NavMeshSurface Surface;
+    private CharacterController characterController; //unitys "improved rigidbody" for characters
+    private Vector3 moveDirection = Vector3.zero;
+    private float rotationX = 0;
     [HideInInspector] public bool canMove = true;
     [SerializeField] private float currentHP;
     [SerializeField] private int currentSeeds = 5;
@@ -126,6 +127,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+
         stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
         PreviewSphere = Instantiate(PreviewSphere);

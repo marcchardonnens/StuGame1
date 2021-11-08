@@ -110,7 +110,7 @@ public class TerrainBuilder : MonoBehaviour
         Scenery.transform.SetParent(transform, false);
         SceneVisibilityManager.instance.DisablePicking(Scenery, true);
 
-        Ground = new GameObject("Terrain");
+        Ground = new GameObject("Ground");
         Ground.transform.SetParent(transform, false);
 
         Terrain = new GameObject("HubTerrain");

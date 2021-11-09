@@ -131,7 +131,7 @@ public class Enemy : MonoBehaviour
         HealthSlider.maxValue = MaxHP;
         HealthSlider.value = currentHP;
         HealthSlider.gameObject.transform.LookAt(player.playerCamera.transform.position);
-        HealthSlider.gameObject.transform.eulerAngles += new Vector3(0,180f,0);
+        HealthSlider.gameObject.transform.localEulerAngles += new Vector3(0,180f,0);
 
         slowupdate -= Time.deltaTime;
         stunnedTimer -= Time.deltaTime;

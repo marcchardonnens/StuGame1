@@ -7,7 +7,20 @@ using UnityEngine.SceneManagement;
 //this class ist responsible for the whole flow of the game.
 //switching scenes, managing game state, etc...
 
+//TODO propper playerstate
 
+//TODO use this
+public enum GameState
+{
+    Broken = 0,
+    Menu,
+    TransitionMenuHub,
+    Hub,
+    TransitionHubGameplay,
+    Gameplay,
+    TransitionGameplayHub,
+    TransitionGameplayMenu
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -23,10 +36,10 @@ public class GameManager : MonoBehaviour
 
     public bool instructionsOKPressed = false;
     public bool PlayerHasControl = false;
-
     public bool InGamePlayScene = false;
     public bool SceneLoaded = false;
-    public bool SceneCompletelyRady = false;
+    public bool SceneCompletelyReady = false;
+    public int CurrentSceneIndex = 0; //0 = menu
 
     private void Awake()
     {
@@ -75,7 +88,7 @@ public class GameManager : MonoBehaviour
     {
         GameManager.Instance.PlayerHasControl = false;
         GameManager.instance.SceneLoaded = false;
-        GameManager.instance.SceneCompletelyRady = false;
+        GameManager.instance.SceneCompletelyReady = false;
         UIController.InstructionsScreen.interactable = false;
         UIController.SetLoadingScreenText(".....Cozyfying House.....");
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE, LoadSceneMode.Additive);
@@ -87,6 +100,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        CurrentSceneIndex = 1;
         SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.HUBSCENE));
 
@@ -121,7 +135,7 @@ public class GameManager : MonoBehaviour
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         UIController.InstructionsScreen.interactable = false;
-        SceneCompletelyRady = true;
+        SceneCompletelyReady = true;
         GameManager.Instance.PlayerHasControl = true;
 
     }
@@ -130,7 +144,7 @@ public class GameManager : MonoBehaviour
     {
         GameManager.Instance.PlayerHasControl = false;
         GameManager.instance.SceneLoaded = false;
-        GameManager.instance.SceneCompletelyRady = false;
+        GameManager.instance.SceneCompletelyReady = false;
         UIController.InstructionsScreen.interactable = false;
         GameManager.instance.LockCursor();
         UIController.SetLoadingScreenText(".....Creating Magical World.....");
@@ -142,16 +156,17 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        CurrentSceneIndex = 2;
         while (!StageManager.NavMeshBaked && !StageManager.TerrainReady)
         {
             yield return null;
         }
         GameManager.instance.SceneLoaded = true;
         UIController.InstructionsScreen.interactable = true;
-        UIController.SetLoadingScreenText("I must save the Survivor!");
         GameManager.instance.UnlockCursor();
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.GAMEPLAYSCENE));
         SceneManager.UnloadSceneAsync(GameConstants.HUBSCENE);
+        UIController.SetLoadingScreenText("I must save the Survivor!");
         while (!instructionsOKPressed)
         {
             yield return null;
@@ -162,7 +177,7 @@ public class GameManager : MonoBehaviour
         GameManager.instance.LockCursor();
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
-        SceneCompletelyRady = true;
+        SceneCompletelyReady = true;
         GameManager.Instance.PlayerHasControl = true;
     }
 
@@ -171,7 +186,7 @@ public class GameManager : MonoBehaviour
     {
         GameManager.Instance.PlayerHasControl = false;
         GameManager.instance.SceneLoaded = false;
-        GameManager.instance.SceneCompletelyRady = false;
+        GameManager.instance.SceneCompletelyReady = false;
         UIController.InstructionsScreen.interactable = false;
         UIController.SetLoadingScreenText(".....Lighting Firepit.....");
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
@@ -182,6 +197,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        CurrentSceneIndex = 1;
         GameManager.instance.SceneLoaded = true;
         SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameConstants.HUBSCENE));
@@ -197,7 +213,7 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
-        SceneCompletelyRady = true;
+        SceneCompletelyReady = true;
         GameManager.Instance.PlayerHasControl = true;
     }
 
@@ -214,26 +230,30 @@ public class GameManager : MonoBehaviour
 
     public void DoorInteract()
     {
-        if (InGamePlayScene)
+        if (GameManager.instance.CurrentSceneIndex == 2)
         {
             StageManager.DoorPressed();
         }
         else
         {
+
             StartCoroutine(HubToGameplay(2f, 2f));
         }
-        InGamePlayScene = !InGamePlayScene;
     }
 
 
     public void PauseGame()
     {
-        // Time.timeScale = 0;
+        Time.timeScale = 0;
+        UnlockCursor();
+        PlayerHasControl = false;
     }
 
     public void UnPauseGame()
     {
-        // Time.timeScale = 1;
+        Time.timeScale = 1;
+        LockCursor();
+        PlayerHasControl = true;
     }
     public void LockCursor()
     {

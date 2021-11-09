@@ -137,7 +137,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        UpdateGameplayHUD();
+        UpdateHUD();
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -285,7 +285,7 @@ public class PlayerController : MonoBehaviour
         // Press Left Shift to run
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX;
-        if (GameManager.Instance.PlayerHasControl)
+        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedX = blockingSpeed;
@@ -307,7 +307,7 @@ public class PlayerController : MonoBehaviour
 
 
         float curSpeedY;
-        if (GameManager.Instance.PlayerHasControl)
+        if (GameManager.Instance.PlayerHasControl  && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -339,7 +339,7 @@ public class PlayerController : MonoBehaviour
 
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && GameManager.Instance.PlayerHasControl && characterController.isGrounded)
+        if (Input.GetButton("Jump") && GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
         }
@@ -369,7 +369,7 @@ public class PlayerController : MonoBehaviour
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
-        if (GameManager.Instance.PlayerHasControl)
+        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
@@ -380,13 +380,23 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    private void UpdateGameplayHUD()
+    private void UpdateHUD()
     {
-        playerUI.UpdateHealth(currentHP, MaxHP);
-        playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
-        playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
-        playerUI.UpdateMushroomCount(shroomCounter);
-        playerUI.UpdateTime(StageManager.StageTimer);
+        if(GameManager.Instance.CurrentSceneIndex == 2)
+        {
+            playerUI.UpdateHealth(currentHP, MaxHP);
+            playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
+            playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
+            playerUI.UpdateMushroomCount(shroomCounter);
+            playerUI.UpdateTime(StageManager.StageTimer);
+        }
+        else if(GameManager.Instance.CurrentSceneIndex == 1)
+        {
+            playerUI.UpdateHealth(currentHP, MaxHP);
+            playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
+            playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
+            
+        }
     }
 
     private void InteractWithObject()

@@ -63,6 +63,8 @@ public class StageManager : MonoBehaviour
     private bool BossKilled = false;
     private bool SurvivorFound = false;
     private static bool doorPressed = false;
+    private static bool giveUp = false;
+    private static bool exitGame = false;
 
     public int EnemiesMax = 25;
 
@@ -84,12 +86,18 @@ public class StageManager : MonoBehaviour
     private void Update()
     {
 
-        if (GameManager.Instance.SceneLoaded)
+        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2)
         {
             SetupPlayer();
             StartCoroutine(EnemySpawner());
             GameManager.Instance.SceneLoaded = false;
             return;
+        }
+        else if(GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 2)
+        {
+            // GameManager.Instance.LockCursor();
+            // GameManager.Instance.PlayerHasControl = true;
+            // Player.playerUI.ShowGameplayHud();
         }
 
         StageTimer -= Time.deltaTime;
@@ -108,6 +116,15 @@ public class StageManager : MonoBehaviour
             {
                 EndStage(StageResult.EnterHomeEarly);
             }
+        }
+        if(giveUp)
+        {
+            giveUp = false;
+            EndStage(StageResult.TimerExpired);
+        }
+        if(exitGame)
+        {
+            EndStage(StageResult.TimerExpired);
         }
     }
 
@@ -179,7 +196,7 @@ public class StageManager : MonoBehaviour
         Player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
         Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
-        Player.playerUI.ShowGameplayHud();
+        // Player.playerUI.ShowGameplayHud();
 
         if (localNavMesh)
         {
@@ -197,8 +214,15 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    public static void ExitGame()
+    {
+        exitGame = true;
+    }
 
-
+    public static void GiveUp()
+    {
+        giveUp = true;
+    }
 
     public static void DoorPressed()
     {
@@ -208,9 +232,6 @@ public class StageManager : MonoBehaviour
     public void EndStage(StageResult result)
     {
         bool showCredits = false;
-        // Debug.Log("end stage");
-        // Loadingscreen.text.text = "Loading Scene";
-        // Loadingscreen.gameObject.SetActive(true);
 
         GameManager.Instance.PauseGame();
 
@@ -255,6 +276,12 @@ public class StageManager : MonoBehaviour
             showCredits = true;
         }
 
+        if(exitGame)
+        {
+            exitGame = false;
+            //TODO back to main menu
+            return;
+        }
 
         StartCoroutine(GameManager.Instance.GameplayToHub(2f, 2f, showCredits));
     }

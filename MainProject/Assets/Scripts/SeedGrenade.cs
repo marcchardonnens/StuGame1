@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class SeedGrenade : MonoBehaviour
 {
     public float ThrowForce = 20f;
@@ -116,6 +117,7 @@ public class SeedGrenade : MonoBehaviour
 
     }
 
+    //TODO fix
     public IEnumerator Pulse()
     {
         GameObject pulse = Instantiate(LingerField);

@@ -27,24 +27,19 @@ public class HubManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.Instance.SceneLoaded)
+        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 1)
         {
             GameManager.Instance.SceneLoaded = false;
             SetupHubscene();
         }
-        else if(GameManager.Instance.SceneCompletelyRady)
+        else if (GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 1)
         {
-            GameManager.Instance.SceneCompletelyRady = false;
-            UnlockPlayer();
+            GameManager.Instance.SceneCompletelyReady = false;
+            // GameManager.Instance.PlayerHasControl = true;
+            // GameManager.Instance.LockCursor();
+            // Player.playerUI.ShowHubHud();
+            // Player.playerCamera.enabled = true;
         }
-    }
-
-    private void UnlockPlayer()
-    {
-        GameManager.Instance.PlayerHasControl = true;
-        GameManager.Instance.LockCursor();
-        Player.playerUI.ShowHubHud();
-        Player.playerCamera.enabled = true;
     }
 
     public void SetupHubscene()

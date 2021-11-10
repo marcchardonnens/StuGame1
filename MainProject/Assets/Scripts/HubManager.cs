@@ -32,7 +32,7 @@ public class HubManager : GameplayManagerBase
         if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 1)
         {
             GameManager.Instance.SceneLoaded = false;
-            CreatePlayer();
+            // CreatePlayer();
         }
         else if (GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 1)
         {
@@ -42,7 +42,7 @@ public class HubManager : GameplayManagerBase
 
 
 
-    public PlayerController CreatePlayer()
+    public override PlayerController CreatePlayer()
     {
         if (HasWokenUp)
         {
@@ -56,7 +56,8 @@ public class HubManager : GameplayManagerBase
 
     public override void SetupStage()
     {
-        throw new NotImplementedException();
+        //might not be needed
+        StageReady = true;
     }
 
     public void InitiateNewRun()

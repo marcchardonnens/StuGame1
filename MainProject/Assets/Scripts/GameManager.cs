@@ -25,14 +25,16 @@ public enum GameState
 public class GameManager : MonoBehaviour
 {
     public bool SkipIntro = false;
-    public static PlayerController Player;
     private static GameManager instance;
 
     public static GameManager Instance { get { return instance; } }
 
     public static ProfileData ProfileData = new ProfileData(false);
+    public PlayerController Player;
+    [HideInInspector] public GameplayManagerBase CurrentManager;
 
     public UIController UIController;
+    public Camera MainCamera;
     public bool UnlockedProfile = false;
     public bool instructionsOKPressed = false;
     public bool PlayerHasControl = false;
@@ -97,6 +99,10 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         CurrentSceneIndex = 1;
+        CurrentManager = FindObjectOfType<HubManager>();
+        CurrentManager.SetupStage();
+        
+        PlayerCreation(CurrentManager);
 
         //! Wait for a bit longer to make person stare at instructions at least a little bit
         //sounds really stupid, but heres why its useful
@@ -150,11 +156,14 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         CurrentSceneIndex = 2;
-        while (!StageManager.NavMeshBaked || !StageManager.TerrainReady)
+        GameManager.instance.SceneLoaded = true;
+        CurrentManager = FindObjectOfType<StageManager>();
+        CurrentManager.SetupStage();
+        while (!CurrentManager.StageReady)
         {
             yield return null;
         }
-        GameManager.instance.SceneLoaded = true;
+        PlayerCreation(CurrentManager);
         GameManager.instance.UnlockCursor();
         UIController.InstructionsScreen.interactable = true;
         UIController.SetLoadingScreenText("I must save the Survivor!");
@@ -182,7 +191,7 @@ public class GameManager : MonoBehaviour
         GameManager.instance.SceneLoaded = false;
         GameManager.instance.SceneCompletelyReady = false;
         UIController.InstructionsScreen.interactable = false;
-        UIController.SetLoadingScreenText(".....Cozyfying House.....");
+        UIController.SetLoadingScreenText(".....Lighting Firepit.....");
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(true);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
@@ -196,13 +205,17 @@ public class GameManager : MonoBehaviour
         }
         CurrentSceneIndex = 1;
         SceneLoaded = true;
+        CurrentManager = FindObjectOfType<HubManager>();
+        CurrentManager.SetupStage();
+        
+        PlayerCreation(CurrentManager);
         instructionsOKPressed = false;
         GameManager.instance.UnlockCursor();
         UIController.InstructionsScreen.interactable = true;
         ///--------------------------
 
 
-        UIController.SetLoadingScreenText("Start Journey");
+        UIController.SetLoadingScreenText("Home Sweet Home");
         while (!instructionsOKPressed)
         {
             yield return null;
@@ -226,11 +239,39 @@ public class GameManager : MonoBehaviour
         GameManager.Instance.PlayerHasControl = false;
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         CurrentSceneIndex = 0;
+        RemovePlayerAndSwapToMainCamera();
         SceneManager.LoadScene(GameConstants.MAINMENUSCENE, LoadSceneMode.Single);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         GameManager.instance.UnlockCursor();
     }
 
+    public void PlayerCreation(IGameplayManager manager)
+    {
+        if(Player != null)
+        {
+            Destroy(Player.gameObject);
+        }
+        Player = manager.CreatePlayer();
+        SwapActiveCameraAndSoundlistenerToPlayer(Player);
+    }
+
+    public void SwapActiveCameraAndSoundlistenerToPlayer(PlayerController player)
+    {
+        MainCamera.enabled = false;
+        MainCamera.GetComponent<AudioListener>().enabled = false;
+        player.playerCamera.enabled = true;
+        player.playerCamera.GetComponent<AudioListener>().enabled = true;
+    }
+
+    public void RemovePlayerAndSwapToMainCamera()
+    {
+        if(Player != null)
+        {
+            Destroy(Player.gameObject);
+        }
+        MainCamera.enabled = false;
+        MainCamera.GetComponent<AudioListener>().enabled = false;
+    }
 
     public void UnlockEverything()
     {

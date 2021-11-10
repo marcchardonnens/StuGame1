@@ -17,7 +17,7 @@ public class WoodResource : MonoBehaviour, ITakeDamage
         if (Health < 0 && !dead)
         {
             dead = true;
-            StageManager.Player.GetWood(WoodAmount);
+            GameManager.Instance.Player.GetWood(WoodAmount);
 
             GetComponent<Animation>().Play("tree003UpperPart|treeFallingCut");
             StartCoroutine(Death());

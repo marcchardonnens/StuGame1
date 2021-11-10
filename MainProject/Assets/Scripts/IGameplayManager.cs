@@ -4,9 +4,8 @@ using UnityEngine;
 
 public interface IGameplayManager
 {
-    PlayerController CreatePlayer(Vector3 pos, Vector3 rot); 
+    PlayerController CreatePlayer();
     void SetupStage();
     void OnSceneLoaded();
     void OnSceneCompletelyReady();
-
 }

@@ -1750,7 +1750,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SkipIntro: 1
+  CurrentManager: {fileID: 0}
   UIController: {fileID: 1600630958}
+  MainCamera: {fileID: 1461749120}
   UnlockedProfile: 0
   instructionsOKPressed: 0
   PlayerHasControl: 0

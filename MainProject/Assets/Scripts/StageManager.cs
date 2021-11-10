@@ -19,7 +19,6 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : GameplayManagerBase
 {
-    public static PlayerController Player;
     public static float StageTimer = 900;
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
@@ -74,9 +73,10 @@ public class StageManager : GameplayManagerBase
 
     protected override void Awake()
     {
-        GameManager.Instance.PlayerHasControl = false;
+        base.Awake();
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
         TerrainReady = false;
+        NavMeshBaked = false;
         SetupStage();
         StartCoroutine(OnTerrainReady());
 
@@ -85,10 +85,10 @@ public class StageManager : GameplayManagerBase
     protected override void Update()
     {
         base.Update();
+        StageReady = TerrainReady && NavMeshBaked;
         if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
         {
             GameManager.Instance.SceneLoaded = false;
-            SetupPlayer();
             return;
         }
         else if(GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
@@ -170,13 +170,13 @@ public class StageManager : GameplayManagerBase
         while (true)
         {
             int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
-            if (currentEnemies < EnemiesMax && Player != null)
+            if (currentEnemies < EnemiesMax && GameManager.Instance.Player != null)
             {
                 int spawns = System.Math.Min(EnemiesSpawnedPerCycle, EnemiesMax - currentEnemies);
                 for (int i = 0; i < spawns; i++)
                 {
                     Vector2 circle = Random.insideUnitCircle * EnemySpawnRange;
-                    Vector3 randompos = new Vector3(circle.x, 0, circle.y) + Player.transform.position;
+                    Vector3 randompos = new Vector3(circle.x, 0, circle.y) + GameManager.Instance.Player.transform.position;
                     NavMeshHit hit;
                     if (NavMesh.SamplePosition(randompos, out hit, EnemySpawnRange, NavMesh.AllAreas))
                     {
@@ -191,24 +191,24 @@ public class StageManager : GameplayManagerBase
         }
     }
 
-
-    public void SetupPlayer()
+    public override PlayerController CreatePlayer()
     {
-        Player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
-        Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
-        Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
+        PlayerController player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
+        player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
+        player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
         if (localNavMesh)
         {
             StartCoroutine(BakeNavMeshLocal(NavMeshBakRepeatTimer));
             NavMeshBaked = true;
         }
+        return player;
     }
 
     public IEnumerator BakeNavMeshLocal(float delay)
     {
         while (true)
         {
-            Player.Surface.BuildNavMesh();
+            GameManager.Instance.Player.Surface.BuildNavMesh();
             yield return new WaitForSeconds(delay);
         }
     }

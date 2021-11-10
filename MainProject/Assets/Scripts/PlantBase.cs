@@ -22,12 +22,12 @@ public abstract class PlantBase : MonoBehaviour, IPlant
             StartCoroutine(Grow(GrowTime));
         }
         currentHP = MaxHP;
-        player = GameManager.Player;
+        player = GameManager.Instance.Player;
     }
 
     public virtual IEnumerator Grow(float growtime)
     {
-        player = GameManager.Player;
+        player = GameManager.Instance.Player;
         if (GrowTime > 0)
         {
             finalScale = transform.localScale;

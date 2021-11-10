@@ -11,8 +11,11 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
     protected static GameplayManagerBase instance;
     public static GameplayManagerBase Instance { get { return instance; } }
 
+    public bool StageReady = false;
+
     protected virtual void Awake()
     {
+        StageReady = false;
         if (instance != null && instance != this)
         {
             Destroy(this.gameObject);
@@ -38,9 +41,9 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
         }
     }
 
-    public virtual PlayerController CreatePlayer(Vector3 pos, Vector3 rot)
+    public virtual PlayerController CreatePlayer()
     {
-        return Instantiate(PlayerPrefab, pos, Quaternion.Euler(rot)).GetComponent<PlayerController>();
+        return Instantiate(PlayerPrefab, Vector3.zero, Quaternion.identity).GetComponent<PlayerController>();
     }
 
 
@@ -48,7 +51,6 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 
     public virtual void OnSceneLoaded()
     {
-        CreatePlayer(Vector3.zero, Vector3.zero);
     }
 
     public virtual void OnSceneCompletelyReady()

@@ -24,7 +24,7 @@ public class Survivor : MonoBehaviour
         while(true)
         {
 
-            agent.SetDestination(StageManager.Player.transform.position);
+            agent.SetDestination(GameManager.Instance.Player.transform.position);
             yield return new WaitForSeconds(followInterval);     
         }
     }

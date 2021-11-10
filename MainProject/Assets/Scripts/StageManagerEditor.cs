@@ -16,13 +16,11 @@ public class StageManagerEditor : Editor
         if (GUILayout.Button("Generate"))
         {
             stageManager.SetupStage();
-            //map.GenerateSimple();
         }
 
         if (DrawDefaultInspector() && stageManager.autoupdate)
         {
             stageManager.SetupStage();
-            //map.GenerateSimple();
         }
 
     }

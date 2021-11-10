@@ -11,17 +11,17 @@ public class StageManagerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        StageManager map = (StageManager)target;
+        StageManager stageManager = (StageManager)target;
         
         if (GUILayout.Button("Generate"))
         {
-            map.MakeStage();
+            stageManager.SetupStage();
             //map.GenerateSimple();
         }
 
-        if (DrawDefaultInspector() && map.autoupdate)
+        if (DrawDefaultInspector() && stageManager.autoupdate)
         {
-            map.MakeStage();
+            stageManager.SetupStage();
             //map.GenerateSimple();
         }
 

@@ -3,18 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HubManager : MonoBehaviour
+public class HubManager : GameplayManagerBase
 {
-    public GameObject PlayerPrefab;
-    public static PlayerController Player;
     public Vector3 PlayerWakeupPos;
     public Vector3 PlayerWakeupRot;
     public Vector3 PlayerEnterHomePos;
     public Vector3 PlayerEnterHomeRot;
     public bool HasWokenUp = true;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         Debug.Log("Hub Manager Awake");
 
     }
@@ -24,13 +23,16 @@ public class HubManager : MonoBehaviour
 
     }
 
+    
+
     // Update is called once per frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();
         if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 1)
         {
             GameManager.Instance.SceneLoaded = false;
-            SetupPlayer();
+            CreatePlayer();
         }
         else if (GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 1)
         {
@@ -38,16 +40,23 @@ public class HubManager : MonoBehaviour
         }
     }
 
-    public void SetupPlayer()
+
+
+    public PlayerController CreatePlayer()
     {
         if (HasWokenUp)
         {
-            Player = Instantiate(PlayerPrefab, PlayerWakeupPos, Quaternion.Euler(PlayerWakeupRot)).GetComponent<PlayerController>();
+            return Instantiate(PlayerPrefab, PlayerWakeupPos, Quaternion.Euler(PlayerWakeupRot)).GetComponent<PlayerController>();
         }
         else
         {
-            Player = Instantiate(PlayerPrefab, PlayerEnterHomePos, Quaternion.Euler(PlayerEnterHomeRot)).GetComponent<PlayerController>();
+            return Instantiate(PlayerPrefab, PlayerEnterHomePos, Quaternion.Euler(PlayerEnterHomeRot)).GetComponent<PlayerController>();
         }
+    }
+
+    public override void SetupStage()
+    {
+        throw new NotImplementedException();
     }
 
     public void InitiateNewRun()
@@ -70,6 +79,5 @@ public class HubManager : MonoBehaviour
     {
 
     }
-
 
 }

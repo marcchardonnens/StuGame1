@@ -17,21 +17,19 @@ public enum StageResult
 
 //this class is responsible for managing the Gameplay in the gameplay Scene
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
-public class StageManager : MonoBehaviour
+public class StageManager : GameplayManagerBase
 {
     public static PlayerController Player;
-    public static float StageTimer = 1500f;
+    public static float StageTimer = 900;
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
     public bool autoupdate = false;
 
     public TerrainBuilder GameplayTB;
-    public TerrainBuilder HubTB;
 
     public NavMeshSurface Surface;
     public float NavMeshBakRepeatTimer = 5f;
     public bool localNavMesh = true;
-    public GameObject PlayerPrefab;
     public GameObject EnemyPrefab;
     public GameObject SurvivorPrefab;
     public GameObject BossPrefab;
@@ -74,18 +72,19 @@ public class StageManager : MonoBehaviour
     public static bool TerrainReady = false;
     public static bool NavMeshBaked = false;
 
-    void Awake()
+    protected override void Awake()
     {
         GameManager.Instance.PlayerHasControl = false;
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
         TerrainReady = false;
-        MakeStage();
+        SetupStage();
         StartCoroutine(OnTerrainReady());
 
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
         if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
         {
             GameManager.Instance.SceneLoaded = false;
@@ -136,7 +135,7 @@ public class StageManager : MonoBehaviour
 
 
 
-    public void MakeStage()
+    public override void SetupStage()
     {
         if (TestingOnly)
         {
@@ -331,8 +330,5 @@ public class StageManager : MonoBehaviour
 
 
     }
-
-
-
 
 }

@@ -10,21 +10,8 @@ public class SeedPlant : PlantBase, IInteractable
     public Light Light;
     public GameObject bloom;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
-
-    // Update is called once per frame
-    void Update()
-    {
-        StartCoroutine(Grow(GrowTime));
-    }
-
     public void Interact()
     {
-
         Debug.Log("Seedplant Interact");
 
         if (grown)

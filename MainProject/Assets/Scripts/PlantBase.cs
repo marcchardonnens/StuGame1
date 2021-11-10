@@ -19,6 +19,7 @@ public abstract class PlantBase : MonoBehaviour, IPlant
         {
             finalScale = transform.localScale;
             transform.localScale = Vector3.zero;
+            StartCoroutine(Grow(GrowTime));
         }
         currentHP = MaxHP;
         player = GameManager.Player;
@@ -42,6 +43,14 @@ public abstract class PlantBase : MonoBehaviour, IPlant
 
     public virtual bool TakeDamage(float amount)
     {
-        throw new System.NotImplementedException();
+        currentHP -= amount;
+        if(currentHP <= 0)
+        {
+            Destroy(gameObject);
+            //TODO raise plant died event
+            return true;
+        }
+        //TODO raise plant take damage event
+        return false;
     }
 }

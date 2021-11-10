@@ -34,7 +34,6 @@ public class GameManager : MonoBehaviour
 
     public UIController UIController;
     public bool UnlockedProfile = false;
-
     public bool instructionsOKPressed = false;
     public bool PlayerHasControl = false;
     public bool InGamePlayScene = false;
@@ -53,12 +52,7 @@ public class GameManager : MonoBehaviour
             instance = this;
         }
         DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-
+        // SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public IEnumerator FadeSceneToBlack(float fadeOutDuration)

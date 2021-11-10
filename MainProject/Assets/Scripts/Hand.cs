@@ -9,8 +9,8 @@ public class Hand : MonoBehaviour
     public const string BLOCKANIM = "BlockHammerAxe";
     public const string UNBLOCKANIM = "UnBlockHammerAxe";
 
-    public const float SWINGTIME = 0.50f;
-    public const float BLOCKTIME = 0.15f;
+    public const float SWINGTIME = 0.25f; //clip length 0.5s, shortening swing time, so enemies dont get hit on the way back
+    public const float BLOCKTIME = 0.15f; // clip time 0.15s
 
     public PlayerController Player;
     public Weapon weapon;

@@ -4,31 +4,11 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public enum EnemyState
-{
-    Spawning,
-    Idle,
-    Stunned,
-    Wandering,
-    EnteringCombat,
-    RangedAttacking,
-    MeleeAttacking,
-    ReturnToSpawn,
-    Dying,
-    Dead,
-}
-
-
-
-
 
 public class Boss : Enemy
 {
     public int RangedAttackSalveAmount = 5;
     public float RangedAttackSalveSpreadAngle = 30f;
-    
-
-
     public float MeteorDamage = 50f;
     public float MeteorDelay = 2f;
     public float MeteorImpactRadius = 3f;
@@ -52,35 +32,7 @@ public class Boss : Enemy
     private float meteorCd = 0f;
     private float summonCd = 0f;
 
-    //public bool TakeDamage(float amount)
-    //{
-    //    bool killingBlow = false;
-
-    //    amount -= Armor;
-
-    //    //TODO mittigation
-
-
-    //    if (amount > 0)
-    //    {
-    //        currentHP -= amount;
-    //    }
-
-
-
-    //    if (killingBlow)
-    //    {
-    //        player.GetMonsterXP(RewardAmount());
-    //        player.GenerateRage(player.KillRageAmount);
-    //    }
-
-    //    killingBlow = CheckDeathCondition();
-
-    //    return killingBlow;
-
-    //}
-
-    public int RewardAmount()
+    public override int RewardAmount()
     {
         float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount ;
 
@@ -96,7 +48,7 @@ public class Boss : Enemy
     }
 
 
-    public void Stun(float duration, EnemyState? nextState = null)
+    public override void Stun(float duration, EnemyState? nextState = null)
     {
         if (currentState != EnemyState.Dying && currentState != EnemyState.Dead)
         {
@@ -104,15 +56,14 @@ public class Boss : Enemy
         }
     }
 
-
     // Start is called before the first frame update
-    private void Start()
+    protected override void Start()
     {
         base.Start();
     }
-
+  
     // Update is called once per frame
-    private void Update()
+    protected override void Update()
     {
         base.Update();
         StartCoroutine(MeteorAttack());
@@ -121,9 +72,8 @@ public class Boss : Enemy
     }
 
 
-    private void EnemyActions(bool isSlowUpdate = false)
+    protected override void EnemyActions(bool isSlowUpdate = false)
     {
-
         switch (currentState)
         {
             case EnemyState.Spawning:
@@ -337,7 +287,7 @@ public class Boss : Enemy
         }
     }
 
-    private void CalcRangedPos()
+    protected override void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
         Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - attackRange);
@@ -360,7 +310,7 @@ public class Boss : Enemy
 
     }
 
-    private void RangedAttack()
+    protected override void RangedAttack()
     {
         //cooldown check
         if (nextRangedCd > Time.time)
@@ -412,7 +362,7 @@ public class Boss : Enemy
         }
     }
 
-    private void MeleeAttack()
+    protected override void MeleeAttack()
     {
         //cooldown check
         if (nextMeleeCd > Time.time)
@@ -446,7 +396,7 @@ public class Boss : Enemy
 
     }
 
-    void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
         float meleeAttackHeight = 0.25f;
         Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, meleeRange);
@@ -459,7 +409,7 @@ public class Boss : Enemy
         
     }
 
-    private void SetMeleeAgent()
+    protected override void SetMeleeAgent()
     {
         agent.areaMask = WALKABLEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
@@ -468,7 +418,7 @@ public class Boss : Enemy
         //could set angular speed/radius or other agent settings here
     }
 
-    private void SetRangedAgent()
+    protected override void SetRangedAgent()
     {
         agent.areaMask = WALKABLEMASK;
         agent.SetAreaCost(MELEEONLYMASK, nonPrioAreaCost);
@@ -476,7 +426,7 @@ public class Boss : Enemy
     }
 
 
-    private bool CheckDeathCondition()
+    protected override bool CheckDeathCondition()
     {
         bool dead = false;
 
@@ -490,7 +440,7 @@ public class Boss : Enemy
         return dead;
     }
 
-    private void InitializeDeath()
+    protected override void InitializeDeath()
     {
         //initiate death
         currentState = EnemyState.Dying;
@@ -585,7 +535,7 @@ public class Boss : Enemy
 
 
 
-    private bool IsDead()
+    protected override bool IsDead()
     {
         if (currentState == EnemyState.Dying ||
             currentState == EnemyState.Dead ||
@@ -598,10 +548,5 @@ public class Boss : Enemy
     }
 
 
-    private IEnumerator ExecuteIn(float seconds, Action action)
-    {
-        yield return new WaitForSeconds(seconds);
-        action();
-    }
 
 }

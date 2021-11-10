@@ -6,23 +6,19 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-//public enum EnemyState
-//{
-//    Spawning,
-//    Idle,
-//    Stunned,
-//    Wandering,
-//    EnteringCombat,
-//    RangedAttacking,
-//    MeleeAttacking,
-//    ReturnToSpawn,
-//    Dying,
-//    Dead,
-//}
-
-
-
-
+public enum EnemyState
+{
+    Spawning,
+    Idle,
+    Stunned,
+    Wandering,
+    EnteringCombat,
+    RangedAttacking,
+    MeleeAttacking,
+    ReturnToSpawn,
+    Dying,
+    Dead,
+}
 
 public class Enemy : MonoBehaviour, ITakeDamage
 {
@@ -98,9 +94,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     public Team Team {get => Team.Enemy;}
 
-
     // Start is called before the first frame update
-    protected void Start()
+    protected virtual void Start()
     {
         child = transform.GetChild(0).gameObject;
         childAnim = child.GetComponent<Animation>();
@@ -126,7 +121,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
     // Update is called once per frame
-    protected void Update()
+    protected virtual void Update()
     {
 
         HealthSlider.minValue = 0;
@@ -153,7 +148,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
 
-    public bool TakeDamage(float amount)
+    public virtual bool TakeDamage(float amount)
     {
         amount -= Armor;
 
@@ -177,7 +172,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    public void LevelUp()
+    public virtual void LevelUp()
     {
         MaxHP *= MaxHP * 1.1f;
         currentHP += MaxHP * 0.1f;
@@ -188,7 +183,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    public int RewardAmount()
+    public virtual int RewardAmount()
     {
         float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount;
 
@@ -204,7 +199,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
 
-    public void Stun(float duration, EnemyState? nextState = null)
+    public virtual void Stun(float duration, EnemyState? nextState = null)
     {
         stunnedTimer += duration;
         queuedState = nextState;
@@ -218,7 +213,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
 
-    protected IEnumerator CheckDistance()
+    protected virtual IEnumerator CheckDistance()
     {
 
         while (true)
@@ -237,7 +232,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    protected IEnumerator Spawn()
+    protected virtual IEnumerator Spawn()
     {
         childAnim.Play("Walk");
         float posy = child.transform.position.y - 1.5f;
@@ -255,7 +250,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
 
-    protected void EnemyActions(bool isSlowUpdate = false)
+    protected virtual void EnemyActions(bool isSlowUpdate = false)
     {
 
         switch (currentState)
@@ -473,7 +468,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         }
     }
 
-    protected void CalcRangedPos()
+    protected virtual void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
         Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - attackRange);
@@ -497,7 +492,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         }
     }
 
-    protected void RangedAttack()
+    protected virtual void RangedAttack()
     {
 
 
@@ -526,7 +521,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    protected void MeleeAttack()
+    protected virtual void MeleeAttack()
     {
         //cooldown check
         if (nextMeleeCd > Time.time)
@@ -561,7 +556,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    protected IEnumerator PlayAnimation(float duration, string anmin, string queued)
+    protected virtual IEnumerator PlayAnimation(float duration, string anmin, string queued)
     {
 
         childAnim.Play(anmin);
@@ -577,7 +572,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    protected void OnDrawGizmosSelected()
+    protected virtual void OnDrawGizmosSelected()
     {
         float meleeAttackHeight = 0.25f;
         Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, meleeRange);
@@ -590,7 +585,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
-    protected void SetMeleeAgent()
+    protected virtual void SetMeleeAgent()
     {
         agent.areaMask = MELEEMASK;
         agent.SetAreaCost(MELEEONLYMASK, AreaDefaultCost);
@@ -599,7 +594,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         //could set angular speed/radius or other agent settings here
     }
 
-    protected void SetRangedAgent()
+    protected virtual void SetRangedAgent()
     {
         agent.areaMask = RANGEDMASK;
         agent.SetAreaCost(MELEEONLYMASK, nonPrioAreaCost);
@@ -607,7 +602,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
 
-    protected bool CheckDeathCondition()
+    protected virtual bool CheckDeathCondition()
     {
         bool dead = false;
 
@@ -621,7 +616,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         return dead;
     }
 
-    protected void InitializeDeath()
+    protected virtual void InitializeDeath()
     {
         childAnim.Play("Death");
         //initiate death
@@ -632,7 +627,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
 
-    protected bool IsDead()
+    protected virtual bool IsDead()
     {
         if (currentState == EnemyState.Dying ||
             currentState == EnemyState.Dead ||

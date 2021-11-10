@@ -30,19 +30,15 @@ public class HubManager : MonoBehaviour
         if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 1)
         {
             GameManager.Instance.SceneLoaded = false;
-            SetupHubscene();
+            SetupPlayer();
         }
         else if (GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 1)
         {
             GameManager.Instance.SceneCompletelyReady = false;
-            // GameManager.Instance.PlayerHasControl = true;
-            // GameManager.Instance.LockCursor();
-            // Player.playerUI.ShowHubHud();
-            // Player.playerCamera.enabled = true;
         }
     }
 
-    public void SetupHubscene()
+    public void SetupPlayer()
     {
         if (HasWokenUp)
         {
@@ -52,8 +48,6 @@ public class HubManager : MonoBehaviour
         {
             Player = Instantiate(PlayerPrefab, PlayerEnterHomePos, Quaternion.Euler(PlayerEnterHomeRot)).GetComponent<PlayerController>();
         }
-        GameManager.Instance.PlayerHasControl = false;
-        Player.playerCamera.enabled = true;
     }
 
     public void InitiateNewRun()

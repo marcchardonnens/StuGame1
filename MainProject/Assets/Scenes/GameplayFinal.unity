@@ -619,7 +619,7 @@ MonoBehaviour:
     octaves: 4
     persistance: 0.063
     lacunarity: 3
-    overallMult: 0.125
+    overallMult: 0.075
     xOffset: 0
     zOffset: 0
     animationCurve:
@@ -871,8 +871,8 @@ MonoBehaviour:
   - prefab: {fileID: 2610891570868212060, guid: 1a511f2a96dc79a43bfab52f8b1488af, type: 3}
     SpawnWeight: 2
   spawnRocks: 1
-  RocksDensity: 100
-  RocksOverallScale: 4
+  RocksDensity: 150
+  RocksOverallScale: 1
   RockPrefabs:
   - prefab: {fileID: 8701302192679013780, guid: c260e4ef70d704df8943b7fa104dbf77, type: 3}
     SpawnWeight: 1

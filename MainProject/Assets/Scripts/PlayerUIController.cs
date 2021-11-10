@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,12 +8,14 @@ public class PlayerUIController : MonoBehaviour
 {
     public const string InteractPrefix = "E - ";
     public Button BackToGameButton, SettingsButton, WakeupButton, ExitGameButton;
-    public GameObject PauseMenu, GameplayHUD, HubHUD;
+    public GameObject PauseMenu, SharedHUD, GameplayHUD, HubHUD;
     public Slider HealthSlider, RageSlider;
+    //shared HUD
+    public TMPro.TextMeshProUGUI interactText, HealthText, RageText, SeedAmountText, SeedFunctionText;
     //GameplayHUD
-    public TMPro.TextMeshProUGUI interactText, HealthText, RageText, MushroomAmountText, SeedAmountText, SeedFunctionText, TimeText;
+    public TMPro.TextMeshProUGUI MushroomAmountText, TimeText;
     //HubHUD
-    public TMPro.TextMeshProUGUI interactTextHub, HealthTextHub, RageTextHub, SeedAmountTextHub, SeedFunctionTextHub, WoodText, MonsterXPText, OxygenText, LuciferiumText, CalciumText;
+    public TMPro.TextMeshProUGUI WoodText, MonsterXPText, OxygenText, LuciferiumText, CalciumText;
     public bool PauseMenuOpen = false;
 
     void Awake()
@@ -24,6 +27,7 @@ public class PlayerUIController : MonoBehaviour
         PauseMenu.SetActive(false);
         GameplayHUD.SetActive(false);
         HubHUD.SetActive(false);
+        SharedHUD.SetActive(false);
     }
 
     void Update()
@@ -33,9 +37,9 @@ public class PlayerUIController : MonoBehaviour
 
     private void ManageOpenMenus()
     {
-        if (GameManager.Instance.PlayerHasControl)
+        if (GameManager.Instance.PlayerHasControl || PauseMenuOpen)
         {
-            if(Input.GetKeyDown(KeyCode.Escape))
+            if(Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
             {
                 if(PauseMenuOpen)
                 {
@@ -58,33 +62,6 @@ public class PlayerUIController : MonoBehaviour
                     ShowGameplayHud();
                 }
             }
-
-            // if (GameManager.Instance.CurrentSceneIndex == 1)
-            // {
-            //     if (PauseMenuOpen)
-            //     {
-            //         ShowMenu();
-            //     }
-            //     else
-            //     {
-            //         ShowHubHud();
-            //     }
-            // }
-            // else if (GameManager.Instance.CurrentSceneIndex == 2)
-            // {
-            //     if (PauseMenuOpen)
-            //     {
-            //         ShowMenu();
-            //     }
-            //     else
-            //     {
-            //         ShowGameplayHud();
-            //     }
-            // }
-            // else
-            // {
-            //     HideHud();
-            // }
         }
         else
         {
@@ -94,16 +71,19 @@ public class PlayerUIController : MonoBehaviour
 
     private void ShowGameplayHud()
     {
+        SharedHUD.SetActive(true);
         GameplayHUD.SetActive(true);
     }
 
     private void ShowHubHud()
     {
+        SharedHUD.SetActive(true);
         HubHUD.SetActive(true);
     }
 
     private void HideAllPannels()
     {
+        SharedHUD.SetActive(false);
         GameplayHUD.SetActive(false);
         HubHUD.SetActive(false);
         PauseMenu.SetActive(false);
@@ -112,6 +92,7 @@ public class PlayerUIController : MonoBehaviour
 
     private void HideHud()
     {
+        SharedHUD.SetActive(false);
         GameplayHUD.SetActive(false);
         HubHUD.SetActive(false);
     }
@@ -121,6 +102,7 @@ public class PlayerUIController : MonoBehaviour
         HideHud();
         PauseMenu.SetActive(true);
         PauseMenuOpen = true;
+        GameManager.Instance.UnlockCursor();
         GameManager.Instance.PauseGame();
     }
 
@@ -128,6 +110,7 @@ public class PlayerUIController : MonoBehaviour
     {
         PauseMenu.SetActive(false);
         PauseMenuOpen = false;
+        GameManager.Instance.LockCursor();
         GameManager.Instance.UnPauseGame();
     }
 
@@ -145,21 +128,20 @@ public class PlayerUIController : MonoBehaviour
     private void OnWakeupButtonClicked()
     {
         Debug.Log("wake up");
-        HideHud();
+        HideAllPannels();
         StageManager.GiveUp();
     }
 
     private void OnExitGameButtonClicked()
     {
         Debug.Log("exit game from game");
-        HideHud();
+        HideAllPannels();
         StageManager.ExitGame();
     }
 
     public void SetInteractText(string text)
     {
         interactText.text = text;
-        interactTextHub.text = text;
     }
 
     public void UpdateHealth(float current, float max)
@@ -167,7 +149,7 @@ public class PlayerUIController : MonoBehaviour
         HealthSlider.minValue = 0;
         HealthSlider.maxValue = max;
         HealthSlider.value = current;
-        HealthText.text = current + "/" + max;
+        HealthText.text = Mathf.CeilToInt(current) + "/" + Mathf.CeilToInt(max);
     }
 
     public void UpdateRage(float current, float max)
@@ -175,7 +157,7 @@ public class PlayerUIController : MonoBehaviour
         RageSlider.minValue = 0;
         RageSlider.maxValue = max;
         RageSlider.value = current;
-        RageText.text = current + "/" + max;
+        RageText.text = Mathf.CeilToInt(current) + "/" + Mathf.CeilToInt(max);
     }
 
     public void UpdateSeedCount(int current, int max)

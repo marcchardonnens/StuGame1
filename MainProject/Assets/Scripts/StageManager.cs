@@ -78,33 +78,39 @@ public class StageManager : MonoBehaviour
     {
         GameManager.Instance.PlayerHasControl = false;
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
-
+        TerrainReady = false;
         MakeStage();
         StartCoroutine(OnTerrainReady());
+
     }
 
     private void Update()
     {
-
-        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2)
+        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
         {
-            SetupPlayer();
-            StartCoroutine(EnemySpawner());
             GameManager.Instance.SceneLoaded = false;
+            SetupPlayer();
             return;
         }
-        else if(GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 2)
+        else if(GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
         {
-            // GameManager.Instance.LockCursor();
-            // GameManager.Instance.PlayerHasControl = true;
-            // Player.playerUI.ShowGameplayHud();
+            GameManager.Instance.SceneCompletelyReady = false;
+            StartCoroutine(EnemySpawner());
+            return;
+        }
+        
+        if(GameManager.Instance.PlayerHasControl)
+        {
+            StageTimer -= Time.deltaTime;
         }
 
-        StageTimer -= Time.deltaTime;
         if (StageTimer <= 0)
         {
             EndStage(StageResult.TimerExpired);
         }
+
+
+        //TODO improve this
         if (doorPressed)
         {
             doorPressed = false;
@@ -117,16 +123,18 @@ public class StageManager : MonoBehaviour
                 EndStage(StageResult.EnterHomeEarly);
             }
         }
-        if(giveUp)
+        if (giveUp)
         {
             giveUp = false;
             EndStage(StageResult.TimerExpired);
         }
-        if(exitGame)
+        if (exitGame)
         {
             EndStage(StageResult.TimerExpired);
         }
     }
+
+
 
     public void MakeStage()
     {
@@ -137,8 +145,6 @@ public class StageManager : MonoBehaviour
 
         GameplayTB.MakeTerrain();
         TerrainReady = true;
-
-
     }
 
     private IEnumerator OnTerrainReady()
@@ -148,9 +154,6 @@ public class StageManager : MonoBehaviour
         {
             StartCoroutine(BakeNavMeshGlobal());
         }
-
-
-
     }
 
     private IEnumerator BakeNavMeshGlobal()
@@ -192,12 +195,9 @@ public class StageManager : MonoBehaviour
 
     public void SetupPlayer()
     {
-        // Player = Instantiate(PlayerPrefab, GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos, Quaternion.Euler(GameplayTB.PlayerSpawnOutsideHouseRotationEuler)).GetComponent<PlayerController>();
         Player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
         Player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         Player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
-        // Player.playerUI.ShowGameplayHud();
-
         if (localNavMesh)
         {
             StartCoroutine(BakeNavMeshLocal(NavMeshBakRepeatTimer));
@@ -276,10 +276,10 @@ public class StageManager : MonoBehaviour
             showCredits = true;
         }
 
-        if(exitGame)
+        if (exitGame)
         {
             exitGame = false;
-            //TODO back to main menu
+            StartCoroutine(GameManager.Instance.TransitionToMenu(2f, 2f));
             return;
         }
 

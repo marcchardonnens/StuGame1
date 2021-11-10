@@ -2,28 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WoodResource : MonoBehaviour
+public class WoodResource : MonoBehaviour, ITakeDamage
 {
-
+    public Team Team {get => Team.Neutral;}
+    [SerializeField] private float DeathAnimationTime = 5f;
     public float Health = 300f;
     public int WoodAmount = 10;
-
     private bool dead = false;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
-    public void TakeDamage(float amount)
+    public bool TakeDamage(float amount)
     {
         Health -= amount;
         
@@ -34,13 +21,15 @@ public class WoodResource : MonoBehaviour
 
             GetComponent<Animation>().Play("tree003UpperPart|treeFallingCut");
             StartCoroutine(Death());
+            return true;
         }
+        return false;
     }
 
 
     public IEnumerator Death()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(DeathAnimationTime);
         Destroy(gameObject);
     }
 

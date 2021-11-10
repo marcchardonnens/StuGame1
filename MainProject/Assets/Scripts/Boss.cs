@@ -399,12 +399,12 @@ public class Boss : Enemy
             if (currentLevel < 2)
             {
                 //simple projectile
-                projectile.SetPropertiesSimple(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
+                projectile.SetPropertiesSimple(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget, Team);
             }
             else
             {
                 //slowtracking projectile
-                projectile.SetPropertiesTracked(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false);
+                projectile.SetPropertiesTracked(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false, Team);
             }
 
             projectile.transform.RotateAround(transform.position, Vector3.up, angle);

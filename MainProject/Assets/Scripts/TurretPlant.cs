@@ -3,66 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurretPlant : MonoBehaviour
+public class TurretPlant : PlantBase
 {
-    public float Health = 200f;
     public float Damage = 50f;
-    public float CoolDown = 3f;
+    public float AttackCoolDown = 3f;
     public float ProjectileSpeed = 30f;
     public float Range = 30f;
     public bool Tracking = true;
     public bool SlowTracking = false;
 
     public GameObject ProjectilePrefab;
-    
-    public float Duration = 0f; // 0 = infinite
-    public float GrowTime = 10f;
 
     //public int AttackSalveSpreadAngle = 30;
     public int UpgradeAttackSalveAmount = 3;
 
-
-
-    private bool grown = false;
-    private Vector3 finalScale;
-    private PlayerController player;
-
-
-
-    // Start is called before the first frame update
-    void Start()
+    public override IEnumerator Grow(float growtime)
     {
-        player = StageManager.Player;
-        if (GrowTime > 0)
-        {
-            finalScale = transform.localScale;
-            transform.localScale = Vector3.zero;
-        }
-        StartCoroutine(PeriodicActions());
+        yield return base.Grow(growtime);
+        StartCoroutine(PeriodicActions(AttackCoolDown));
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator PeriodicActions(float periodicDelay)
     {
-        StartCoroutine(Grow());
-    }
-
-    private IEnumerator Grow()
-    {
-        if (transform.localScale.x < finalScale.x)
-        {
-            yield return null;
-            transform.localScale += (finalScale / GrowTime) * Time.deltaTime;
-        }
-        else
-        {
-            grown = true;
-        }
-    }
-
-    private IEnumerator PeriodicActions()
-    {
-        yield return new WaitForSeconds(GrowTime);
         while (true)
         {
             int shots = GameManager.ProfileData.HasTurretUpgrade ? UpgradeAttackSalveAmount : 1;
@@ -80,7 +42,6 @@ public class TurretPlant : MonoBehaviour
                     if (enemy)
                     {
                         enemies.Add(enemy);
-
                     }
                 }
             }
@@ -96,11 +57,10 @@ public class TurretPlant : MonoBehaviour
             for (int i = 0; i < shots; i++)
             {
                 SimpleProjectile projectile = Instantiate(ProjectilePrefab, transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();
-                projectile.SetPropertiesTracked(gameObject, (enemies[i].transform.position - transform.position) + new Vector3(0, 3f, 0), ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, enemies[i].transform, true, true);
+                projectile.SetPropertiesTracked(gameObject, (enemies[i].transform.position - transform.position) + new Vector3(0, 3f, 0), ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, enemies[i].transform, true, Team);
             }
 
-            yield return new WaitForSeconds(CoolDown);
+            yield return new WaitForSeconds(periodicDelay);
         }
     }
-
 }

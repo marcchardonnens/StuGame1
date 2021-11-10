@@ -24,7 +24,7 @@ using Random = UnityEngine.Random;
 
 
 
-public class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour, ITakeDamage
 {
     public float MaxHP = 1000f;
     public float MeleeDamage = 15f;
@@ -95,6 +95,8 @@ public class Enemy : MonoBehaviour
 
     protected GameObject child;
     protected Animation childAnim;
+
+    public Team Team {get => Team.Enemy;}
 
 
     // Start is called before the first frame update
@@ -513,12 +515,12 @@ public class Enemy : MonoBehaviour
         if (Random.Range(0f, 1f) <= ProjectileTrackingChance)
         {
             //simple projectile
-            projectile.SetPropertiesSimple(gameObject, Vector3.up + currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget);
+            projectile.SetPropertiesSimple(gameObject, Vector3.up + currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget, Team);
         }
         else
         {
             //slowtracking projectile
-            projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward * 0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform, false);
+            projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward * 0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform, false, Team);
         }
 
 

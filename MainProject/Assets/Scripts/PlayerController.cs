@@ -17,8 +17,9 @@ public enum PowerupType
     //PlantShroom,
 }
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, ITakeDamage
 {
+    public Team Team { get => Team.Player; }
     public Hand RightHand;
     //public Hand LeftHand;
     public float walkingSpeed = 7.5f;
@@ -137,6 +138,10 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if(!GameManager.Instance.PlayerHasControl)
+        {
+            return;
+        }
         UpdateHUD();
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
@@ -187,6 +192,7 @@ public class PlayerController : MonoBehaviour
 
         if (!previewing)
         {
+            playerUI.UpdateSeedSelectionText("");
             if (plantAnimationTimer <= Time.time)
             {
                 if (Input.GetMouseButton(0))
@@ -256,18 +262,20 @@ public class PlayerController : MonoBehaviour
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
-                }
-                else
-                {
-                    playerUI.UpdateSeedSelectionText("");
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
             }
         }
@@ -307,7 +315,7 @@ public class PlayerController : MonoBehaviour
 
 
         float curSpeedY;
-        if (GameManager.Instance.PlayerHasControl  && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -382,20 +390,17 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateHUD()
     {
-        if(GameManager.Instance.CurrentSceneIndex == 2)
+        playerUI.UpdateHealth(currentHP, MaxHP);
+        playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
+        playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
+        if (GameManager.Instance.CurrentSceneIndex == 2)
         {
-            playerUI.UpdateHealth(currentHP, MaxHP);
-            playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
-            playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
             playerUI.UpdateMushroomCount(shroomCounter);
             playerUI.UpdateTime(StageManager.StageTimer);
         }
-        else if(GameManager.Instance.CurrentSceneIndex == 1)
+        else if (GameManager.Instance.CurrentSceneIndex == 1)
         {
-            playerUI.UpdateHealth(currentHP, MaxHP);
-            playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
-            playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
-            
+            playerUI.UpdateResources();
         }
     }
 
@@ -421,6 +426,7 @@ public class PlayerController : MonoBehaviour
             CheckColliderInteractable(collider);
             return;
         }
+        playerUI.SetInteractText("");
         currentInteractable = null;
     }
 
@@ -575,17 +581,14 @@ public class PlayerController : MonoBehaviour
 
 
     //later damage types
-    public void TakeDamage(float amount)
+    public bool TakeDamage(float amount)
     {
         if (amount <= 0)
         {
-            return;
+            return false;
         }
         rageTimer = Time.time + RageDissipationTime;
         float postMitigation = amount;
-
-        //apply mitigation
-
 
         if (postMitigation >= 0)
         {
@@ -595,16 +598,25 @@ public class PlayerController : MonoBehaviour
         if (currentHP <= 0)
         {
             stageManager.EndStage(StageResult.Death);
+            return true;
         }
 
-
-
+        return false;
     }
 
     public void Heal(float amount)
     {
         //no overheal
         currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
+    }
+
+    public void RefillSeeds(int amount)
+    {
+        currentSeeds += amount;
+        if (currentSeeds > MaxSeeds)
+        {
+            currentSeeds = MaxSeeds;
+        }
     }
 
     public void MeleeAttack()

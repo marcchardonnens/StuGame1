@@ -177,8 +177,7 @@ public class StageManager : GameplayManagerBase
                 {
                     Vector2 circle = Random.insideUnitCircle * EnemySpawnRange;
                     Vector3 randompos = new Vector3(circle.x, 0, circle.y) + GameManager.Instance.Player.transform.position;
-                    NavMeshHit hit;
-                    if (NavMesh.SamplePosition(randompos, out hit, EnemySpawnRange, NavMesh.AllAreas))
+                    if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, EnemySpawnRange, NavMesh.AllAreas))
                     {
                         Instantiate(EnemyPrefab, hit.position, Quaternion.identity);
                     }
@@ -194,6 +193,7 @@ public class StageManager : GameplayManagerBase
     public override PlayerController CreatePlayer()
     {
         PlayerController player = Instantiate(PlayerPrefab, null).GetComponent<PlayerController>();
+        // Vector3 house = new Vector3(GameplayTB.houseGlobalPosition.x, GameplayTB.houseGlobalPosition.y, GameplayTB.houseGlobalPosition.z); //deep copy
         player.transform.position = GameplayTB.houseGlobalPosition + GameplayTB.PlayerSpawnOutsideHouseOffsetPos;
         player.transform.eulerAngles = GameplayTB.PlayerSpawnOutsideHouseRotationEuler;
         if (localNavMesh)

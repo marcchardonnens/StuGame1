@@ -24,14 +24,15 @@ public enum GameState
 
 public class GameManager : MonoBehaviour
 {
+    public GameObject PlayerPrefab;
     public bool SkipIntro = false;
     private static GameManager instance;
 
     public static GameManager Instance { get { return instance; } }
 
-    public static ProfileData ProfileData = new ProfileData(false);
+    /* [HideInInspector] */ public static ProfileData ProfileData = new ProfileData(false);
     public PlayerController Player;
-    [HideInInspector] public GameplayManagerBase CurrentManager;
+    /* [HideInInspector] */ public GameplayManagerBase CurrentManager;
 
     public UIController UIController;
     public Camera MainCamera;
@@ -94,6 +95,7 @@ public class GameManager : MonoBehaviour
         UIController.LoadingScreen.SetActive(true);
         UIController.MainMenu.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
+        asyncLoad.allowSceneActivation = true;
         while (!asyncLoad.isDone)
         {
             yield return null;
@@ -151,6 +153,7 @@ public class GameManager : MonoBehaviour
         UIController.LoadingScreen.SetActive(true);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE, LoadSceneMode.Single);
+        asyncLoad.allowSceneActivation = true;
         while (!asyncLoad.isDone)
         {
             yield return null;
@@ -179,8 +182,8 @@ public class GameManager : MonoBehaviour
         GameManager.instance.LockCursor();
         UIController.LoadingScreen.SetActive(false);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
-        SceneCompletelyReady = true;
         GameManager.Instance.UnPauseGame();
+        SceneCompletelyReady = true;
     }
 
     //TODO show credits & bugged
@@ -194,40 +197,57 @@ public class GameManager : MonoBehaviour
         UIController.SetLoadingScreenText(".....Lighting Firepit.....");
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(true);
+        Debug.Log("just before load");
+        // AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE, LoadSceneMode.Additive);
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
-
+        SceneManager.LoadScene(GameConstants.HUBSCENE);
+        Debug.Log("just after load");
+        // Debug.Log("just after fade to loadscreen");
 
         //BUG gets stuck between here
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GameConstants.HUBSCENE, LoadSceneMode.Single);
-        while (!asyncLoad.isDone)
+
+
+        CurrentSceneIndex = 1;
+        SceneLoaded = true;
+        Debug.Log("searching hubmanager");
+        CurrentManager = null;
+        CurrentManager = FindObjectOfType<HubManager>();
+        if(CurrentManager == null)
+        {
+            CurrentManager = Instantiate(new GameObject("HubManager"), null).AddComponent<HubManager>();
+            CurrentManager.PlayerPrefab = PlayerPrefab;
+        }
+
+
+        CurrentManager.SetupStage();
+        Debug.Log("current manager not null");
+
+        while(!CurrentManager.StageReady)
         {
             yield return null;
         }
-        CurrentSceneIndex = 1;
-        SceneLoaded = true;
-        CurrentManager = FindObjectOfType<HubManager>();
-        CurrentManager.SetupStage();
-        
+        Debug.Log("stage ready");
         PlayerCreation(CurrentManager);
         instructionsOKPressed = false;
         GameManager.instance.UnlockCursor();
-        UIController.InstructionsScreen.interactable = true;
         ///--------------------------
 
 
         UIController.SetLoadingScreenText("Home Sweet Home");
+        UIController.InstructionsScreen.interactable = true;
+        instructionsOKPressed = false;
+        Debug.Log("before ok pressed");
         while (!instructionsOKPressed)
         {
             yield return null;
         }
-        instructionsOKPressed = false;
+        Debug.Log("ok pressed");
         UIController.InstructionsScreen.interactable = false;
         GameManager.instance.LockCursor();
         yield return StartCoroutine(FadeSceneToBlack(fadeOutDuration));
         UIController.LoadingScreen.SetActive(false);
         GameManager.instance.PlayerHasControl = true;
         yield return StartCoroutine(FadeSceneToTransparent(fadeInDuration));
-        UIController.InstructionsScreen.interactable = false;
         SceneCompletelyReady = true;
         GameManager.Instance.UnPauseGame();
 
@@ -247,6 +267,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayerCreation(IGameplayManager manager)
     {
+        Debug.Log("player creation");
         if(Player != null)
         {
             Destroy(Player.gameObject);
@@ -261,6 +282,7 @@ public class GameManager : MonoBehaviour
         MainCamera.GetComponent<AudioListener>().enabled = false;
         player.playerCamera.enabled = true;
         player.playerCamera.GetComponent<AudioListener>().enabled = true;
+        Player.transform.SetSiblingIndex(0);
     }
 
     public void RemovePlayerAndSwapToMainCamera()

@@ -6,6 +6,8 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
+
+//TODO propper state machine
 public enum EnemyState
 {
     Spawning,

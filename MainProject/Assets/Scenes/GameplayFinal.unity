@@ -995,7 +995,7 @@ MonoBehaviour:
   - {fileID: 8237304073132461758, guid: a4606276b03365f41a0e4eb6f6467668, type: 3}
   - {fileID: 4591676181349186806, guid: 418a294af8b95794798942e2b5e4c85e, type: 3}
   - {fileID: 7045907100818247743, guid: 6ca8a545edc8b484eb313eafdcdec2f0, type: 3}
-  ResourceTreePrefab: {fileID: 7467134138277427182, guid: c2679e0adbcf1cf4faca16e1ee70e7ec, type: 3}
+  ResourceTreePrefab: {fileID: 7467134138277427182, guid: 53efb95692437411ea56eb5c0244f604, type: 3}
   BossAreaLight: {fileID: 3539575069507365686, guid: 183fd8f5783d4954e8dc1d7c997ce53d, type: 3}
   TextureData:
     baseColours:

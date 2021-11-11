@@ -123,9 +123,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     private IInteractable currentInteractable = null;
 
-    void Start()
+    void Awake()
     {
-
         stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
         PreviewSphere = Instantiate(PreviewSphere);
@@ -136,12 +135,18 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         currentHP = MaxHP;
     }
 
+    void Start()
+    {
+
+    }
+
     void Update()
     {
         if(!GameManager.Instance.PlayerHasControl)
         {
             return;
         }
+
         UpdateHUD();
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
@@ -374,6 +379,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         }
 
         // Move the controller
+        Physics.SyncTransforms();
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
@@ -414,8 +420,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public void ScanInteractable(float InteractionRange)
     {
-        Collider collider;
-        if (CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
+        if (CrossHairLookPosition(out Collider collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
         {
             //give prio to interactables
             CheckColliderInteractable(collider);
@@ -445,29 +450,10 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         playerUI.SetInteractText("");
     }
 
-    // public static String ScanInteractableNameStatic(float range, Camera cam)
-    // {
-    //     Collider collider;
-    //     if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
-    //     {
-    //         if (collider != null)
-    //         {
-    //             Interactable interactable = collider.GetComponent<Interactable>();
-    //             if(interactable.transform.parent != null)
-    //             {
-    //                 return interactable.transform.parent.name;
-    //             }
-    //             return interactable.name;
-    //         }
-    //     }
-    //     return "";
-    // }
-
     public static bool CrossHairLookPositionStatic(out Collider collider, Camera cam, float maxDistance = float.MaxValue, int layermask = ~0)
     {
         //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
-        RaycastHit hit;
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             collider = hit.collider;
             return true;
@@ -708,6 +694,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     public void ConsumeShroom(Powerup powerup)
     {
 
+
+        //TODO constants in powerup class
         //Shroom UI
         shroomCounter += 1;
 
@@ -763,8 +751,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)
     {
-        RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             pos = hit.point;
             return true;
@@ -781,8 +768,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     public bool CrossHairLookPosition(out Collider collider, float maxDistance = float.MaxValue, int layermask = ~0)
     {
         //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
-        RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             collider = hit.collider;
             return true;
@@ -797,8 +783,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         RightHand.gameObject.SetActive(false);
         PreviewSphere.SetActive(true);
 
-        Vector3 lookPos = new Vector3();
-        bool onGround = CrossHairLookPosition(out lookPos, maxDistance, layerMask);
+        bool onGround = CrossHairLookPosition(out Vector3 lookPos, maxDistance, layerMask);
         PreviewSphere.transform.position = lookPos;
 
         PreviewLine.SetPosition(0, RightHand.transform.position);

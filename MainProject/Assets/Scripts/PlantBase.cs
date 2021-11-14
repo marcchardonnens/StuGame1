@@ -1,17 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class PlantBase : MonoBehaviour, IPlant
 {
-    public Team Team {get => Team.Player;}
-    public float MaxHP = 500f;
+    public Team Team { get; } = Team.Player;
+    [field: SerializeField]
+    public float MaxHP { get; set; }
+    [field: SerializeField]
+    public float CurrentHP { get; protected set; }
     public float GrowTime = 5f;
     public float Duration = 0f; //0 = infinite
     private Vector3 finalScale;
     protected bool grown = false;
     protected PlayerController player;
-    protected float currentHP;
+    public event Action<float> OnTakeDamage = delegate { };
+    public event Func<IPlant> OnDeath = delegate { return null; };
 
     protected void Start()
     {
@@ -21,7 +26,7 @@ public abstract class PlantBase : MonoBehaviour, IPlant
             transform.localScale = Vector3.zero;
             StartCoroutine(Grow(GrowTime));
         }
-        currentHP = MaxHP;
+        CurrentHP = MaxHP;
         player = GameManager.Instance.Player;
     }
 
@@ -43,14 +48,14 @@ public abstract class PlantBase : MonoBehaviour, IPlant
 
     public virtual bool TakeDamage(float amount)
     {
-        currentHP -= amount;
-        if(currentHP <= 0)
-        {
+        OnTakeDamage?.Invoke(amount);
+        CurrentHP -= amount;
+        if (CurrentHP <= 0)
+        {   
+            OnDeath?.Invoke();
             Destroy(gameObject);
-            //TODO raise plant died event
             return true;
         }
-        //TODO raise plant take damage event
         return false;
     }
 }

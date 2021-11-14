@@ -6,6 +6,6 @@ public interface IGameplayManager
 {
     PlayerController CreatePlayer();
     void SetupStage();
-    void OnSceneLoaded();
-    void OnSceneCompletelyReady();
+    void BeginTransition(int sceneIndex);
+    void GiveControl();
 }

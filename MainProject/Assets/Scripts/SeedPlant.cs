@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class SeedPlant : PlantBase, IInteractable
 {
+    
     public float UpgradeGrowtimeMultiplier = 0.5f;
     public int SeedRefillAmount = 1;
 
     public Light Light;
     public GameObject bloom;
+
+    public string Name => "Seed Plant";
 
     public void Interact()
     {

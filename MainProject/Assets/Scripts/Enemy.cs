@@ -22,9 +22,13 @@ public enum EnemyState
     Dead,
 }
 
-public class Enemy : MonoBehaviour, ITakeDamage
+public class Enemy : MonoBehaviour, ITakeDamage<Enemy>
 {
-    public float MaxHP = 1000f;
+    public static readonly List<Enemy> AllEnemies = new List<Enemy>();
+    [field: SerializeField]
+    public float MaxHP { get; set; }
+    [field: SerializeField]
+    public float CurrentHP { get; protected set; }
     public float MeleeDamage = 15f;
     public float RangedDamage = 5f;
     public float Armor = 0f;
@@ -94,7 +98,22 @@ public class Enemy : MonoBehaviour, ITakeDamage
     protected GameObject child;
     protected Animation childAnim;
 
-    public Team Team {get => Team.Enemy;}
+    public event Action<float> OnTakeDamage;
+    public event Func<Enemy> OnDeath = delegate { return null; };
+
+    public Team Team { get => Team.Enemy; }
+
+
+
+    protected virtual void OnEnable()
+    {
+        AllEnemies.Add(this);
+    }
+
+    protected virtual void OnDisable()
+    {
+        AllEnemies.Remove(this);
+    }
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -130,7 +149,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         HealthSlider.maxValue = MaxHP;
         HealthSlider.value = currentHP;
         HealthSlider.gameObject.transform.LookAt(player.playerCamera.transform.position);
-        HealthSlider.gameObject.transform.localEulerAngles += new Vector3(0,180f,0);
+        HealthSlider.gameObject.transform.localEulerAngles += new Vector3(0, 180f, 0);
 
         slowupdate -= Time.deltaTime;
         stunnedTimer -= Time.deltaTime;
@@ -152,6 +171,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     public virtual bool TakeDamage(float amount)
     {
+        OnTakeDamage?.Invoke(amount);
+
         amount -= Armor;
 
         //TODO mittigation
@@ -166,8 +187,9 @@ public class Enemy : MonoBehaviour, ITakeDamage
         bool killingBlow = CheckDeathCondition();
         if (killingBlow)
         {
-            player.GetMonsterXP(RewardAmount());
-            player.GenerateRage(player.KillRageAmount);
+            OnDeath?.Invoke();
+            // player.GetMonsterXP(RewardAmount());
+            // player.GenerateRage(player.KillRageAmount);
         }
 
         return killingBlow;

@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class HubManager : GameplayManagerBase
-{
+{  
     public Vector3 PlayerWakeupPos;
     public Vector3 PlayerWakeupRot;
     public Vector3 PlayerEnterHomePos;
@@ -15,29 +16,34 @@ public class HubManager : GameplayManagerBase
     {
         base.Awake();
         Debug.Log("Hub Manager Awake");
-
     }
+
+    protected void OnEnable()
+    {
+        Door.OnDoorInteract += OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
+    }
+
+    protected void OnDisable()
+    {
+        Door.OnDoorInteract -= OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.RemoveListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.RemoveListener(OnExitButton);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
 
     }
 
-    
+
 
     // Update is called once per frame
     protected override void Update()
     {
         base.Update();
-        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 1)
-        {
-            GameManager.Instance.SceneLoaded = false;
-            // CreatePlayer();
-        }
-        else if (GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 1)
-        {
-            GameManager.Instance.SceneCompletelyReady = false;
-        }
     }
 
 
@@ -56,14 +62,13 @@ public class HubManager : GameplayManagerBase
 
     public override void SetupStage()
     {
-        //might not be needed
-        StageReady = true;
+        //setup things like upgrades or resources if needed
+
+
+        RaiseSceneReady();
     }
 
-    public void InitiateNewRun()
-    {
 
-    }
 
     public void UpgradeAndReplaceHouse()
     {
@@ -81,4 +86,26 @@ public class HubManager : GameplayManagerBase
 
     }
 
+    private void OnDoorInteract()
+    {
+        //clean up scene
+
+        BeginTransition(GameConstants.GAMEPLAYSCENE);
+    }
+    public override void BeginTransition(int sceneIndex)
+    {
+
+        TransitionToStage(sceneIndex);
+    }
+
+    protected override void OnExitButton()
+    {
+        BeginTransition(GameConstants.MAINMENUSCENE);
+    }
+
+    protected override void OnWakeupButton()
+    {
+        // waking up while in the hub
+        // no use for this yet, but maybe later
+    }
 }

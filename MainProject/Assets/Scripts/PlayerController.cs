@@ -17,9 +17,20 @@ public enum PowerupType
     //PlantShroom,
 }
 
-public class PlayerController : MonoBehaviour, ITakeDamage
+public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
 {
-    public Team Team { get => Team.Player; }
+    public static event Action OnPlayerCreated = delegate{};
+    public static event Action OnPlayerDestroyed = delegate{};
+    public event Action<float> OnTakeDamage = delegate{};
+    public event Func<PlayerController> OnDeath = delegate{return null;};
+
+    [field: SerializeField]
+    public Team Team { get; } = Team.Player;
+    [field: SerializeField]
+    public float MaxHP { get; set; }
+    [field: SerializeField]
+    public float CurrentHP {get; protected set;}
+
     public Hand RightHand;
     //public Hand LeftHand;
     public float walkingSpeed = 7.5f;
@@ -79,7 +90,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private MeshRenderer PreviewRenderer;
 
     //BaseStats, will change throughout the game
-    public float MaxHP = 100;
+    // public float MaxHP = 100;
     public float BaseDamage = 5f;
     public float AttackSpeed = 0f;
     public float BaseBlockAmount = 0f;
@@ -90,7 +101,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private CharacterController characterController; //unitys "improved rigidbody" for characters
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
-    [SerializeField] private float currentHP;
+    // [SerializeField] private float currentHP;
     [SerializeField] private int currentSeeds = 5;
     [SerializeField] private float currentShield = 0f;
     private StageManager stageManager;
@@ -131,8 +142,14 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
         PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
         PreviewSphere.SetActive(false);
+        OnPlayerCreated?.Invoke();
 
-        currentHP = MaxHP;
+        CurrentHP = MaxHP;
+    }
+
+    void OnDestroy()
+    {
+        OnPlayerDestroyed?.Invoke();
     }
 
     void Start()
@@ -161,7 +178,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
                 float rageLost = RageDissipationRatePerSecond * Time.deltaTime;
                 Rage -= rageLost;
 
-                float misshpPercent = Mathf.Abs(1 - (currentHP / MaxHP));
+                float misshpPercent = Mathf.Abs(1 - (CurrentHP / MaxHP));
 
                 float missinghpMultiplier = 1 + (RageHealingMissingHPMultiplierMax - 1) * misshpPercent;
                 //
@@ -396,7 +413,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     private void UpdateHUD()
     {
-        playerUI.UpdateHealth(currentHP, MaxHP);
+        playerUI.UpdateHealth(CurrentHP, MaxHP);
         playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
         playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
         if (GameManager.Instance.CurrentSceneIndex == 2)
@@ -442,7 +459,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
             if (collider.TryGetComponent(out IInteractable interactable))
             {
                 currentInteractable = interactable;
-                playerUI.SetInteractText(interactable.UiText());
+                playerUI.SetInteractText(interactable.Name + "\n" + interactable.UiText());
                 return;
             }
         }
@@ -569,6 +586,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     //later damage types
     public bool TakeDamage(float amount)
     {
+        OnTakeDamage?.Invoke(amount);
         if (amount <= 0)
         {
             return false;
@@ -578,12 +596,12 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         if (postMitigation >= 0)
         {
-            currentHP -= postMitigation;
+            CurrentHP -= postMitigation;
         }
 
-        if (currentHP <= 0)
+        if (CurrentHP <= 0)
         {
-            stageManager.EndStage(StageResult.Death);
+            OnDeath?.Invoke();
             return true;
         }
 
@@ -593,7 +611,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     public void Heal(float amount)
     {
         //no overheal
-        currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
+        CurrentHP += Mathf.Clamp(amount, 0f, MaxHP - CurrentHP);
     }
 
     public void RefillSeeds(int amount)
@@ -658,7 +676,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         Rage = 0f;
         float expoGain = Mathf.Pow(LevelToThePowerOf, RageLevel);
         MaxHP += HPLevel * expoGain;
-        Heal(currentHP += HPLevel * expoGain);
+        Heal(CurrentHP += HPLevel * expoGain);
         BaseDamage += BaseDamageLevel * expoGain;
         AttackSpeed += AttackSpeedLevel * expoGain;
         Armor += ArmorLevel * expoGain;

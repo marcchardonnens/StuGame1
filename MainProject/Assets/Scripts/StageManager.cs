@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 public enum StageResult
 {
+    None,
     Death,
     TimerExpired,
     EnterHomeEarly,
@@ -23,9 +24,7 @@ public class StageManager : GameplayManagerBase
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
     public bool autoupdate = false;
-
     public TerrainBuilder GameplayTB;
-
     public NavMeshSurface Surface;
     public float NavMeshBakRepeatTimer = 5f;
     public bool localNavMesh = true;
@@ -59,17 +58,15 @@ public class StageManager : GameplayManagerBase
 
     private bool BossKilled = false;
     private bool SurvivorFound = false;
-    private static bool doorPressed = false;
-    private static bool giveUp = false;
-    private static bool exitGame = false;
 
     public int EnemiesMax = 25;
 
     public bool SurvivorFreed = false;
 
+    private StageResult Result = StageResult.None;
 
-    public static bool TerrainReady = false;
-    public static bool NavMeshBaked = false;
+    public bool TerrainReady = false;
+    public bool NavMeshBaked = false;
 
     protected override void Awake()
     {
@@ -77,59 +74,69 @@ public class StageManager : GameplayManagerBase
         WoodMax = GameManager.ProfileData.HasWoodInventoryUpgrade ? WoodMaxUpgraded : WoodMaxDefault;
         TerrainReady = false;
         NavMeshBaked = false;
+
+        Door.OnDoorInteract += OnDoorInteract;
+
         SetupStage();
         StartCoroutine(OnTerrainReady());
 
+    }
+    protected void OnEnable()
+    {
+        Door.OnDoorInteract += OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
+    }
+
+    protected void OnDisable()
+    {
+        Door.OnDoorInteract -= OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.RemoveListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.RemoveListener(OnExitButton);
+    }
+    private void OnDoorInteract()
+    {
+        if (SurvivorFound)
+        {
+            Result = StageResult.SurvivorRescued;
+            BeginTransition(GameConstants.HUBSCENE);
+        }
+        else
+        {
+            Result = StageResult.EnterHomeEarly;
+            BeginTransition(GameConstants.HUBSCENE);
+        }
+    }
+
+    private void OnPlayerDeath()
+    {
+        Result = StageResult.Death;
+        BeginTransition(GameConstants.HUBSCENE);
+    }
+
+    private void OnGiveup()
+    {
+        Result = StageResult.Death;
+        BeginTransition(GameConstants.HUBSCENE);
     }
 
     protected override void Update()
     {
         base.Update();
-        StageReady = TerrainReady && NavMeshBaked;
-        if (GameManager.Instance.SceneLoaded && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
-        {
-            GameManager.Instance.SceneLoaded = false;
-            return;
-        }
-        else if(GameManager.Instance.SceneCompletelyReady && GameManager.Instance.CurrentSceneIndex == 2 && TerrainReady)
-        {
-            GameManager.Instance.SceneCompletelyReady = false;
-            StartCoroutine(EnemySpawner());
-            return;
-        }
-        
-        if(GameManager.Instance.PlayerHasControl)
+
+        //TODO
+        //StartCoroutine(EnemySpawner());
+
+
+        if (GameManager.Instance.PlayerHasControl)
         {
             StageTimer -= Time.deltaTime;
         }
 
         if (StageTimer <= 0)
         {
-            EndStage(StageResult.TimerExpired);
-        }
-
-
-        //TODO improve this
-        if (doorPressed)
-        {
-            doorPressed = false;
-            if (SurvivorFreed)
-            {
-                EndStage(StageResult.SurvivorRescued);
-            }
-            else
-            {
-                EndStage(StageResult.EnterHomeEarly);
-            }
-        }
-        if (giveUp)
-        {
-            giveUp = false;
-            EndStage(StageResult.TimerExpired);
-        }
-        if (exitGame)
-        {
-            EndStage(StageResult.TimerExpired);
+            Result = StageResult.TimerExpired;
+            BeginTransition(GameConstants.HUBSCENE);
         }
     }
 
@@ -213,34 +220,8 @@ public class StageManager : GameplayManagerBase
         }
     }
 
-    public static void ExitGame()
+    private void EndStage(StageResult result)
     {
-        exitGame = true;
-    }
-
-    public static void GiveUp()
-    {
-        giveUp = true;
-    }
-
-    public static void DoorPressed()
-    {
-        doorPressed = true;
-    }
-
-    public void EndStage(StageResult result)
-    {
-        bool showCredits = false;
-
-        GameManager.Instance.PauseGame();
-
-        // if (GameManager.ProfileData.FirstRun)
-        // {
-        //     GameManager.ProfileData.FirstRun = false;
-        //     //show tips
-        // }
-
-
         if (result == StageResult.Death || result == StageResult.TimerExpired)
         {
             //lose all except monster xp
@@ -271,18 +252,8 @@ public class StageManager : GameplayManagerBase
             //"win" aplly major upgrade etc...
             GameManager.ProfileData.StorySuccessProgress++;
             GameManager.ProfileData.UnlockedLightbulb = true;
-
-            showCredits = true;
         }
 
-        if (exitGame)
-        {
-            exitGame = false;
-            StartCoroutine(GameManager.Instance.TransitionToMenu(2f, 2f));
-            return;
-        }
-
-        StartCoroutine(GameManager.Instance.GameplayToHub(2f, 2f, showCredits));
     }
     public void OnPlayerGetMonsterXP(int amount)
     {
@@ -319,16 +290,26 @@ public class StageManager : GameplayManagerBase
         //survivor follow player
         //double remaining timer
 
-
         if (NavMesh.SamplePosition(GameplayTB.obejctiveGlobalPosition, out NavMeshHit hit, 50f, 1 << GameConstants.GROUNDLAYER))
         {
             Instantiate(SurvivorPrefab, hit.position, Quaternion.identity);
         }
 
         SurvivorFreed = true;
-
-
-
     }
 
+    public override void BeginTransition(int sceneIndex)
+    {
+        EndStage(Result);
+    }
+
+    protected override void OnExitButton()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    protected override void OnWakeupButton()
+    {
+        throw new System.NotImplementedException();
+    }
 }

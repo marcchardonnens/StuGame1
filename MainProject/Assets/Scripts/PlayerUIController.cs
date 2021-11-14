@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class PlayerUIController : MonoBehaviour
 {
+    public static PlayerUIController Instance {get; private set;}
     public const string InteractPrefix = "E - ";
     public Button BackToGameButton, SettingsButton, WakeupButton, ExitGameButton;
     public GameObject PauseMenu, SharedHUD, GameplayHUD, HubHUD;
@@ -20,6 +21,14 @@ public class PlayerUIController : MonoBehaviour
 
     void Awake()
     {
+        if(Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
         BackToGameButton.onClick.AddListener(OnBackToGameButtonClicked);
         SettingsButton.onClick.AddListener(OnSettingsButtonClicked);
         WakeupButton.onClick.AddListener(OnWakeupButtonClicked);
@@ -28,46 +37,19 @@ public class PlayerUIController : MonoBehaviour
         GameplayHUD.SetActive(false);
         HubHUD.SetActive(false);
         SharedHUD.SetActive(false);
+
+        SceneTransition.OnAnyTransitionBegin += HideAllPannels;
+        SceneTransition.OnHubTransitionComplete += ShowHubHud;
+        SceneTransition.OnGameplayTransitionComplete += ShowGameplayHud;
+        SceneTransition.OnMenuTransitionComplete += HideAllPannels;
+
+
     }
 
-    void Update()
-    {
-        ManageOpenMenus();
+    private void Start() {
+        
     }
 
-    private void ManageOpenMenus()
-    {
-        if (GameManager.Instance.PlayerHasControl || PauseMenuOpen)
-        {
-            if(Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
-            {
-                if(PauseMenuOpen)
-                {
-                    HidePauseMenu();
-                }
-                else
-                {
-                    ShowPauseMenu();
-                }
-            }
-
-            if(!PauseMenuOpen)
-            {
-                if(GameManager.Instance.CurrentSceneIndex == 1)
-                {
-                    ShowHubHud();
-                }
-                else if(GameManager.Instance.CurrentSceneIndex == 2)
-                {
-                    ShowGameplayHud();
-                }
-            }
-        }
-        else
-        {
-            HideHud();
-        }
-    }
 
     private void ShowGameplayHud()
     {
@@ -129,14 +111,14 @@ public class PlayerUIController : MonoBehaviour
     {
         Debug.Log("wake up");
         HideAllPannels();
-        StageManager.GiveUp();
+        // StageManager.GiveUp();
     }
 
     private void OnExitGameButtonClicked()
     {
         Debug.Log("exit game from game");
         HideAllPannels();
-        StageManager.ExitGame();
+        // StageManager.ExitGame();
     }
 
     public void SetInteractText(string text)

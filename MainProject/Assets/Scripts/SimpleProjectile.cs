@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleProjectile : MonoBehaviour, ITakeDamage<SimpleProjectile>, IProjectile
+public class SimpleProjectile : MonoBehaviour, ITakeDamage, IProjectile
 {
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate{};
+    public event Action<ITakeDamage> OnDeath = delegate{};
     public Team Team {get; private set;}
     [field: SerializeField]
     public float MaxHP { get; set; }
@@ -26,8 +28,7 @@ public class SimpleProjectile : MonoBehaviour, ITakeDamage<SimpleProjectile>, IP
 
     private bool hitTrackedOnly = false;
 
-    public event Action<float> OnTakeDamage = delegate{};
-    public event Func<SimpleProjectile> OnDeath = delegate{ return null;};
+
 
     public void SetPropertiesSimple(GameObject source, Vector3 direction, float speed, float damage, float hp, float lifetime, Transform tracked, Team team)
     {
@@ -133,7 +134,7 @@ public class SimpleProjectile : MonoBehaviour, ITakeDamage<SimpleProjectile>, IP
             }
         }
 
-        if(collider.TryGetComponent(out ITakeDamage<MonoBehaviour> damageable))
+        if(collider.TryGetComponent(out ITakeDamage damageable))
         {
             if(damageable.Team != Team)
             {
@@ -153,12 +154,13 @@ public class SimpleProjectile : MonoBehaviour, ITakeDamage<SimpleProjectile>, IP
 
     public void SelfDestruct()
     {
+        OnDeath?.Invoke(this);
         Destroy(gameObject);
     }
 
     public bool TakeDamage(float amount)
     {
-        OnTakeDamage?.Invoke(amount);
+        OnTakeDamage?.Invoke(this, amount);
         hp -= amount;
         if(hp <= 0)
         {

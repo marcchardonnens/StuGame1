@@ -22,7 +22,7 @@ public enum EnemyState
     Dead,
 }
 
-public class Enemy : MonoBehaviour, ITakeDamage<Enemy>
+public class Enemy : MonoBehaviour, ITakeDamage
 {
     public static readonly List<Enemy> AllEnemies = new List<Enemy>();
     [field: SerializeField]
@@ -98,8 +98,8 @@ public class Enemy : MonoBehaviour, ITakeDamage<Enemy>
     protected GameObject child;
     protected Animation childAnim;
 
-    public event Action<float> OnTakeDamage;
-    public event Func<Enemy> OnDeath = delegate { return null; };
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate{};
+    public event Action<ITakeDamage> OnDeath = delegate { };
 
     public Team Team { get => Team.Enemy; }
 
@@ -171,7 +171,7 @@ public class Enemy : MonoBehaviour, ITakeDamage<Enemy>
 
     public virtual bool TakeDamage(float amount)
     {
-        OnTakeDamage?.Invoke(amount);
+        OnTakeDamage?.Invoke(this, amount);
 
         amount -= Armor;
 
@@ -187,7 +187,7 @@ public class Enemy : MonoBehaviour, ITakeDamage<Enemy>
         bool killingBlow = CheckDeathCondition();
         if (killingBlow)
         {
-            OnDeath?.Invoke();
+            OnDeath?.Invoke(this);
             // player.GetMonsterXP(RewardAmount());
             // player.GenerateRage(player.KillRageAmount);
         }

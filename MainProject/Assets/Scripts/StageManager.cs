@@ -96,6 +96,7 @@ public class StageManager : GameplayManagerBase
     }
     private void OnDoorInteract()
     {
+        Debug.Log("door interact outside");
         if (SurvivorFound)
         {
             Result = StageResult.SurvivorRescued;
@@ -156,10 +157,12 @@ public class StageManager : GameplayManagerBase
     private IEnumerator OnTerrainReady()
     {
         yield return new WaitUntil(() => TerrainReady);
+        CreatePlayer();
         if (!localNavMesh)
         {
-            StartCoroutine(BakeNavMeshGlobal());
+            yield return StartCoroutine(BakeNavMeshGlobal());
         }
+        RaiseSceneReady();
     }
 
     private IEnumerator BakeNavMeshGlobal()
@@ -167,9 +170,10 @@ public class StageManager : GameplayManagerBase
         Surface.BuildNavMesh();
         NavMeshBaked = true;
         yield return null;
-
     }
 
+
+    //TODO propper enemy controller
     private IEnumerator EnemySpawner()
     {
         yield return new WaitForSeconds(EnemySpawnInitialDelay);
@@ -208,7 +212,13 @@ public class StageManager : GameplayManagerBase
             StartCoroutine(BakeNavMeshLocal(NavMeshBakRepeatTimer));
             NavMeshBaked = true;
         }
+        player.OnDeath += OnPlayerDeath;
         return player;
+    }
+    
+    private void OnPlayerDeath(ITakeDamage player)
+    {
+        EndStage(StageResult.Death);
     }
 
     public IEnumerator BakeNavMeshLocal(float delay)
@@ -245,7 +255,6 @@ public class StageManager : GameplayManagerBase
             GameManager.ProfileData.CalciumTotal += CalciumCollected;
 
             GameManager.ProfileData.StoryReturnProgress++;
-
         }
         else if (result == StageResult.SurvivorRescued)
         {
@@ -253,7 +262,6 @@ public class StageManager : GameplayManagerBase
             GameManager.ProfileData.StorySuccessProgress++;
             GameManager.ProfileData.UnlockedLightbulb = true;
         }
-
     }
     public void OnPlayerGetMonsterXP(int amount)
     {
@@ -301,15 +309,18 @@ public class StageManager : GameplayManagerBase
     public override void BeginTransition(int sceneIndex)
     {
         EndStage(Result);
+        TransitionToStage(sceneIndex);
     }
 
     protected override void OnExitButton()
     {
-        throw new System.NotImplementedException();
+        Result = StageResult.Death;
+        BeginTransition(GameConstants.MAINMENUSCENE);
     }
 
     protected override void OnWakeupButton()
     {
-        throw new System.NotImplementedException();
+        Result = StageResult.Death;
+        BeginTransition(GameConstants.HUBSCENE);
     }
 }

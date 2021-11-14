@@ -14,8 +14,6 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
     protected static GameplayManagerBase instance;
     public static GameplayManagerBase Instance { get { return instance; } }
 
-    public bool StageReady = false;
-
     protected virtual void Awake()
     {
         if (instance != null && instance != this)

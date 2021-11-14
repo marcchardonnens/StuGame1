@@ -13,15 +13,15 @@ public class StageManagerEditor : Editor
     {
         StageManager stageManager = (StageManager)target;
         
-        if (GUILayout.Button("Generate"))
-        {
-            stageManager.SetupStage();
-        }
+        // if (GUILayout.Button("Generate"))
+        // {
+        //     stageManager.SetupStage();
+        // }
 
-        if (DrawDefaultInspector() && stageManager.autoupdate)
-        {
-            stageManager.SetupStage();
-        }
+        // if (DrawDefaultInspector() && stageManager.autoupdate)
+        // {
+        //     stageManager.SetupStage();
+        // }
 
     }
 }

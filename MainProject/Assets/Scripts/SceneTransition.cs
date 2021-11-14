@@ -20,15 +20,20 @@ public static class SceneTransition
     public static event Action OnHubTransitionComplete = delegate { };
     public static event Action OnGameplayTransitionComplete = delegate { };
 
-    public static void TransitionToMenu()
+    public async static void TransitionToMenu()
     {
+        OnMenuTransitionBegin?.Invoke();
+        await TransitionInitialize();
+        GameManager.Instance.UpdateState(GameState.Transition);
+        GameManager.Instance.DestroyCurrentManager();
+        SceneManager.LoadScene(GameConstants.MAINMENUSCENE);
 
     }
 
     public async static void TransitionToHub()
     {
         OnHubTransitionBegin?.Invoke();
-        TransitionInitialize();
+        await TransitionInitialize();
         UIController.Instance.ShowLoadingScreen("Lighting Fire");
         await FadeSceneToTransparent(FADETIME);
         GameManager.Instance.UpdateState(GameState.Transition);
@@ -44,21 +49,20 @@ public static class SceneTransition
     public async static void TransitionToGameplay()
     {
         OnGameplayTransitionBegin?.Invoke();
-        TransitionInitialize();
+        await TransitionInitialize();
         UIController.Instance.ShowLoadingScreen("Generating Level");
         await FadeSceneToTransparent(FADETIME);
         GameManager.Instance.UpdateState(GameState.Transition);
         GameManager.Instance.DestroyCurrentManager();
-        SceneManager.LoadScene(GameConstants.GAMEPLAYSCENE);
-        while (!GameManager.Instance.CurrentManager.StageReady)
-        {
-            await Task.Yield();
-        }
-        UIController.SetLoadingScreenText("Save the Survivor!");
-        UIController.EnableUIInteraction();
+        AsyncOperation load = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE);
+        load.completed += delegate
+        {            
+            UIController.SetLoadingScreenText("Save the Survivor!");
+            UIController.EnableUIInteraction();
+        };
     }
 
-    private async static void TransitionInitialize()
+    private async static Task TransitionInitialize()
     {
         OnAnyTransitionBegin?.Invoke();
         GameManager.Instance.UpdateState(GameState.TransitionBegin);
@@ -73,19 +77,22 @@ public static class SceneTransition
         await FadeSceneToBlack(FADETIME);
         UIController.LoadingScreen.SetActive(false);
         await FadeSceneToTransparent(FADETIME);
-        OnAnyTransitionComplete?.Invoke();
-        if (GameManager.Instance.CurrentSceneIndex == GameConstants.MAINMENUSCENE)
-        {
-            OnMenuTransitionComplete?.Invoke();
-        }
-        else if (GameManager.Instance.CurrentSceneIndex == GameConstants.HUBSCENE)
-        {
-            OnHubTransitionComplete?.Invoke();
-        }
-        else if (GameManager.Instance.CurrentSceneIndex == GameConstants.GAMEPLAYSCENE)
-        {
-            OnGameplayTransitionComplete?.Invoke();
-        }
+        GameManager.Instance.CurrentManager.GiveControl();
+
+
+        // OnAnyTransitionComplete?.Invoke();
+        // if (GameManager.Instance.CurrentSceneIndex == GameConstants.MAINMENUSCENE)
+        // {
+        //     OnMenuTransitionComplete?.Invoke();
+        // }
+        // else if (GameManager.Instance.CurrentSceneIndex == GameConstants.HUBSCENE)
+        // {
+        //     OnHubTransitionComplete?.Invoke();
+        // }
+        // else if (GameManager.Instance.CurrentSceneIndex == GameConstants.GAMEPLAYSCENE)
+        // {
+        //     OnGameplayTransitionComplete?.Invoke();
+        // }
     }
 
 

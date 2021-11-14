@@ -39,17 +39,9 @@ public class PlayerUIController : MonoBehaviour
         SharedHUD.SetActive(false);
 
         SceneTransition.OnAnyTransitionBegin += HideAllPannels;
-        SceneTransition.OnHubTransitionComplete += ShowHubHud;
-        SceneTransition.OnGameplayTransitionComplete += ShowGameplayHud;
-        SceneTransition.OnMenuTransitionComplete += HideAllPannels;
-
-
+        HubManager.OnSceneCompletelyReady += ShowHubHud;
+        StageManager.OnSceneCompletelyReady += ShowGameplayHud;
     }
-
-    private void Start() {
-        
-    }
-
 
     private void ShowGameplayHud()
     {

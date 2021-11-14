@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ITakeDamage<in T>
+public interface ITakeDamage
 {
     float MaxHP { get; set; }
     float CurrentHP {get;}
     bool TakeDamage(float amount);
     Team Team {get;}
-    event Action<float> OnTakeDamage;
-    event Func<T> OnDeath;
+    event Action<ITakeDamage, float> OnTakeDamage;
+    event Action<ITakeDamage> OnDeath;
 }

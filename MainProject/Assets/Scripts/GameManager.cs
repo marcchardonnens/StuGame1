@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     [field: SerializeField]
     public GameObject PlayerPrefab { get; set; }
+    [field: SerializeField]
     public bool SkipIntro { get; set; } = false;
     public static ProfileData ProfileData { get; set; } = new ProfileData(false);
     public PlayerController Player { get; set; }
@@ -59,29 +60,57 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        
+        PlayerController.OnPlayerCreated += OnPlayerCreation;
+        PlayerController.OnPlayerDestroyed += OnRemovePlayerSwapToMainCamera;
     }
 
     public void DestroyCurrentManager()
     {
-        Destroy(CurrentManager.gameObject);
+        if(CurrentManager != null)
+        {
+            Destroy(CurrentManager.gameObject);
+        }
     }
 
     public void UpdateState(GameState newState)
     {
         State = newState;
 
-        //TODO handle transitions
+        switch (newState)
+        {
+            case GameState.Intro:
+                break;
+            case GameState.Menu:
+                break;
+            case GameState.TransitionBegin:
+                break;
+            case GameState.Transition:
+                break;
+            case GameState.TransitionEnding:
+                break;
+            case GameState.StageInitializing:
+                break;
+            case GameState.StagePlaying:
+                UnPauseGame();
+                break;
+            case GameState.StagePaused:
+                PauseGame();
+                break;
+            case GameState.StageEnding:
+                break;
+            default:
+                break;
+        }
     }
 
-    public void PlayerCreation(IGameplayManager manager)
+    public void OnPlayerCreation(PlayerController player)
     {
         Debug.Log("player creation");
         if(Player != null)
         {
             Destroy(Player.gameObject);
         }
-        Player = manager.CreatePlayer();
+        Player = player;
         SwapActiveCameraAndSoundlistenerToPlayer(Player);
     }
 
@@ -94,7 +123,7 @@ public class GameManager : MonoBehaviour
         Player.transform.SetSiblingIndex(0);
     }
 
-    public void RemovePlayerAndSwapToMainCamera()
+    public void OnRemovePlayerSwapToMainCamera(PlayerController player)
     {
         if(Player != null)
         {

@@ -35,7 +35,7 @@ public class HubManager : GameplayManagerBase
     // Start is called before the first frame update
     void Start()
     {
-
+        SetupStage();
     }
 
 
@@ -64,7 +64,8 @@ public class HubManager : GameplayManagerBase
     {
         //setup things like upgrades or resources if needed
 
-
+        CreatePlayer();
+        
         RaiseSceneReady();
     }
 

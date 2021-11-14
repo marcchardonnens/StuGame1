@@ -17,7 +17,6 @@ public class UIController : MonoBehaviour
     public Button ReadyButton;
 
     public CanvasGroup FadePannel;
-    public CanvasGroup InstructionsScreen;
 
     public GameObject MainMenu, SplashScreen, LoadingScreen, CreditsScreen;
 
@@ -26,7 +25,6 @@ public class UIController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -37,7 +35,6 @@ public class UIController : MonoBehaviour
         SettingsButtonMainMenu.onClick.AddListener(OnSettingsButtonClicked);
         ExitButtonMainMenu.onClick.AddListener(OnExitButtonClicked);
         ReadyButton.onClick.AddListener(OnReadyButtonClicked);
-        InstructionsScreen.interactable = false;
         SceneTransition.UIController = this;
         DisableUIInteraction();
         GameplayManagerBase.OnSceneReady += EnableUIInteraction;
@@ -54,6 +51,7 @@ public class UIController : MonoBehaviour
             SplashScreen.SetActive(false);
             FadePannel.gameObject.SetActive(true);
             FadePannel.alpha = 0;
+            EnableUIInteraction();
         }
 
 
@@ -78,17 +76,18 @@ public class UIController : MonoBehaviour
         SplashScreen.SetActive(false);
         MainMenu.SetActive(true);
         await SceneTransition.FadeSceneToTransparent(fadeDur);
+        EnableUIInteraction();
     }
 
     public void EnableUIInteraction()
     {
-        InstructionsScreen.interactable = true;
+        ReadyButton.interactable = true;
         GameManager.Instance.UnlockCursor();
     }
 
     public void DisableUIInteraction()
     {
-        InstructionsScreen.interactable = false;
+        ReadyButton.interactable = false;
         GameManager.Instance.LockCursor();
     }
 
@@ -109,7 +108,8 @@ public class UIController : MonoBehaviour
 
     public void ShowMenu()
     {
-
+        HideAll();
+        MainMenu.SetActive(true);
     }
 
     public void ShowCredits()
@@ -119,7 +119,7 @@ public class UIController : MonoBehaviour
 
     public void HideAll()
     {
-        MainMenu.SetActive(true);
+        MainMenu.SetActive(false);
         LoadingScreen.SetActive(false);
         CreditsScreen.SetActive(false);
         SplashScreen.SetActive(false);
@@ -129,7 +129,8 @@ public class UIController : MonoBehaviour
     private void OnStartButtonClicked()
     {
         Debug.Log("start button");
-        StartCoroutine(GameManager.Instance.MainMenuToHub(1.5f, 1.5f));
+        DisableUIInteraction();
+        SceneTransition.TransitionToHub();
     }
 
     private void OnProfileButtonClicked()
@@ -158,7 +159,6 @@ public class UIController : MonoBehaviour
 
     private void OnReadyButtonClicked()
     {
-        // GameManager.Instance.InstructionsOKPressed = true;
         SceneTransition.FadeAwayLoadingScreen();
         Debug.Log("ready");
     }

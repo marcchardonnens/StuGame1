@@ -17,12 +17,12 @@ public enum PowerupType
     //PlantShroom,
 }
 
-public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
+public class PlayerController : MonoBehaviour, ITakeDamage
 {
-    public static event Action OnPlayerCreated = delegate{};
-    public static event Action OnPlayerDestroyed = delegate{};
-    public event Action<float> OnTakeDamage = delegate{};
-    public event Func<PlayerController> OnDeath = delegate{return null;};
+    public static event Action<PlayerController> OnPlayerCreated = delegate{};
+    public static event Action<PlayerController> OnPlayerDestroyed = delegate{};
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate{};
+    public event Action<ITakeDamage> OnDeath = delegate{};
 
     [field: SerializeField]
     public Team Team { get; } = Team.Player;
@@ -109,7 +109,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
 
 
 
-    public PlayerUIController playerUI;
+    private PlayerUIController playerUI = PlayerUIController.Instance;
 
     private int shroomCounter = 0;
 
@@ -142,14 +142,14 @@ public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
         PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
         PreviewSphere.SetActive(false);
-        OnPlayerCreated?.Invoke();
+        OnPlayerCreated?.Invoke(this);
 
         CurrentHP = MaxHP;
     }
 
     void OnDestroy()
     {
-        OnPlayerDestroyed?.Invoke();
+        OnPlayerDestroyed?.Invoke(this);
     }
 
     void Start()
@@ -586,7 +586,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
     //later damage types
     public bool TakeDamage(float amount)
     {
-        OnTakeDamage?.Invoke(amount);
+        OnTakeDamage?.Invoke(this, amount);
         if (amount <= 0)
         {
             return false;
@@ -601,7 +601,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage<PlayerController>
 
         if (CurrentHP <= 0)
         {
-            OnDeath?.Invoke();
+            OnDeath?.Invoke(this);
             return true;
         }
 

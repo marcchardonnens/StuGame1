@@ -15,8 +15,8 @@ public abstract class PlantBase : MonoBehaviour, IPlant
     private Vector3 finalScale;
     protected bool grown = false;
     protected PlayerController player;
-    public event Action<float> OnTakeDamage = delegate { };
-    public event Func<IPlant> OnDeath = delegate { return null; };
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
+    public event Action<ITakeDamage> OnDeath = delegate { };
 
     protected void Start()
     {
@@ -48,11 +48,11 @@ public abstract class PlantBase : MonoBehaviour, IPlant
 
     public virtual bool TakeDamage(float amount)
     {
-        OnTakeDamage?.Invoke(amount);
+        OnTakeDamage?.Invoke(this, amount);
         CurrentHP -= amount;
         if (CurrentHP <= 0)
         {   
-            OnDeath?.Invoke();
+            OnDeath?.Invoke(this);
             Destroy(gameObject);
             return true;
         }

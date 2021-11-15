@@ -49,15 +49,15 @@ public class TerrainBuilder : MonoBehaviour
     [SerializeField] private bool spawnTrees = true;
     public int TreeDensity = 1;
     public float TreeOverallScale = 1f;
-    public RandomChoice[] TreePrefabs;
+    public RandomChoice<GameObject>[] TreePrefabs;
     [SerializeField] private bool spawnRocks = true;
     public int RocksDensity = 1;
     public float RocksOverallScale = 1f;
-    public RandomChoice[] RockPrefabs;
+    public RandomChoice<GameObject>[] RockPrefabs;
     public int PowerupDensity = 50;
     public float MushroomOverallScale = 2f;
     [SerializeField] private bool spawnPowerups = true;
-    public RandomChoice[] PowerupPrefabs;
+    public RandomChoice<GameObject>[] PowerupPrefabs;
     public GameObject[] SideQuestPrefabs;
     public GameObject ResourceTreePrefab;
     public GameObject BossAreaLight;
@@ -470,7 +470,7 @@ public class TerrainBuilder : MonoBehaviour
                                 }
 
 
-                                GameObject go = RandomChoice.Choose(TreePrefabs, RNG);
+                                GameObject go = RandomChoice<GameObject>.Choose(TreePrefabs, RNG);
 
                                 go = Instantiate(go, Scenery.transform);
                                 go.name += (" " + x + " " + z);
@@ -549,7 +549,7 @@ public class TerrainBuilder : MonoBehaviour
             {
                 x *= TerrainScale;
                 z *= TerrainScale;
-                GameObject go = RandomChoice.Choose(RockPrefabs, RNG);
+                GameObject go = RandomChoice<GameObject>.Choose(RockPrefabs, RNG);
 
                 go = Instantiate(go, Scenery.transform);
                 go.name += (" " + x + " " + z);
@@ -616,7 +616,7 @@ public class TerrainBuilder : MonoBehaviour
                                 }
 
                                 float y = Mathf.Lerp(combinedMap[x, z, xchunk, zchunk], combinedMap[x + 1, z + 1, xchunk, zchunk], (rx + rz) / 2f);
-                                GameObject go = RandomChoice.Choose(PowerupPrefabs, RNG);
+                                GameObject go = RandomChoice<GameObject>.Choose(PowerupPrefabs, RNG);
 
                                 go = Instantiate(go, Terrain.transform);
                                 go.name += (" " + cx + " " + cz);

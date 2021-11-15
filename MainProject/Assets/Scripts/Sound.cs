@@ -1,39 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 
-public enum SoundType
-{
-    MusicMenu,
-    MusicGameplay,
-    PlayerAttack,
-    PlayerHurt,
-    PlayerJump,
-    PlayerBlock,
-    PlayerAction,
-    PlayerDialogue,
-    Enemy,
-    EnemyBoss,
-}
-
-
 [System.Serializable]
-public class Sound
+public class Sound : RandomChoice<AudioClip>
 {
-    public SoundType Type;
-    public RandomChoice<AudioClip>[] Clips;
+    [Range(0f,1f)]
+    public float Volume = 1f;
 
-
-    public static AudioClip ChooseClipFromType(SoundType type, Sound[] sounds)
-    {
-        RandomChoice<AudioClip>[] clips = sounds.FirstOrDefault(x => x.Type == type).Clips;
-        if (clips == null || clips.Length <= 0)
-        {
-            Debug.LogWarning("No suitableAudioclipsFound");
-        }
-        return RandomChoice<AudioClip>.Choose(clips);
-    }
-
+    [Range(-3f,3f)]
+    public float pitch = 1f;
+    public float SpacialBlend {get;} = 0f;
 }

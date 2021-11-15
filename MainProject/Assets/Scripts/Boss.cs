@@ -34,7 +34,7 @@ public class Boss : Enemy
 
     protected override IEnumerator PlayPeriodicSound()
     {
-        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.EnemyBoss, Sounds));
+        AudioManager.Instance.PlayClip(ClipCollection.ChooseClipFromType(SoundType.EnemyBoss, Sounds));
         yield return new WaitForSeconds(Random.Range(2f,4f));
     }
 

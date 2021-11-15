@@ -66,7 +66,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     public float Gravity = 20f;
 
-    public Sound[] Sounds;
+    public ClipCollection[] Sounds;
 
 
     //AI stuff
@@ -147,7 +147,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual IEnumerator PlayPeriodicSound()
     {
-        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.Enemy, Sounds));
+        AudioManager.Instance.PlayClip(ClipCollection.ChooseClipFromType(SoundType.Enemy, Sounds));
         yield return new WaitForSeconds(Random.Range(2f,4f));
     }
 

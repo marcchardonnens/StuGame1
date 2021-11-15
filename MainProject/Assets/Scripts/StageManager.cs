@@ -20,6 +20,7 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : GameplayManagerBase
 {
+    public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
     public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public float StageTimer = 900;
     public float PlayerSpawnFromHouseOffset = 15f;
@@ -132,10 +133,6 @@ public class StageManager : GameplayManagerBase
     {
         base.Update();
 
-        //TODO
-        //StartCoroutine(EnemySpawner());
-
-
         if (GameManager.Instance.GamePaused)
         {
             StageTimer -= Time.deltaTime;
@@ -169,7 +166,11 @@ public class StageManager : GameplayManagerBase
         {
             yield return StartCoroutine(BakeNavMeshGlobal());
         }
+        OnSceneReady?.Invoke();
         RaiseSceneReady();
+        
+        //TODO better Enemy controller
+        StartCoroutine(EnemySpawner());
     }
 
     private IEnumerator BakeNavMeshGlobal()
@@ -187,7 +188,8 @@ public class StageManager : GameplayManagerBase
 
         while (true)
         {
-            int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
+            // int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
+            int currentEnemies = Enemy.AllEnemies.Count;
             if (currentEnemies < EnemiesMax && GameManager.Instance.Player != null)
             {
                 int spawns = System.Math.Min(EnemiesSpawnedPerCycle, EnemiesMax - currentEnemies);
@@ -201,8 +203,6 @@ public class StageManager : GameplayManagerBase
                     }
                 }
             }
-
-
 
             yield return new WaitForSeconds(EnemyRespawnDelay);
         }

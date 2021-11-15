@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using System.Linq;
 
 
 //TODO propper state machine
@@ -64,11 +65,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float combatSpeed = 4f;
 
     public float Gravity = 20f;
-    public float NavMeshPosCorrectionMax = 25f;
 
-    protected Vector3 spawnPoint;
+    public Sound[] Sounds;
+
 
     //AI stuff
+    public float NavMeshPosCorrectionMax = 25f;
+    protected Vector3 spawnPoint;
     public const int MELEEMASK = 1 << 0 | 1 << 3;
     public const int RANGEDMASK = 1 << 0 | 1 << 4;
     public const int WALKABLEMASK = 1 << 0;
@@ -122,7 +125,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         childAnim = child.GetComponent<Animation>();
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
-        player = FindObjectOfType<PlayerController>();
+        player = GameManager.Instance.Player;
 
         Vector3 sourcePostion = transform.position;
         if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
@@ -139,6 +142,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
         currentState = EnemyState.Spawning;
         //agent.areaMask = WALKABLEMASK;
         StartCoroutine(Spawn());
+        StartCoroutine(PlayPeriodicSound());
+    }
+
+    protected virtual IEnumerator PlayPeriodicSound()
+    {
+        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.Enemy, Sounds));
+        yield return new WaitForSeconds(Random.Range(2f,4f));
     }
 
     // Update is called once per frame
@@ -239,12 +249,9 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual IEnumerator CheckDistance()
     {
-
         while (true)
         {
-
             float distance = Vector3.Distance(transform.position, player.transform.position);
-
             if (distance > 300f)
             {
                 Destroy(gameObject);
@@ -252,8 +259,6 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
             yield return new WaitForSeconds(5f);
         }
-
-
     }
 
     protected virtual IEnumerator Spawn()

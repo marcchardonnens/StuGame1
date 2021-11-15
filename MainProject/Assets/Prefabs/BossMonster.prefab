@@ -1373,7 +1373,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cec3d37dc10958b41ad58966ac132ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHP: 1000
+  <MaxHP>k__BackingField: 0
+  <CurrentHP>k__BackingField: 0
   MeleeDamage: 15
   RangedDamage: 5
   Armor: 0
@@ -1395,7 +1396,7 @@ MonoBehaviour:
   PlayerRageLevelRewardMultiplier: 0.5
   EnemyLevelRewardMultiplier: 1.75
   RandomRewardMultiplier: 0.2
-  ProjectilePrefab: {fileID: 0}
+  ProjectilePrefab: {fileID: 3728895101345913898, guid: d21849c2e0605cd478b97d02b043c9fc, type: 3}
   ProjectileLifetime: 10
   ProjectileSpeed: 5
   ProjectileTurnSpeed: 5
@@ -1405,11 +1406,17 @@ MonoBehaviour:
   wanderDistance: 5
   combatSpeed: 4
   Gravity: 20
+  Sounds:
+  - Type: 9
+    Clips:
+    - prefab: {fileID: 8300000, guid: 8a04b2f1e2ad34612a30ef6e9d4f4dd0, type: 3}
+      SpawnWeight: 1
   NavMeshPosCorrectionMax: 25
   AreaDefaultCost: 1
   nonPrioAreaCost: 10
   aiCirclingMargin: 3
   currentHP: 0
+  HealthSlider: {fileID: 267570305}
   RangedAttackSalveAmount: 5
   RangedAttackSalveSpreadAngle: 30
   MeteorDamage: 50
@@ -1422,9 +1429,9 @@ MonoBehaviour:
   DelayBetweenMeteorsMin: 0.1
   DelayBetweenMeteorsMax: 0.5
   MeteorSpawnHeight: 100
-  MeteorPrefab: {fileID: 0}
-  MeteorIndicatorPrefab: {fileID: 0}
-  EnemyPrefab: {fileID: 0}
+  MeteorPrefab: {fileID: 9028664898774826319, guid: ce9ecbfce4f69db4ea7a10893adf0292, type: 3}
+  MeteorIndicatorPrefab: {fileID: 3144128741029878771, guid: 1d6694501baa08b49a83e285facc1e5c, type: 3}
+  EnemyPrefab: {fileID: 4022036406902719952, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
   AddSummonAmount: 3
   AddSummonCoolDown: 20
   AddSummonRadius: 20

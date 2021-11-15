@@ -356,7 +356,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerPrefab: {fileID: 6966436671165702007, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
-  StageReady: 0
+  StageTimer: 900
   PlayerSpawnFromHouseOffset: 15
   TestingOnly: 0
   autoupdate: 0
@@ -382,6 +382,8 @@ MonoBehaviour:
   WoodMaxUpgraded: 100
   EnemiesMax: 25
   SurvivorFreed: 0
+  TerrainReady: 0
+  NavMeshBaked: 0
 --- !u!4 &1643062605
 Transform:
   m_ObjectHideFlags: 0
@@ -951,7 +953,7 @@ MonoBehaviour:
   - {fileID: 475630404428713357, guid: 0ce61f44e02a3e64f89ca7e4ce56fcda, type: 3}
   PlayerSpawnOutsideHouseOffsetPos: {x: 1, y: 8, z: -6}
   PlayerSpawnOutsideHouseRotationEuler: {x: 0, y: 180, z: 0}
-  SurvivorPrefab: {fileID: 4254141587217500248, guid: bff7aa862101ae240817d5a0e7357e42, type: 3}
+  SurvivorPrefab: {fileID: 4247225949845245642, guid: 4719d5671f24cd94680e4baed57b8354, type: 3}
   Water: {fileID: 4280240914679992784}
   spawnTrees: 1
   TreeDensity: 50

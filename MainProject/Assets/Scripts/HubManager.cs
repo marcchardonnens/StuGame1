@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class HubManager : GameplayManagerBase
 {  
+    public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
     public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public Vector3 PlayerWakeupPos;
     public Vector3 PlayerWakeupRot;
@@ -72,6 +73,7 @@ public class HubManager : GameplayManagerBase
         CreatePlayer();
         
         RaiseSceneReady();
+        OnSceneReady?.Invoke();
     }
 
 

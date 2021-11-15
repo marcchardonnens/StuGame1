@@ -27,6 +27,9 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public Hand RightHand;
     //public Hand LeftHand;
+
+    public Sound[] PlayerSounds;
+
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float blockingSpeed = 3.5f;
@@ -147,7 +150,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
         OnPowerupComsume?.Invoke(shroomCounter);
         OnSeedCountChanged?.Invoke(currentSeeds, MaxSeeds);
-        OnResourcesChanged?.Invoke();        
+        OnResourcesChanged?.Invoke();
     }
 
     void OnDestroy()
@@ -361,6 +364,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         if (Input.GetButton("Jump") && GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
+            AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.PlayerJump, PlayerSounds));
         }
         else
         {
@@ -571,6 +575,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         if (postMitigation >= 0)
         {
+
+            AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.PlayerHurt, PlayerSounds));
             CurrentHP -= postMitigation;
             OnHealthChanged?.Invoke(CurrentHP, MaxHP);
         }
@@ -608,7 +614,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         {
             return;
         }
-
+        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.PlayerAttack, PlayerSounds));
         nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed / (1 + (AttackSpeed / 100)));
         RightHand.MeleeAttack();
         isBlocking = false;
@@ -621,6 +627,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public void Block()
     {
+        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.PlayerBlock, PlayerSounds));
         isBlocking = true;
         RightHand.Block();
     }

@@ -8,7 +8,7 @@ using UnityEngine;
 //all of these should be singletons, because you dont want 2 managers managing the same thing
 public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 {
-    public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
+    public static event Action OnAnySceneReady = delegate { }; //stage setup, other classes can do setup
     public GameObject PlayerPrefab;
     protected static GameplayManagerBase instance;
     public static GameplayManagerBase Instance { get { return instance; } }
@@ -64,7 +64,7 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 
     protected void RaiseSceneReady()
     {
-        OnSceneReady?.Invoke();
+        OnAnySceneReady?.Invoke();
     }
 
     public virtual void GiveControl()

@@ -1148,7 +1148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8fc3cd80a2f9ea43a08a1accfb80b98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHP: 100
+  <MaxHP>k__BackingField: 250
+  <CurrentHP>k__BackingField: 250
   MeleeDamage: 40
   RangedDamage: 15
   Armor: 0
@@ -1180,6 +1181,11 @@ MonoBehaviour:
   wanderDistance: 5
   combatSpeed: 4
   Gravity: 20
+  Sounds:
+  - Type: 8
+    Clips:
+    - prefab: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
+      SpawnWeight: 1
   NavMeshPosCorrectionMax: 25
   AreaDefaultCost: 1
   nonPrioAreaCost: 10
@@ -1204,7 +1210,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.25
   m_BaseOffset: 0
   m_WalkableMask: 1
   m_ObstacleAvoidanceType: 4

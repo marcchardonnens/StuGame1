@@ -32,6 +32,12 @@ public class Boss : Enemy
     private float meteorCd = 0f;
     private float summonCd = 0f;
 
+    protected override IEnumerator PlayPeriodicSound()
+    {
+        AudioManager.Instance.PlayClip(Sound.ChooseClipFromType(SoundType.EnemyBoss, Sounds));
+        yield return new WaitForSeconds(Random.Range(2f,4f));
+    }
+
     public override int RewardAmount()
     {
         float reward = BaseRewardAmount + currentLevel * EnemyLevelRewardMultiplier * BaseRewardAmount ;

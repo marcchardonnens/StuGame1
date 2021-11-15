@@ -37,7 +37,7 @@ public class UIController : MonoBehaviour
         ReadyButton.onClick.AddListener(OnReadyButtonClicked);
         SceneTransition.UIController = this;
         DisableUIInteraction();
-        GameplayManagerBase.OnSceneReady += EnableUIInteraction;
+        GameplayManagerBase.OnAnySceneReady += EnableUIInteraction;
 
         if (!GameManager.Instance.SkipIntro)
         {

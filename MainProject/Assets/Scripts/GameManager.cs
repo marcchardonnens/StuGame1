@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     public UIController UIController { get; set; }
     [field: SerializeField]
     public Camera MainCamera { get; set; }
+    public event Action<GameState, GameState> OnGameStateChanged = delegate{};
     [field: SerializeField]
     public bool UnlockedProfile { get; set; } = false;
     public bool InstructionsOKPressed { get; set; } = false;
@@ -74,6 +75,7 @@ public class GameManager : MonoBehaviour
 
     public void UpdateState(GameState newState)
     {
+        OnGameStateChanged?.Invoke(State, newState);
         State = newState;
 
         switch (newState)

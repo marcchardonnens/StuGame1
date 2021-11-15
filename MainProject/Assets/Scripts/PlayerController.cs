@@ -3,19 +3,6 @@ using System;
 using UnityEngine;
 using Unity.AI.Navigation;
 
-public enum PowerupType
-{
-    IronShroom,
-    RedShroom,
-    BlueShroom,
-    GreenShroom,
-    GoldShroom,
-    WoodShroom,
-    StoneShroom,
-    //TransparentShroom,
-    //YellowShroom,
-    //PlantShroom,
-}
 
 public class PlayerController : MonoBehaviour, ITakeDamage
 {

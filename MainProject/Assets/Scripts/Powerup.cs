@@ -2,6 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum PowerupType
+{
+    IronShroom,
+    RedShroom,
+    BlueShroom,
+    GreenShroom,
+    GoldShroom,
+    WoodShroom,
+    StoneShroom,
+    //TransparentShroom,
+    //YellowShroom,
+    //PlantShroom,
+}
 
 [RequireComponent(typeof(Collider))]
 public class Powerup : MonoBehaviour

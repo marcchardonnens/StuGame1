@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class HubManager : GameplayManagerBase
 {  
+    public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public Vector3 PlayerWakeupPos;
     public Vector3 PlayerWakeupRot;
     public Vector3 PlayerEnterHomePos;
@@ -46,7 +47,11 @@ public class HubManager : GameplayManagerBase
         base.Update();
     }
 
-
+    public override void GiveControl()
+    {
+        base.GiveControl();
+        OnSceneCompletelyReady?.Invoke();
+    }
 
     public override PlayerController CreatePlayer()
     {

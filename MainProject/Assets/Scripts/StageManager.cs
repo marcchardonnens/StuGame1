@@ -1,10 +1,10 @@
-using System.Security.Cryptography;
 using System.Collections;
-using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.SceneManagement;
+using System;
+using Random = UnityEngine.Random;
+using Object = UnityEngine.Object;
 
 public enum StageResult
 {
@@ -20,7 +20,8 @@ public enum StageResult
 //setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : GameplayManagerBase
 {
-    public static float StageTimer = 900;
+    public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
+    public float StageTimer = 900;
     public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
     public bool autoupdate = false;
@@ -94,6 +95,12 @@ public class StageManager : GameplayManagerBase
         PlayerUIController.Instance.WakeupButton.onClick.RemoveListener(OnWakeupButton);
         PlayerUIController.Instance.ExitGameButton.onClick.RemoveListener(OnExitButton);
     }
+
+    public override void GiveControl()
+    {
+        base.GiveControl();
+        OnSceneCompletelyReady?.Invoke();
+    }
     private void OnDoorInteract()
     {
         Debug.Log("door interact outside");
@@ -129,7 +136,7 @@ public class StageManager : GameplayManagerBase
         //StartCoroutine(EnemySpawner());
 
 
-        if (GameManager.Instance.PlayerHasControl)
+        if (GameManager.Instance.GamePaused)
         {
             StageTimer -= Time.deltaTime;
         }

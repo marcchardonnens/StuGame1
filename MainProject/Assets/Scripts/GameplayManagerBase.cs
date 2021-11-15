@@ -9,7 +9,6 @@ using UnityEngine;
 public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 {
     public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
-    public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public GameObject PlayerPrefab;
     protected static GameplayManagerBase instance;
     public static GameplayManagerBase Instance { get { return instance; } }
@@ -68,9 +67,8 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
         OnSceneReady?.Invoke();
     }
 
-    public void GiveControl()
+    public virtual void GiveControl()
     {
         GameManager.Instance.UpdateState(GameState.StagePlaying);
-        OnSceneCompletelyReady?.Invoke();
     }
 }

@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
     public bool UnlockedProfile { get; set; } = false;
     public bool InstructionsOKPressed { get; set; } = false;
     [field: SerializeField]
-    public bool PlayerHasControl { get; set; } = false;
+    public bool GamePaused { get; set; } = false;
     public bool InGamePlayScene { get; set; } = false;
     public bool SceneLoaded { get; set; } = false;
     public bool SceneCompletelyReady { get; set; } = false;
@@ -146,13 +146,13 @@ public class GameManager : MonoBehaviour
     public void PauseGame()
     {
         Time.timeScale = 0;
-        PlayerHasControl = false;
+        GamePaused = false;
     }
 
     public void UnPauseGame()
     {
         Time.timeScale = 1;
-        PlayerHasControl = true;
+        GamePaused = true;
     }
     public void LockCursor()
     {

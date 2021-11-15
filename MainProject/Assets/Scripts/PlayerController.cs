@@ -19,17 +19,24 @@ public enum PowerupType
 
 public class PlayerController : MonoBehaviour, ITakeDamage
 {
-    public static event Action<PlayerController> OnPlayerCreated = delegate{};
-    public static event Action<PlayerController> OnPlayerDestroyed = delegate{};
-    public event Action<ITakeDamage, float> OnTakeDamage = delegate{};
-    public event Action<ITakeDamage> OnDeath = delegate{};
+    public static event Action<PlayerController> OnPlayerCreated = delegate { };
+    public static event Action<PlayerController> OnPlayerDestroyed = delegate { };
+    public static event Action<int> OnPowerupComsume = delegate { };
+    public static event Action<float, float> OnHealthChanged = delegate { };
+    public static event Action<int, int> OnSeedCountChanged = delegate { };
+    public static event Action<float, float> OnRageAmountChanged = delegate { };
+    public static event Action OnResourcesChanged = delegate { }; //maybe move that to hubmanager or elsewhere
+
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
+    public event Action<ITakeDamage, float> OnGetHealed = delegate { };
+    public event Action<ITakeDamage> OnDeath = delegate { };
 
     [field: SerializeField]
     public Team Team { get; } = Team.Player;
     [field: SerializeField]
     public float MaxHP { get; set; }
     [field: SerializeField]
-    public float CurrentHP {get; protected set;}
+    public float CurrentHP { get; private set; }
 
     public Hand RightHand;
     //public Hand LeftHand;
@@ -144,7 +151,16 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         PreviewSphere.SetActive(false);
         OnPlayerCreated?.Invoke(this);
 
+    }
+
+    void Start()
+    {
         CurrentHP = MaxHP;
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+        OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
+        OnPowerupComsume?.Invoke(shroomCounter);
+        OnSeedCountChanged?.Invoke(currentSeeds, MaxSeeds);
+        OnResourcesChanged?.Invoke();        
     }
 
     void OnDestroy()
@@ -152,43 +168,29 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         OnPlayerDestroyed?.Invoke(this);
     }
 
-    void Start()
-    {
-
-    }
 
     void Update()
     {
-        if(!GameManager.Instance.PlayerHasControl)
+        if (!GameManager.Instance.GamePaused)
         {
             return;
         }
 
-        UpdateHUD();
+
+
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
             InteractWithObject();
         }
+
+
+
         //ragedissipation
-        if (rageTimer < Time.time)
-        {
-            if (Rage > RageDissipationRatePerSecond * Time.deltaTime)
-            {
-                float rageLost = RageDissipationRatePerSecond * Time.deltaTime;
-                Rage -= rageLost;
+        RageDisspation();
 
-                float misshpPercent = Mathf.Abs(1 - (CurrentHP / MaxHP));
 
-                float missinghpMultiplier = 1 + (RageHealingMissingHPMultiplierMax - 1) * misshpPercent;
-                //
-                Heal(rageLost * missinghpMultiplier);
-            }
-            else
-            {
-                Rage = 0f;
-            }
-        }
+
 
         if (Input.GetKeyDown("1"))
         {
@@ -315,7 +317,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         // Press Left Shift to run
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX;
-        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedX = blockingSpeed;
@@ -337,7 +339,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
 
         float curSpeedY;
-        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -369,7 +371,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen && characterController.isGrounded)
+        if (Input.GetButton("Jump") && GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
         }
@@ -400,7 +402,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
-        if (GameManager.Instance.PlayerHasControl && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
@@ -411,21 +413,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     }
 
-    private void UpdateHUD()
-    {
-        playerUI.UpdateHealth(CurrentHP, MaxHP);
-        playerUI.UpdateRage(Rage, RageLevelThreshholdCurrent);
-        playerUI.UpdateSeedCount(currentSeeds, MaxSeeds);
-        if (GameManager.Instance.CurrentSceneIndex == 2)
-        {
-            playerUI.UpdateMushroomCount(shroomCounter);
-            playerUI.UpdateTime(StageManager.StageTimer);
-        }
-        else if (GameManager.Instance.CurrentSceneIndex == 1)
-        {
-            playerUI.UpdateResources();
-        }
-    }
+
 
     private void InteractWithObject()
     {
@@ -597,6 +585,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         if (postMitigation >= 0)
         {
             CurrentHP -= postMitigation;
+            OnHealthChanged?.Invoke(CurrentHP, MaxHP);
         }
 
         if (CurrentHP <= 0)
@@ -610,8 +599,11 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public void Heal(float amount)
     {
+        OnGetHealed?.Invoke(this, amount);
+
         //no overheal
         CurrentHP += Mathf.Clamp(amount, 0f, MaxHP - CurrentHP);
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
     }
 
     public void RefillSeeds(int amount)
@@ -699,6 +691,30 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         //character sais something, n stuff
     }
 
+    private void RageDisspation()
+    {
+        if (rageTimer < Time.time)
+        {
+            if (Rage > RageDissipationRatePerSecond * Time.deltaTime)
+            {
+                float rageLost = RageDissipationRatePerSecond * Time.deltaTime;
+                Rage -= rageLost;
+                OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
+
+                float misshpPercent = Mathf.Abs(1 - (CurrentHP / MaxHP));
+
+                float missinghpMultiplier = 1 + (RageHealingMissingHPMultiplierMax - 1) * misshpPercent;
+
+
+                Heal(rageLost * missinghpMultiplier);
+            }
+            else
+            {
+                Rage = 0f;
+            }
+        }
+    }
+
     public void GetMonsterXP(int amount)
     {
         stageManager.OnPlayerGetMonsterXP(Mathf.RoundToInt((float)amount * (1f + MonsterXpMult)));
@@ -716,6 +732,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         //TODO constants in powerup class
         //Shroom UI
         shroomCounter += 1;
+        OnPowerupComsume?.Invoke(shroomCounter);
 
         switch (powerup.Type)
         {

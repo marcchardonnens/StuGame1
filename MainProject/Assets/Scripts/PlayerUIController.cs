@@ -41,6 +41,12 @@ public class PlayerUIController : MonoBehaviour
         SceneTransition.OnAnyTransitionBegin += HideAllPannels;
         HubManager.OnSceneCompletelyReady += ShowHubHud;
         StageManager.OnSceneCompletelyReady += ShowGameplayHud;
+
+        PlayerController.OnHealthChanged += UpdateHealth;
+        PlayerController.OnRageAmountChanged += UpdateRage;
+        PlayerController.OnSeedCountChanged += UpdateSeedCount;
+        PlayerController.OnPowerupComsume += UpdateMushroomCount;
+        PlayerController.OnResourcesChanged += UpdateResources;
     }
 
     private void ShowGameplayHud()

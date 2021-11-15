@@ -130,6 +130,11 @@ public class GameManager : MonoBehaviour
         if(Player != null)
         {
             Destroy(Player.gameObject);
+            Player = null;
+        }
+        if(MainCamera == null)
+        {
+            return;
         }
         MainCamera.enabled = false;
         MainCamera.GetComponent<AudioListener>().enabled = false;

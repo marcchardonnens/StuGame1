@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    public ClipCollection[] Music;
+    public ClipCollection<Sound>[] Music;
     public static AudioManager Instance {get; private set;}
 
     private AudioSource effects, music;
@@ -29,7 +29,7 @@ public class AudioManager : MonoBehaviour
 
     private void PlayGameplayMusic()
     {
-        music.PlayOneShot(ClipCollection.ChooseClipFromType(SoundType.MusicGameplay, Music));
+        music.PlayOneShot(ClipCollection<Sound>.ChooseClipFromType(SoundType.MusicGameplay, Music));
     }
 
     public void PlayClip(AudioClip clip)

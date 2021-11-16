@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable]
 public class RandomChoice<T>
 {
-    public T prefab;
+    public T Object;
     public bool Enaled = true;
     public float SpawnWeight = 1f;
 
@@ -27,7 +27,7 @@ public class RandomChoice<T>
             curWeight += choice.SpawnWeight;
             if (curWeight >= value)
             {
-                return choice.prefab;
+                return choice.Object;
             }
         }
 
@@ -49,7 +49,7 @@ public class RandomChoice<T>
             curWeight += choice.SpawnWeight;
             if (curWeight >= value)
             {
-                return choice.prefab;
+                return choice.Object;
             }
         }
 

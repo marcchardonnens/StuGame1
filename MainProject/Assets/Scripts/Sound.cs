@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 [System.Serializable]
-public class Sound : RandomChoice<AudioClip>
+public class Sound
 {
     [Range(0f,1f)]
     public float Volume = 1f;

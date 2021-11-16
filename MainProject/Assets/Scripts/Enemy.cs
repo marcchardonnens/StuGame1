@@ -155,15 +155,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual IEnumerator PlayPeriodicSound()
     {
-        // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
-        // AudioManager.Instance.PlayClip(ClipCollection<AudioClip>.ChooseClipFromType(SoundType.Enemy, Sounds).Object);
-        // RandomChoice<SpacialSound>.Choose(ClipCollection<SpacialSound>.GetClipsOfType(SoundType.Enemy, Sounds));
-        // SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds).);
-        // SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
-
-        // Sounds[0].Clips[0].
-
-        yield return new WaitForSeconds(Random.Range(2f, 4f));
+        AudioManager.Instance.PlayClip(ClipCollection.ChooseClipFromType(SoundType.Enemy, Sounds));
+        yield return new WaitForSeconds(Random.Range(2f,4f));
     }
 
     // Update is called once per frame

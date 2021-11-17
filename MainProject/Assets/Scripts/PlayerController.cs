@@ -655,6 +655,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         {
             Rage += amount;
         }
+
+        OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
     }
 
     public void RageLevelUp()

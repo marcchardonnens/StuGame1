@@ -85,6 +85,7 @@ public class GameManager : MonoBehaviour
             case GameState.Menu:
                 break;
             case GameState.TransitionBegin:
+                PauseGame();
                 break;
             case GameState.Transition:
                 break;

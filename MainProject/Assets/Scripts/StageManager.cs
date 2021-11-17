@@ -1,10 +1,8 @@
+using System;
 using System.Collections;
 using Unity.AI.Navigation;
-using UnityEngine;
 using UnityEngine.AI;
-using System;
-using Random = UnityEngine.Random;
-using Object = UnityEngine.Object;
+using UnityEngine;
 
 public enum StageResult
 {
@@ -15,21 +13,18 @@ public enum StageResult
     SurvivorRescued,
 }
 
-
-//this class is responsible for managing the Gameplay in the gameplay Scene
-//setting up the stage, gameplay (spawning mobs, handling events), and cleaning up the stage again
 public class StageManager : GameplayManagerBase
 {
     public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
     public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public float StageTimer = 900;
-    public float PlayerSpawnFromHouseOffset = 15f;
+    public float PlayerSpawnFromHouseOffset = 15f; 
     public bool TestingOnly = false;
     public bool autoupdate = false;
     public TerrainBuilder GameplayTB;
     public NavMeshSurface Surface; 
-    public float NavMeshBakRepeatTimer = 5f;
-    public bool localNavMesh = true;
+    public float NavMeshBakRepeatTimer = 5f; 
+    public bool localNavMesh = false;
     public GameObject EnemyPrefab;
     public GameObject SurvivorPrefab;
     public GameObject BossPrefab;
@@ -195,7 +190,7 @@ public class StageManager : GameplayManagerBase
                 int spawns = System.Math.Min(EnemiesSpawnedPerCycle, EnemiesMax - currentEnemies);
                 for (int i = 0; i < spawns; i++)
                 {
-                    Vector2 circle = Random.insideUnitCircle * EnemySpawnRange;
+                    Vector2 circle = UnityEngine.Random.insideUnitCircle * EnemySpawnRange;
                     Vector3 randompos = new Vector3(circle.x, 0, circle.y) + GameManager.Instance.Player.transform.position;
                     if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, EnemySpawnRange, NavMesh.AllAreas))
                     {
@@ -232,7 +227,7 @@ public class StageManager : GameplayManagerBase
     {
         while (true)
         {
-            GameManager.Instance.Player.Surface.BuildNavMesh();
+            // GameManager.Instance.Player.Surface.BuildNavMesh();
             yield return new WaitForSeconds(delay);
         }
     }

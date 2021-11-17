@@ -27,7 +27,7 @@ public class StageManager : GameplayManagerBase
     public bool TestingOnly = false;
     public bool autoupdate = false;
     public TerrainBuilder GameplayTB;
-    public NavMeshSurface Surface;
+    public NavMeshSurface Surface; 
     public float NavMeshBakRepeatTimer = 5f;
     public bool localNavMesh = true;
     public GameObject EnemyPrefab;

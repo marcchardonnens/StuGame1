@@ -20,20 +20,19 @@ public enum SoundType
 
 
 [System.Serializable]
-public class ClipCollection<T> where T : RandomChoice<AudioClip>
+public class ClipCollection<T> where T : Sound
 {
     public SoundType Type;
-    public T[] Clips;
+    public RandomChoice<T>[] Clips;
 
-
-    public static AudioClip ChooseClipFromType(SoundType type, ClipCollection<T>[] sounds)
+    public static T ChooseClipFromType(SoundType type, ClipCollection<T>[] sounds)
     {
-        T[] clips = sounds.FirstOrDefault(x => x.Type == type).Clips;
+        RandomChoice<T>[] clips = sounds.FirstOrDefault(x => x.Type == type).Clips;
         if (clips == null || clips.Length <= 0)
         {
             Debug.LogWarning("No suitableAudioclipsFound");
         }
-        return RandomChoice<AudioClip>.Choose(clips);
+        return RandomChoice<T>.Choose(clips);
     }
 
 }

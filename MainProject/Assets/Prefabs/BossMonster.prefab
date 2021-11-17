@@ -1409,8 +1409,16 @@ MonoBehaviour:
   Sounds:
   - Type: 9
     Clips:
-    - prefab: {fileID: 8300000, guid: 8a04b2f1e2ad34612a30ef6e9d4f4dd0, type: 3}
+    - Object:
+        Clip: {fileID: 8300000, guid: 8a04b2f1e2ad34612a30ef6e9d4f4dd0, type: 3}
+        Volume: 1
+        pitch: 1
+        StereoPan: 0
+        MinDistance: 1
+        MaxDistance: 100
+      Enaled: 1
       SpawnWeight: 1
+  SpacialAudio: {fileID: 0}
   NavMeshPosCorrectionMax: 25
   AreaDefaultCost: 1
   nonPrioAreaCost: 10

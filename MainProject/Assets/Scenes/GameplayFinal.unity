@@ -355,18 +355,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f33c9dbe8c67f0b4aa78821f99fdcb64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerPrefab: {fileID: 6966436671165702007, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+  PlayerPrefab: {fileID: 0}
   StageTimer: 900
   PlayerSpawnFromHouseOffset: 15
   TestingOnly: 0
   autoupdate: 0
-  GameplayTB: {fileID: 4280240915689885985}
-  Surface: {fileID: 679463725}
+  GameplayTB: {fileID: 0}
+  Surface: {fileID: 0}
   NavMeshBakRepeatTimer: 5
-  localNavMesh: 0
-  EnemyPrefab: {fileID: 4022036406902719952, guid: 399c8cd55649eca45a6d7b7c378059c4, type: 3}
-  SurvivorPrefab: {fileID: 4247225949845245642, guid: 4719d5671f24cd94680e4baed57b8354, type: 3}
-  BossPrefab: {fileID: 4022036406902719952, guid: a2d5288ba23df1040b20e94a05bfb145, type: 3}
+  localNavMesh: 1
+  EnemyPrefab: {fileID: 0}
+  SurvivorPrefab: {fileID: 0}
+  BossPrefab: {fileID: 0}
   PreSpawnEnemies: 1
   EnemySpawnInitialDelay: 15
   EnemyRespawnDelay: 10
@@ -959,39 +959,52 @@ MonoBehaviour:
   TreeDensity: 50
   TreeOverallScale: 4
   TreePrefabs:
-  - prefab: {fileID: 7297583925699596485, guid: 5535933a90272493bb583440a85baa87, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 50
-  - prefab: {fileID: 7577503427401562878, guid: 65afb1c6a15c34143a372eb17307bb19, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 10
-  - prefab: {fileID: 2610891570868212060, guid: 1a511f2a96dc79a43bfab52f8b1488af, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 2
   spawnRocks: 1
   RocksDensity: 150
   RocksOverallScale: 1
   RockPrefabs:
-  - prefab: {fileID: 8701302192679013780, guid: c260e4ef70d704df8943b7fa104dbf77, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 4363347301995379010, guid: c989d67ab73cb42a5b78a329bc9671b3, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 5
-  - prefab: {fileID: 7233618484334843155, guid: 50726f5f08f364f628edb8ef8cc97241, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 50
   PowerupDensity: 15
   MushroomOverallScale: 3
   spawnPowerups: 1
   PowerupPrefabs:
-  - prefab: {fileID: 4036946568686139731, guid: 92f76e7e27c284543b4d4b2430dacc50, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 6107992960786754969, guid: 11ed81494ed514eaa93d43d27adb72c6, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 6973727057115477831, guid: 4d39391da914845898bd87047f4137fe, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 4240462233283676569, guid: 57c6ef1a6e3364963967834885d9812c, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 1495965431817431863, guid: 42d124a877f1943e38d4c559e488bcfc, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 7538674755511054081, guid: 0802d8f4f94f04a4fb8e5df7d6d135cf, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
-  - prefab: {fileID: 2018903233681602824, guid: bc880d418494e40fda0320c17c513e13, type: 3}
+  - Object: {fileID: 0}
+    Enaled: 1
     SpawnWeight: 1
   SideQuestPrefabs:
   - {fileID: 8237304073132461758, guid: a4606276b03365f41a0e4eb6f6467668, type: 3}

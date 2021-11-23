@@ -46,6 +46,11 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 
     public abstract void BeginTransition(int sceneIndex);
 
+    internal Vector3? GetNavmeshLocationNearPlayer(float minDistance, float maxDistance)
+    {
+        return null;
+    }
+
     protected virtual void TransitionToStage(int sceneIndex)
     {
         if(sceneIndex == GameConstants.MAINMENUSCENE)

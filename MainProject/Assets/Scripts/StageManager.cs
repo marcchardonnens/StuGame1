@@ -184,7 +184,7 @@ public class StageManager : GameplayManagerBase
         while (true)
         {
             // int currentEnemies = Object.FindObjectsOfType<Enemy>().Length;
-            int currentEnemies = Enemy.AllEnemies.Count;
+            int currentEnemies = Enemy.All.Count;
             if (currentEnemies < EnemiesMax && GameManager.Instance.Player != null)
             {
                 int spawns = System.Math.Min(EnemiesSpawnedPerCycle, EnemiesMax - currentEnemies);

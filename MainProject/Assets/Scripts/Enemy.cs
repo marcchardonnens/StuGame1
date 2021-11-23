@@ -27,7 +27,7 @@ public enum EnemyState
 [RequireComponent(typeof(SpacialAudioSource))]
 public class Enemy : MonoBehaviour, ITakeDamage
 {
-    public static readonly List<Enemy> AllEnemies = new List<Enemy>();
+    public static readonly List<Enemy> All = new List<Enemy>();
     [field: SerializeField]
     public float MaxHP { get; set; }
     [field: SerializeField]
@@ -112,12 +112,21 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual void OnEnable()
     {
-        AllEnemies.Add(this);
+        All.Add(this);
+        PlayerController.OnRageLevelUp += OnRageLevelUp;
+    }
+
+    private void OnRageLevelUp(int oldLevel, int newLevel)
+    {
+        LevelUp();
+        currentLevel = newLevel;
+        //TODO statemachine change
     }
 
     protected virtual void OnDisable()
     {
-        AllEnemies.Remove(this);
+        All.Remove(this);
+        PlayerController.OnRageLevelUp -= OnRageLevelUp;
     }
 
     protected virtual void Awake()
@@ -127,6 +136,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         SpacialAudio = GetComponent<SpacialAudioSource>();
+
+        //TODO level up to current level
     }
 
     // Start is called before the first frame update

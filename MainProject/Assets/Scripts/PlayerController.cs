@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     public static event Action<float, float> OnHealthChanged = delegate { };
     public static event Action<int, int> OnSeedCountChanged = delegate { };
     public static event Action<float, float> OnRageAmountChanged = delegate { };
+    public static event Action<int, int> OnRageLevelUp = delegate { };
     public static event Action OnResourcesChanged = delegate { }; //maybe move that to hubmanager or elsewhere
 
     public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
@@ -673,7 +674,10 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         runningSpeed += RunningSpeedLevel;
         blockingSpeed += BlockingSpeedLevel;
 
+        int rageLevelOld = RageLevel;
         RageLevel++;
+
+        OnRageLevelUp?.Invoke(rageLevelOld, RageLevel);
 
         RageLevelThreshholdCurrent =
             RageLevelThreshholdCurrent * Mathf.Pow(RageLevelThreshholdIncreasePower, RageLevel);

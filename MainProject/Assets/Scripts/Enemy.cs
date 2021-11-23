@@ -16,8 +16,10 @@ public enum EnemyState
     Stunned,
     Wandering,
     EnteringCombat,
-    RangedAttacking,
-    MeleeAttacking,
+    Combat,
+    RangedAttacking, //remove later
+    MeleeAttacking, //remove later
+    ExitCombat,
     ReturnToSpawn,
     Dying,
     Dead,
@@ -100,8 +102,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public Slider HealthSlider;
     protected float outOfCombatTimer = 0f;
 
-    protected GameObject child;
-    protected Animation childAnim;
+    protected GameObject model;
+    protected Animation modelAnimation;
 
     public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
     public event Action<ITakeDamage> OnDeath = delegate { };
@@ -131,8 +133,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual void Awake()
     {
-        child = transform.GetChild(0).gameObject;
-        childAnim = child.GetComponent<Animation>();
+        model = transform.GetChild(0).gameObject;
+        modelAnimation = model.GetComponent<Animation>();
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         SpacialAudio = GetComponent<SpacialAudioSource>();
@@ -283,13 +285,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual IEnumerator Spawn()
     {
-        childAnim.Play("Walk");
-        float posy = child.transform.position.y - 1.5f;
+        modelAnimation.Play("Walk");
+        float posy = model.transform.position.y - 1.5f;
 
         for (int i = 0; i < 100; i++)
         {
             float newy = posy + ((1.5f / 100f) * (float)i);
-            child.transform.position = new Vector3(transform.position.x, newy, transform.position.z);
+            model.transform.position = new Vector3(transform.position.x, newy, transform.position.z);
             yield return new WaitForSeconds(1f / 100);
         }
         yield return new WaitForSeconds(1f);
@@ -315,7 +317,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
             case EnemyState.Idle:
                 {
-                    childAnim.Stop();
+                    modelAnimation.Stop();
                     if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
                     {
                         currentState = EnemyState.EnteringCombat;
@@ -338,7 +340,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
             case EnemyState.Wandering:
                 {
-                    childAnim.Play("Walk");
+                    modelAnimation.Play("Walk");
                     if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
                     {
                         currentState = EnemyState.EnteringCombat;
@@ -355,7 +357,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
             case EnemyState.Stunned:
                 {
-                    childAnim.Stop();
+                    modelAnimation.Stop();
                     //not stunned anymore
                     if (stunnedTimer <= 0)
                     {
@@ -494,8 +496,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
 
-                    child.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
-                    child.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
+                    model.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
+                    model.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
 
                     if (stunnedTimer <= 0)
                     {
@@ -608,11 +610,11 @@ public class Enemy : MonoBehaviour, ITakeDamage
     protected virtual IEnumerator PlayAnimation(float duration, string anmin, string queued)
     {
 
-        childAnim.Play(anmin);
+        modelAnimation.Play(anmin);
         agent.isStopped = true;
 
         yield return new WaitForSeconds(duration);
-        childAnim.Play(queued);
+        modelAnimation.Play(queued);
 
         if (agent.isOnNavMesh)
         {
@@ -667,7 +669,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual void InitializeDeath()
     {
-        childAnim.Play("Death");
+        modelAnimation.Play("Death");
         //initiate death
         currentState = EnemyState.Dying;
         stunnedTimer = deathTime;

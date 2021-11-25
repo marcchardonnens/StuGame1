@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public static class SceneTransition
 {
-    public const float FADETIME = 2f;
+    public const float FADETIME = 0f;
     public static UIController UIController;
 
     public static event Action OnAnyTransitionBegin = delegate { };

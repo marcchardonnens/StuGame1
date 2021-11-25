@@ -1156,20 +1156,20 @@ MonoBehaviour:
   RangedDamage: 12
   Armor: 0
   FrontBlock: 0
-  PlayerDetectRange: 15
+  PlayerDetectRange: 25
   PlayerLoseRange: 50
   TimeUntilOutOfCombat: 10
   SpawnReturnDistance: 5
   SpawnTime: 2
   DeathTime: 2
-  MeleeRange: 0.6
+  MeleeRadius: 0.75
   RangedAttackRangeMin: 10
   RangedAttackRangeMax: 35
   MeleeAttackCooldown: 2
   RangedAttackCooldown: 4
   MeleeAnimationTime: 0.5
   RangedAnimationTime: 0.5
-  currentLevel: 0
+  currentLevel: 1
   BaseRewardAmount: 500
   PlayerRageLevelRewardMultiplier: 0.5
   EnemyLevelRewardMultiplier: 1.75
@@ -1211,8 +1211,8 @@ NavMeshAgent:
   m_GameObject: {fileID: 4022036406902719952}
   m_Enabled: 1
   m_AgentTypeID: -334000983
-  m_Radius: 0.75
-  m_Speed: 3.5
+  m_Radius: 0.5
+  m_Speed: 7.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120

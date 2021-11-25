@@ -8,4 +8,9 @@ public static class Util
     {
         return (int)(s * 1000);
     }
+
+    public static Vector2 VectorXZ(Vector3 v)
+    {
+        return new Vector2(v.x, v.z);
+    }
 }

@@ -6,6 +6,7 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using System.Linq;
+// using UnityEditor;
 
 
 //TODO propper state machine
@@ -20,7 +21,7 @@ public enum EnemyState
     Dying,
 }
 
-
+[SelectionBase]
 [RequireComponent(typeof(SpacialAudioSource))]
 public class Enemy : MonoBehaviour, ITakeDamage
 {
@@ -39,7 +40,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float SpawnReturnDistance = 5f;
     public float SpawnTime = 2f;
     public float DeathTime = 2f;
-    public float MeleeRange = 3f;
+    public float MeleeRadius = 0.75f;
+    public float MeleeRange { get => 2 * MeleeRadius; }
     public float RangedAttackRangeMin = 10f;
     public float RangedAttackRangeMax = 35f;
     public float MeleeAttackCooldown = 2f;
@@ -95,12 +97,23 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public event Action<ITakeDamage> OnDeath = delegate { };
     public Team Team { get => Team.Enemy; }
 
+    protected virtual void Awake()
+    {
+        model = transform.GetChild(0).gameObject;
+        // SceneVisibilityManager.instance.DisablePicking(model, true);
+        modelAnimation = model.GetComponent<Animation>();
+        currentHP = MaxHP;
+        agent = GetComponent<NavMeshAgent>();
+        agent.stoppingDistance = StoppingDistance;
+        SpacialAudio = GetComponent<SpacialAudioSource>();
 
+
+    }
 
     protected virtual void OnEnable()
     {
         player = GameManager.Instance.Player;
-        currentLevel = player.RageLevel;
+        // currentLevel = player.RageLevel; //TODO
 
         Vector3 sourcePostion = transform.position;
         if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
@@ -115,53 +128,30 @@ public class Enemy : MonoBehaviour, ITakeDamage
         }
         ChangeBehaviour(currentLevel);
         StartCoroutine(Behaviour.CheckDistance());
-        
+
         All.Add(this);
         PlayerController.OnRageLevelUp += OnRageLevelUp;
-
-    }
-
-
-
-    protected virtual void OnDisable()
-    {
-        StopAllCoroutines();
-        All.Remove(this);
-        PlayerController.OnRageLevelUp -= OnRageLevelUp;
-    }
-
-    protected virtual void Awake()
-    {
-        model = transform.GetChild(0).gameObject;
-        modelAnimation = model.GetComponent<Animation>();
-        currentHP = MaxHP;
-        agent = GetComponent<NavMeshAgent>();
-        agent.stoppingDistance = StoppingDistance;
-        SpacialAudio = GetComponent<SpacialAudioSource>();
-
 
     }
 
     // Start is called before the first frame update
     protected virtual void Start()
     {
-
-
-
         StartCoroutine(PlayPeriodicSound());
         StartCoroutine(SpawnAnimation());
     }
 
-
-
     // Update is called once per frame
     protected virtual void Update()
     {
-
         UpdateHealthbar();
-
         Behaviour.Tick();
-
+    }
+    protected virtual void OnDisable()
+    {
+        StopAllCoroutines();
+        All.Remove(this);
+        PlayerController.OnRageLevelUp -= OnRageLevelUp;
     }
 
     protected IEnumerator SpawnAnimation()
@@ -553,19 +543,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
 
-    protected virtual void OnDrawGizmosSelected()
-    {
-        float meleeAttackHeight = 1.25f;
-        Vector3 p1 = transform.position + new Vector3(0, meleeAttackHeight, 0) + transform.forward * MeleeRange;
-        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight/2f, 0) + transform.forward * MeleeRange;
-        Vector3 p3 = transform.position + transform.forward * MeleeRange;
 
-        //Gizmos.color = Color.yellow;
-
-        Gizmos.DrawWireSphere(p1, MeleeRange);
-        Gizmos.DrawWireSphere(p2, MeleeRange);
-        Gizmos.DrawWireSphere(p3, MeleeRange);
-    }
 
     protected virtual bool CheckDeathCondition()
     {
@@ -596,5 +574,46 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
         return false;
     }
+
+
+
+
+    #region DebugCode
+    protected virtual void OnDrawGizmosSelected()
+    {
+        float meleeAttackHeight = 1.25f;
+        Vector3 p1 = transform.position + new Vector3(0, meleeAttackHeight, 0) + transform.forward * MeleeRadius;
+        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, 0) + transform.forward * MeleeRadius;
+        Vector3 p3 = transform.position + transform.forward * MeleeRadius;
+
+        //Gizmos.color = Color.yellow;
+
+        Gizmos.DrawWireSphere(p1, MeleeRadius);
+        Gizmos.DrawWireSphere(p2, MeleeRadius);
+        Gizmos.DrawWireSphere(p3, MeleeRadius);
+    }
+
+    public virtual string Print(bool print = true)
+    {
+        string s = this.GetType().ToString();
+        s += "enemy\n";
+        s += Behaviour.Print(false);
+
+        if (print)
+        {
+            Debug.Log(s);
+        }
+
+        return s;
+    }
+
+
+    //on mouse down is for gameview only
+    // void OnMouseDown()
+    // {
+    //     Print();
+    // }
+
+    #endregion
 
 }

@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[Serializable]
 public class EnemyBehaviourMeleeSwarm : EnemyBehaviourBase
 {
 
@@ -28,28 +30,12 @@ public class EnemyBehaviourMeleeSwarm : EnemyBehaviourBase
         }
         else if (distToPlayer < Enemy.RangedAttackRangeMax && distToPlayer > Enemy.RangedAttackRangeMin)
         {
-            RangedAttack();
+            Enemy.StartCoroutine(RangedAttack());
         }
 
-        
         if (agent.isOnNavMesh)
         {
             agent.SetDestination(GameManager.Instance.Player.transform.position);
         }
-    }
-
-    protected override void ExitCombat()
-    {
-        base.ExitCombat();
-    }
-
-    protected override void EnteringCombat()
-    {
-        base.EnteringCombat();
-    }
-
-    internal override IEnumerator CheckDistance()
-    {
-        return base.CheckDistance();
     }
 }

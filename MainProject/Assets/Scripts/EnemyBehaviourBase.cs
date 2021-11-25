@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System;
 using System.Collections;
@@ -6,9 +7,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 using static Util;
+using Debug = UnityEngine.Debug;
 
-
-
+[Serializable]
 public abstract class EnemyBehaviourBase
 {
     public abstract int DifficultyLevel { get; }
@@ -22,7 +23,6 @@ public abstract class EnemyBehaviourBase
     private const string AnimationShoot = "Shoot";
     private const string AnimationMelee = "Melee";
     private const string AnimationDeath = "Death";
-    public float aiCirclingMargin = 3f; //choosing random pos within this range from target
 
     protected Enemy Enemy;
     protected GameObject model;
@@ -38,6 +38,7 @@ public abstract class EnemyBehaviourBase
     protected float outOfCombatTime = 0f;
     protected float stunnedTime = 0f;
     protected float nextMeleeCd = 0f;
+    protected bool Aiming = false;
     protected float nextRangedCd = 0f;
 
 
@@ -151,7 +152,7 @@ public abstract class EnemyBehaviourBase
             return;
         }
 
-        if(agent.remainingDistance < Enemy.StoppingDistance)
+        if (agent.remainingDistance < Enemy.StoppingDistance)
         {
             agent.destination = GetNewWanderPosition();
         }
@@ -186,7 +187,7 @@ public abstract class EnemyBehaviourBase
     protected Vector3 GetNewWanderPosition()
     {
         Vector3 randompos = Random.insideUnitSphere * Enemy.WanderDistanceMax;
-        if(randompos.magnitude < Enemy.WanderDistanceMin)
+        if (randompos.magnitude < Enemy.WanderDistanceMin)
         {
             randompos *= Enemy.WanderDistanceMin / randompos.magnitude;
         }
@@ -215,7 +216,7 @@ public abstract class EnemyBehaviourBase
         while (true)
         {
             float distance = DistanceToPlayer();
-            if (distance > 300f)
+            if (distance > 500f)
             {
                 UnityEngine.Object.Destroy(Enemy.gameObject);
             }
@@ -224,7 +225,7 @@ public abstract class EnemyBehaviourBase
         }
     }
 
-    protected void MeleeAttack()
+    protected async void MeleeAttack()
     {
         if (nextMeleeCd > Time.time)
         {
@@ -233,11 +234,13 @@ public abstract class EnemyBehaviourBase
         Enemy.StartCoroutine(PlayAnimation(2f, AnimationMelee, AnimationWalk));
         nextMeleeCd += Time.time + Enemy.MeleeAttackCooldown;
         RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
-        float meleeAttackHeight = 0.25f;
-        Vector3 p1 = Enemy.transform.position + new Vector3(0, -meleeAttackHeight / 2f, Enemy.MeleeRange);
-        Vector3 p2 = Enemy.transform.position + new Vector3(0, meleeAttackHeight / 2, Enemy.MeleeRange);
-        
-        RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, Enemy.MeleeRange, Vector3.forward);
+
+        await Task.Delay(Util.SecondsToMillis(1f)); // melee wind up time
+
+        float meleeAttackHeight = 1.25f;
+        Vector3 p1 = Enemy.transform.position + new Vector3(0, meleeAttackHeight, 0) + Enemy.transform.forward * Enemy.MeleeRadius;
+        Vector3 p2 = Enemy.transform.position + Enemy.transform.forward * Enemy.MeleeRadius;
+        RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, Enemy.MeleeRadius, Vector3.forward);
         foreach (RaycastHit hit in hits)
         {
             //do damage to player
@@ -249,44 +252,101 @@ public abstract class EnemyBehaviourBase
         }
     }
 
-    protected void RangedAttack()
+    protected IEnumerator RangedAttack()
     {
         //cooldown check
-        if (nextRangedCd > Time.time)
+        if (nextRangedCd > Time.time || Aiming)
         {
-            return;
+            yield break;
         }
-        Enemy.StartCoroutine(PlayAnimation(1f, AnimationShoot, AnimationWalk));
+        Aiming = true;
+        RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
+
+        //look at player
+        Vector3 toPlayerDirection = GameManager.Instance.Player.transform.position - Enemy.transform.position;
+        toPlayerDirection.y = 0;
+        Vector3 forward = Enemy.transform.forward;
+        forward.y = 0;
+
+        float oldSpeed = agent.speed;
+        float oldAcceleration = agent.acceleration;
+        float oldAngularSpeed = agent.angularSpeed;
+        bool oldAutobreaking = agent.autoBraking;
+        float angle = Vector3.Angle(forward, toPlayerDirection);
+        float angleMargin = Random.Range(1f, 10f); // enemies take various amounts of time to aim for better or worse accuracy
+        while (angle > angleMargin)
+        {
+            if (DistanceToPlayer() < Enemy.RangedAttackRangeMin)
+            {
+                agent.acceleration = oldAcceleration;
+                agent.speed = oldSpeed;
+                agent.autoBraking = oldAutobreaking;
+                agent.angularSpeed = oldAngularSpeed;
+                Aiming = false;
+                yield break;
+            }
+
+            toPlayerDirection = GameManager.Instance.Player.transform.position - Enemy.transform.position;
+            toPlayerDirection.y = 0;
+            forward = Enemy.transform.forward;
+            forward.y = 0;
+
+            modelAnimation.Stop();
+            agent.destination = GameManager.Instance.Player.transform.position;
+            agent.speed = 0.05f; //0 speed will block rotation movement, from testing 0.03164 and above still works
+            agent.acceleration = 10000; // allow faster rotation acceleration while aiming
+            agent.angularSpeed = 36000;
+            agent.autoBraking = false;
+            angle = Vector3.Angle(forward, toPlayerDirection);
+
+            RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
+            yield return null;
+        }
+
+        agent.acceleration = oldAcceleration;
+        agent.speed = oldSpeed;
+        agent.autoBraking = oldAutobreaking;
+        agent.angularSpeed = oldAngularSpeed;
+
         nextRangedCd = Time.time + Enemy.RangedAttackCooldown;
         RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
-        SimpleProjectile projectile =
-            Enemy.Instantiate(Enemy.ProjectilePrefab, Enemy.transform.position + Vector3.up + Enemy.transform.forward * 1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
-        if (Random.Range(0f, 1f) <= Enemy.ProjectileTrackingChance)
+        Aiming = false;
+        Enemy.StartCoroutine(PlayAnimation(1f, AnimationShoot, AnimationWalk));
+        try
         {
-            //simple projectile
-            projectile.SetPropertiesSimple(Enemy.gameObject,
-                                           Vector3.up + currentTarget.transform.position - Enemy.transform.position,
-                                           Enemy.ProjectileSpeed,
-                                           Enemy.RangedDamage,
-                                           Enemy.ProjectileHP,
-                                           Enemy.ProjectileLifetime,
-                                           currentTarget,
-                                           Enemy.Team);
+            SimpleProjectile projectile =
+                Enemy.Instantiate(Enemy.ProjectilePrefab, Enemy.transform.position + Vector3.up + Enemy.transform.forward * Enemy.MeleeRadius, Quaternion.identity).GetComponent<SimpleProjectile>();
+            if (Random.Range(0f, 1f) <= Enemy.ProjectileTrackingChance)
+            {
+                //simple projectile
+                projectile.SetPropertiesSimple(Enemy.gameObject,
+                                               Vector3.up + currentTarget.transform.position - Enemy.transform.position,
+                                               Enemy.ProjectileSpeed,
+                                               Enemy.RangedDamage,
+                                               Enemy.ProjectileHP,
+                                               Enemy.ProjectileLifetime,
+                                               currentTarget,
+                                               Enemy.Team);
+            }
+            else
+            {
+                //slowtracking projectile
+                projectile.SetPropertiesTracked(Enemy.gameObject,
+                                                Vector3.up + Enemy.transform.position + Enemy.transform.forward * 0.5f,
+                                                Enemy.ProjectileSpeed,
+                                                Enemy.RangedDamage,
+                                                Enemy.ProjectileHP,
+                                                Enemy.ProjectileLifetime,
+                                                true,
+                                                Enemy.ProjectileTurnSpeed,
+                                                currentTarget.transform,
+                                                false,
+                                                Enemy.Team);
+            }
         }
-        else
+        catch (NullReferenceException e)
         {
-            //slowtracking projectile
-            projectile.SetPropertiesTracked(Enemy.gameObject,
-                                            Vector3.up + Enemy.transform.position + Enemy.transform.forward * 0.5f,
-                                            Enemy.ProjectileSpeed,
-                                            Enemy.RangedDamage,
-                                            Enemy.ProjectileHP,
-                                            Enemy.ProjectileLifetime,
-                                            true,
-                                            Enemy.ProjectileTurnSpeed,
-                                            currentTarget.transform,
-                                            false,
-                                            Enemy.Team);
+            Debug.Log(e);
         }
     }
 
@@ -320,5 +380,27 @@ public abstract class EnemyBehaviourBase
     {
         outOfCombatTime = Time.time + duration;
     }
+
+
+
+
+    #region DebugCode
+
+    public virtual string Print(bool print = true)
+    {
+        string s = this.GetType().ToString();
+        s += "current state " + currentState.ToString();
+
+
+
+
+        if (print)
+        {
+            Debug.Log(s);
+        }
+        return s;
+    }
+
+    #endregion
 
 }

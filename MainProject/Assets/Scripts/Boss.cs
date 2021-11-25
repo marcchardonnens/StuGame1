@@ -179,13 +179,13 @@ public class Boss : Enemy
     protected override void OnDrawGizmosSelected()
     {
         float meleeAttackHeight = 0.25f;
-        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
-        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, MeleeRange);
+        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRadius);
+        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, MeleeRadius);
 
         //Gizmos.color = Color.yellow;
 
-        Gizmos.DrawWireSphere(p1, MeleeRange);
-        Gizmos.DrawWireSphere(p2, MeleeRange);
+        Gizmos.DrawWireSphere(p1, MeleeRadius);
+        Gizmos.DrawWireSphere(p2, MeleeRadius);
         
     }
 

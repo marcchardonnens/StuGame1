@@ -11,6 +11,12 @@ using static Util;
 
 public abstract class EnemyBehaviourBase
 {
+    public abstract int DifficultyLevel { get;}
+    public bool IsInCombat { get => outOfCombatTime > Time.time; }
+    public bool IsStunned { get => stunnedTime > Time.time; }
+
+    protected bool MeleeCDReady { get => nextMeleeCd <= Time.time; }
+    protected bool RangedCDReady { get => nextRangedCd <= Time.time; }
 
     public float aiCirclingMargin = 3f; //choosing random pos within this range from target
 
@@ -25,10 +31,11 @@ public abstract class EnemyBehaviourBase
 
     protected EnemyState currentState = EnemyState.Spawning;
     protected Transform target;
-    protected float outOfCombatTimer = 0f;
+    protected float outOfCombatTime = 0f;
+    protected float stunnedTime = 0f;
     protected float nextMeleeCd = 0f;
     protected float nextRangedCd = 0f;
-    protected float stunnedTime = 0f;
+
 
     protected EnemyBehaviourBase(Enemy enemy, GameObject model, Animation modelAnimation, NavMeshAgent agent, Vector3 spawnPoint)
     {
@@ -116,7 +123,7 @@ public abstract class EnemyBehaviourBase
 
     protected virtual void EnteringCombat()
     {
-        outOfCombatTimer = Time.time + Enemy.TimeUntilOutOfCombat;
+        outOfCombatTime = Time.time + Enemy.TimeUntilOutOfCombat;
     }
 
     private void Wandering()

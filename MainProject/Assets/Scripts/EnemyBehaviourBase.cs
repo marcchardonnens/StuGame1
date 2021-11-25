@@ -11,6 +11,9 @@ using static Util;
 
 public abstract class EnemyBehaviourBase
 {
+
+    public float aiCirclingMargin = 3f; //choosing random pos within this range from target
+
     protected Enemy Enemy;
     protected GameObject model;
     protected Animation modelAnimation;
@@ -21,10 +24,11 @@ public abstract class EnemyBehaviourBase
 
 
     protected EnemyState currentState = EnemyState.Spawning;
+    protected Transform target;
     protected float outOfCombatTimer = 0f;
     protected float nextMeleeCd = 0f;
     protected float nextRangedCd = 0f;
-    protected float stunnedTimer = 0f;
+    protected float stunnedTime = 0f;
 
     protected EnemyBehaviourBase(Enemy enemy, GameObject model, Animation modelAnimation, NavMeshAgent agent, Vector3 spawnPoint)
     {
@@ -39,8 +43,14 @@ public abstract class EnemyBehaviourBase
         EvaluateActions();
     }
 
+    public void UpdateState(EnemyState newState)
+    {
+        currentState = newState;
+    }
+
     private void EvaluateActions()
     {
+        StunnedActions();
         switch (currentState)
         {
             case EnemyState.Spawning:
@@ -49,9 +59,6 @@ public abstract class EnemyBehaviourBase
             case EnemyState.Idle:
                 Idle();
                 break;
-            case EnemyState.Stunned:
-                Stunned();
-                break;
             case EnemyState.Wandering:
                 Wandering();
                 break;
@@ -59,7 +66,7 @@ public abstract class EnemyBehaviourBase
                 EnteringCombat();
                 break;
             case EnemyState.Combat:
-                Combat();
+                CombatActions();
                 break;
             case EnemyState.ExitCombat:
                 ExitCombat();
@@ -67,25 +74,31 @@ public abstract class EnemyBehaviourBase
             case EnemyState.Dying:
                 Dying();
                 break;
-            case EnemyState.Dead:
-                Dead();
-                break;
         }
     }
-
-    private void Dead()
+    private bool StunnedActions()
     {
-        UnityEngine.Object.Destroy(Enemy.gameObject);
+        if (stunnedTime > Time.time)
+        {
+
+
+            agent.isStopped = true;
+            return true; //still stunned
+        }
+
+        agent.isStopped = false;
+        return false; //not stunned
     }
 
     private void Dying()
     {
+        modelAnimation.Play("Death");
         model.transform.eulerAngles += new Vector3((90f / Enemy.DeathTime) * Time.deltaTime, 0, 0);
         model.transform.position += new Vector3(0, (-2f / Enemy.DeathTime) * Time.deltaTime, 0);
 
-        if (stunnedTimer <= 0)
+        if (stunnedTime <= Time.time)
         {
-            currentState = EnemyState.Dead;
+            UnityEngine.Object.Destroy(Enemy.gameObject);
         }
     }
 
@@ -99,10 +112,7 @@ public abstract class EnemyBehaviourBase
         agent.SetDestination(spawnPoint);
     }
 
-    protected virtual void Combat()
-    {
-        throw new NotImplementedException();
-    }
+    protected abstract void CombatActions();
 
     protected virtual void EnteringCombat()
     {
@@ -118,11 +128,6 @@ public abstract class EnemyBehaviourBase
         {
             currentState = EnemyState.Idle;
         }
-    }
-
-    private void Stunned()
-    {
-        throw new NotImplementedException();
     }
 
     private void Idle()
@@ -151,9 +156,9 @@ public abstract class EnemyBehaviourBase
         {
             float newy = posy + ((1.5f / 100f) * (float)i);
             model.transform.position = new Vector3(Enemy.transform.position.x, newy, Enemy.transform.position.z);
-            await Task.Delay(SecondsToMillis(Enemy.SpawnTime/2f) / 100);
+            await Task.Delay(SecondsToMillis(Enemy.SpawnTime / 2f) / 100);
         }
-        await Task.Delay(SecondsToMillis(Enemy.SpawnTime/2f));
+        await Task.Delay(SecondsToMillis(Enemy.SpawnTime / 2f));
         currentState = EnemyState.Idle;
     }
 
@@ -165,5 +170,27 @@ public abstract class EnemyBehaviourBase
             return true;
         }
         return false;
+    }
+
+    internal void Stun(float duration)
+    {
+        if (stunnedTime < duration + Time.time)
+        {
+            stunnedTime = duration + Time.time;
+        }
+        // UpdateState(EnemyState.Stunned);
+    }
+    internal virtual IEnumerator CheckDistance()
+    {
+        while (true)
+        {
+            float distance = Vector3.Distance(Enemy.transform.position, GameManager.Instance.Player.transform.position);
+            if (distance > 300f)
+            {
+                UnityEngine.Object.Destroy(Enemy.gameObject);
+            }
+
+            yield return new WaitForSeconds(5f);
+        }
     }
 }

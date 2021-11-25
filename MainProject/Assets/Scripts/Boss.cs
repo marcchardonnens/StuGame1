@@ -54,14 +54,6 @@ public class Boss : Enemy
     }
 
 
-    public override void Stun(float duration, EnemyState? nextState = null)
-    {
-        if (currentState != EnemyState.Dying && currentState != EnemyState.Dead)
-        {
-            currentState = EnemyState.Stunned;
-        }
-    }
-
     // Start is called before the first frame update
     protected override void Start()
     {

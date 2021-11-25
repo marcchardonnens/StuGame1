@@ -236,8 +236,8 @@ public abstract class EnemyBehaviourBase
         float meleeAttackHeight = 0.25f;
         Vector3 p1 = Enemy.transform.position + new Vector3(0, -meleeAttackHeight / 2f, Enemy.MeleeRange);
         Vector3 p2 = Enemy.transform.position + new Vector3(0, meleeAttackHeight / 2, Enemy.MeleeRange);
+        
         RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, Enemy.MeleeRange, Vector3.forward);
-
         foreach (RaycastHit hit in hits)
         {
             //do damage to player

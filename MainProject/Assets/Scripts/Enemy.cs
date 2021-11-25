@@ -555,15 +555,16 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual void OnDrawGizmosSelected()
     {
-        float meleeAttackHeight = 0.25f;
-        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
-        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, MeleeRange);
+        float meleeAttackHeight = 1.25f;
+        Vector3 p1 = transform.position + new Vector3(0, meleeAttackHeight, 0) + transform.forward * MeleeRange;
+        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight/2f, 0) + transform.forward * MeleeRange;
+        Vector3 p3 = transform.position + transform.forward * MeleeRange;
 
         //Gizmos.color = Color.yellow;
 
         Gizmos.DrawWireSphere(p1, MeleeRange);
         Gizmos.DrawWireSphere(p2, MeleeRange);
-
+        Gizmos.DrawWireSphere(p3, MeleeRange);
     }
 
     protected virtual bool CheckDeathCondition()

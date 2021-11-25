@@ -1212,6 +1212,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7334289401069246199, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
+      propertyPath: RageMaxLevel
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1fc47980c9099e64da110d0ca62924f7, type: 3}
 --- !u!1 &1597245389 stripped

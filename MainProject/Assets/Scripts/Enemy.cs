@@ -94,20 +94,20 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual void OnEnable()
     {
-        All.Add(this);
+        player = GameManager.Instance.Player;
+        currentLevel = player.RageLevel;
         ChangeBehaviour(currentLevel);
+        StartCoroutine(Behaviour.CheckDistance());
+        All.Add(this);
         PlayerController.OnRageLevelUp += OnRageLevelUp;
+
     }
 
-    private void OnRageLevelUp(int oldLevel, int newLevel)
-    {
-        LevelUp();
-        currentLevel = newLevel;
-        ChangeBehaviour(currentLevel);
-    }
+
 
     protected virtual void OnDisable()
     {
+        StopAllCoroutines();
         All.Remove(this);
         PlayerController.OnRageLevelUp -= OnRageLevelUp;
     }
@@ -120,21 +120,19 @@ public class Enemy : MonoBehaviour, ITakeDamage
         agent = GetComponent<NavMeshAgent>();
         SpacialAudio = GetComponent<SpacialAudioSource>();
 
-        currentLevel = player.RageLevel;
+
     }
 
     // Start is called before the first frame update
     protected virtual void Start()
     {
 
-        player = GameManager.Instance.Player;
 
         Vector3 sourcePostion = transform.position;
         if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
         {
             transform.position = closestHit.position;
             spawnPoint = transform.position;
-            StartCoroutine(Behaviour.CheckDistance());
         }
         else
         {
@@ -142,6 +140,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
             Destroy(gameObject);
         }
         StartCoroutine(PlayPeriodicSound());
+        StartCoroutine(SpawnAnimation());
     }
 
 
@@ -156,13 +155,28 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     }
 
+    protected IEnumerator SpawnAnimation()
+    {
+        modelAnimation.Stop();
+        float posy = model.transform.position.y - 1.5f;
+
+        for (int i = 0; i < 100; i++)
+        {
+            float newy = posy + (1.5f / 100f * i);
+            model.transform.position = new Vector3(transform.position.x, newy, transform.position.z);
+            yield return new WaitForSeconds(SpawnTime / 2f / 100);
+        }
+        yield return new WaitForSeconds(SpawnTime / 2f);
+        Behaviour.UpdateState(EnemyState.Idle);
+    }
+
     public void ChangeBehaviour(int level)
     {
-        if(level == 0)
+        if (level == 0)
         {
             Behaviour = new EnemyBehaviourMeleeSwarm(this, model, modelAnimation, agent, spawnPoint);
         }
-        else if(level == 1)
+        else if (level == 1)
         {
             Behaviour = new EnemyBehaviourRangedKiting(this, model, modelAnimation, agent, spawnPoint);
         }
@@ -183,7 +197,12 @@ public class Enemy : MonoBehaviour, ITakeDamage
         SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
         yield return new WaitForSeconds(Random.Range(2f, 4f));
     }
-
+    private void OnRageLevelUp(int oldLevel, int newLevel)
+    {
+        // LevelUp();
+        currentLevel = newLevel;
+        ChangeBehaviour(currentLevel);
+    }
     public virtual bool TakeDamage(float amount)
     {
         OnTakeDamage?.Invoke(this, amount);

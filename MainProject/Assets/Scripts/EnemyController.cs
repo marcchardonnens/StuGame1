@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
+using System.Collections;
 
 public class EnemyController
 {
@@ -10,7 +11,7 @@ public class EnemyController
 
     //constants
     private bool active = false;
-    private const int MAXENEMIES = 15;
+    private const int MAXENEMIES = 10;
     private const int SPAWNINTERVAL = 10; //seconds to milis
     private const int GROUPSIZE = 5;
     private const float SPAWNDISTANCEPLAYERMIN = 25f;
@@ -30,7 +31,12 @@ public class EnemyController
         Manager = manager;
         EnemyPrefab = enemyPrefab;
         PlayerController.OnRageLevelUp += OnRageLevelUp;
-        CheckEnemySpawn();
+        manager.StartCoroutine(CheckEnemySpawn());
+    }
+    
+    ~EnemyController()
+    {
+        active = false;
     }
 
     private void OnRageLevelUp(int oldLevel, int newLevel)
@@ -43,16 +49,15 @@ public class EnemyController
 
     }
 
-    private async void CheckEnemySpawn()
+    private IEnumerator CheckEnemySpawn()
     {
         while (active)
         {
-            await Task.Delay(Util.SecondsToMillis(SPAWNINTERVAL));
-            Debug.Log("Check Enemy Spawn");
             if (Enemy.All.Count < MAXENEMIES)
             {
                 SpawnEnemies();
             }
+            yield return new WaitForSeconds(SPAWNINTERVAL);
         }
     }
     private void SpawnEnemies()

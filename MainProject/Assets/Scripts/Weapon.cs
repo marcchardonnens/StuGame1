@@ -93,13 +93,13 @@ public class Weapon : MonoBehaviour
 
     void OnTriggerEnter(Collider collider)
     {
-        Debug.Log("stick collision");
+        // Debug.Log("stick collision");
         if (player != null && swingTimer > 0 && !blocking)
         {
             Enemy enemy = collider.GetComponent<Enemy>();
             if (enemy)
             {
-                Debug.Log("enemy damage");
+                // Debug.Log("enemy damage");
                 float totalDamage = Damage + player.BaseDamage;
                 bool lethal = enemy.TakeDamage(totalDamage);
                 player.GenerateRage(player.MeleeHitRageAmount);
@@ -122,7 +122,7 @@ public class Weapon : MonoBehaviour
             SimpleProjectile projectile = collider.GetComponent<SimpleProjectile>();
             if (projectile)
             {
-                Debug.Log("projectile block");
+                // Debug.Log("projectile block");
                 player.GenerateRage(player.BlockRageAmount);
 
                 if (BlockIsPercent)

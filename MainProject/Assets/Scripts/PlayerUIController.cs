@@ -41,6 +41,7 @@ public class PlayerUIController : MonoBehaviour
         SceneTransition.OnAnyTransitionBegin += HideAllPannels;
         HubManager.OnSceneCompletelyReady += ShowHubHud;
         StageManager.OnSceneCompletelyReady += ShowGameplayHud;
+        ArenaManager.OnSceneCompletelyReady += ShowGameplayHud;
 
         PlayerController.OnHealthChanged += UpdateHealth;
         PlayerController.OnRageAmountChanged += UpdateRage;

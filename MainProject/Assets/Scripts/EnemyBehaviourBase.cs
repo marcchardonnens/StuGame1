@@ -1,28 +1,47 @@
+using System.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
+using static Util;
+
+
 
 public abstract class EnemyBehaviourBase
 {
     protected Enemy Enemy;
-    protected EnemyState state = EnemyState.Spawning;
     protected GameObject model;
     protected Animation modelAnimation;
-    protected EnemyState currentState;
-    protected Vector3 spawnPoint;
     protected NavMeshAgent agent;
+    protected Vector3 spawnPoint;
 
+
+
+
+    protected EnemyState currentState = EnemyState.Spawning;
+    protected float outOfCombatTimer = 0f;
+    protected float nextMeleeCd = 0f;
+    protected float nextRangedCd = 0f;
+    protected float stunnedTimer = 0f;
+
+    protected EnemyBehaviourBase(Enemy enemy, GameObject model, Animation modelAnimation, NavMeshAgent agent, Vector3 spawnPoint)
+    {
+        Enemy = enemy;
+        this.model = model;
+        this.modelAnimation = modelAnimation;
+        this.agent = agent;
+        this.spawnPoint = spawnPoint;
+    }
     public void Tick()
     {
         EvaluateActions();
     }
 
-    protected void EvaluateActions()
+    private void EvaluateActions()
     {
-        switch (state)
+        switch (currentState)
         {
             case EnemyState.Spawning:
                 Spawning();
@@ -45,9 +64,6 @@ public abstract class EnemyBehaviourBase
             case EnemyState.ExitCombat:
                 ExitCombat();
                 break;
-            case EnemyState.ReturnToSpawn:
-                ReturnToSpawn();
-                break;
             case EnemyState.Dying:
                 Dying();
                 break;
@@ -59,22 +75,28 @@ public abstract class EnemyBehaviourBase
 
     private void Dead()
     {
-        throw new NotImplementedException();
+        UnityEngine.Object.Destroy(Enemy.gameObject);
     }
 
     private void Dying()
     {
-        throw new NotImplementedException();
-    }
+        model.transform.eulerAngles += new Vector3((90f / Enemy.DeathTime) * Time.deltaTime, 0, 0);
+        model.transform.position += new Vector3(0, (-2f / Enemy.DeathTime) * Time.deltaTime, 0);
 
-    private void ReturnToSpawn()
-    {
-        throw new NotImplementedException();
+        if (stunnedTimer <= 0)
+        {
+            currentState = EnemyState.Dead;
+        }
     }
 
     protected virtual void ExitCombat()
     {
-        throw new NotImplementedException();
+        //return to spawnpoint
+        if (Mathf.Abs(Vector3.Distance(spawnPoint, Enemy.transform.position)) < Enemy.SpawnReturnDistance)
+        {
+            currentState = EnemyState.Idle;
+        }
+        agent.SetDestination(spawnPoint);
     }
 
     protected virtual void Combat()
@@ -84,19 +106,18 @@ public abstract class EnemyBehaviourBase
 
     protected virtual void EnteringCombat()
     {
-        throw new NotImplementedException();
+        outOfCombatTimer = Time.time + Enemy.TimeUntilOutOfCombat;
     }
 
     private void Wandering()
     {
         modelAnimation.Play("Walk");
-        CheckPlayerNearby();
+        CheckPlayerNearby(Enemy.PlayerDetectRange);
 
         if (!agent.hasPath)
         {
             currentState = EnemyState.Idle;
         }
-
     }
 
     private void Stunned()
@@ -107,7 +128,7 @@ public abstract class EnemyBehaviourBase
     private void Idle()
     {
         modelAnimation.Stop();
-        CheckPlayerNearby();
+        CheckPlayerNearby(Enemy.PlayerDetectRange);
 
         Vector3 randompos = Random.insideUnitSphere * Enemy.wanderDistance;
         randompos += spawnPoint;
@@ -121,14 +142,24 @@ public abstract class EnemyBehaviourBase
         }
     }
 
-    protected void Spawning()
+    protected async void Spawning()
     {
-        throw new NotImplementedException();
+        modelAnimation.Stop();
+        float posy = model.transform.position.y - 1.5f;
+
+        for (int i = 0; i < 100; i++)
+        {
+            float newy = posy + ((1.5f / 100f) * (float)i);
+            model.transform.position = new Vector3(Enemy.transform.position.x, newy, Enemy.transform.position.z);
+            await Task.Delay(SecondsToMillis(Enemy.SpawnTime/2f) / 100);
+        }
+        await Task.Delay(SecondsToMillis(Enemy.SpawnTime/2f));
+        currentState = EnemyState.Idle;
     }
 
-    protected bool CheckPlayerNearby()
+    protected bool CheckPlayerNearby(float range)
     {
-        if (Vector3.Distance(GameManager.Instance.Player.gameObject.transform.position, Enemy.transform.position) < Enemy.PlayerDetectRange)
+        if (Vector3.Distance(GameManager.Instance.Player.gameObject.transform.position, Enemy.transform.position) < range)
         {
             currentState = EnemyState.EnteringCombat;
             return true;

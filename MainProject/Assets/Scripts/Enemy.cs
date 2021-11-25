@@ -41,11 +41,11 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float PlayerDetectRange = 15f;
     public float PlayerLoseRange = 25f;
     public float TimeUntilOutOfCombat = 10f;
-    public float spawnReturnDistance = 5f;
-    public float spawnTime = 2f;
-    public float deathTime = 2f;
-    public float meleeRange = 3f;
-    public float attackRange = 15f;
+    public float SpawnReturnDistance = 5f;
+    public float SpawnTime = 2f;
+    public float DeathTime = 2f;
+    public float MeleeRange = 3f;
+    public float AttackRange = 15f;
     public float MeleeAttackCooldown = 2f;
     public float RangedAttackCooldown = 4f;
     public float MeleeAnimationTime = 0.5f;
@@ -74,6 +74,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public SpacialAudioSource SpacialAudio;
 
     //AI stuff
+    public EnemyBehaviourBase Behaviour;
     public float NavMeshPosCorrectionMax = 25f;
     protected Vector3 spawnPoint;
     public const int MELEEMASK = 1 << 0 | 1 << 3;
@@ -138,6 +139,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         SpacialAudio = GetComponent<SpacialAudioSource>();
+
+        // EnemyBehaviourBase = new 
 
         //TODO level up to current level
     }
@@ -419,13 +422,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
                         currentState = EnemyState.ReturnToSpawn;
                         break;
                     }
-                    else if (distToPlayer < meleeRange)
+                    else if (distToPlayer < MeleeRange)
                     {
                         outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
                         MeleeAttack();
                         break;
                     }
-                    else if (distToPlayer < attackRange)
+                    else if (distToPlayer < AttackRange)
                     {
                         if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
                         {
@@ -450,13 +453,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
                     {
                         currentState = EnemyState.ReturnToSpawn;
                     }
-                    else if (distToPlayer < meleeRange)
+                    else if (distToPlayer < MeleeRange)
                     {
                         outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
                         MeleeAttack();
                         agent.SetDestination(player.transform.position);
                     }
-                    else if (distToPlayer < attackRange)
+                    else if (distToPlayer < AttackRange)
                     {
                         if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
                         {
@@ -476,7 +479,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
             case EnemyState.ReturnToSpawn:
                 {
-                    if (Mathf.Abs(Vector3.Distance(spawnPoint, transform.position)) < spawnReturnDistance)
+                    if (Mathf.Abs(Vector3.Distance(spawnPoint, transform.position)) < SpawnReturnDistance)
                     {
                         currentState = EnemyState.Idle;
                     }
@@ -496,8 +499,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
 
-                    model.transform.eulerAngles += new Vector3((90f / deathTime) * Time.deltaTime, 0, 0);
-                    model.transform.position += new Vector3(0, (-2f / deathTime) * Time.deltaTime, 0);
+                    model.transform.eulerAngles += new Vector3((90f / DeathTime) * Time.deltaTime, 0, 0);
+                    model.transform.position += new Vector3(0, (-2f / DeathTime) * Time.deltaTime, 0);
 
                     if (stunnedTimer <= 0)
                     {
@@ -522,7 +525,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     protected virtual void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
-        Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - attackRange);
+        Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - AttackRange);
 
         //randomize pos slightly
         Vector3 randompos = Random.insideUnitSphere * aiCirclingMargin;
@@ -584,9 +587,9 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
 
         float meleeAttackHeight = 0.25f;
-        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, meleeRange);
-        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2, meleeRange);
-        RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, meleeRange, Vector3.forward);
+        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
+        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2, MeleeRange);
+        RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, MeleeRange, Vector3.forward);
 
         foreach (RaycastHit hit in hits)
         {
@@ -626,13 +629,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
     protected virtual void OnDrawGizmosSelected()
     {
         float meleeAttackHeight = 0.25f;
-        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, meleeRange);
-        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, meleeRange);
+        Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
+        Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2f, MeleeRange);
 
         //Gizmos.color = Color.yellow;
 
-        Gizmos.DrawWireSphere(p1, meleeRange);
-        Gizmos.DrawWireSphere(p2, meleeRange);
+        Gizmos.DrawWireSphere(p1, MeleeRange);
+        Gizmos.DrawWireSphere(p2, MeleeRange);
 
     }
 
@@ -672,7 +675,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         modelAnimation.Play("Death");
         //initiate death
         currentState = EnemyState.Dying;
-        stunnedTimer = deathTime;
+        stunnedTimer = DeathTime;
         GetComponent<NavMeshAgent>().enabled = false;
         GetComponent<Collider>().enabled = false;
     }

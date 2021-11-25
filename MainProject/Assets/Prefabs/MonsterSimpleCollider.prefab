@@ -1150,26 +1150,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8fc3cd80a2f9ea43a08a1accfb80b98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxHP>k__BackingField: 250
-  <CurrentHP>k__BackingField: 250
-  MeleeDamage: 40
-  RangedDamage: 15
+  <MaxHP>k__BackingField: 100
+  <CurrentHP>k__BackingField: 100
+  MeleeDamage: 30
+  RangedDamage: 12
   Armor: 0
   FrontBlock: 0
   PlayerDetectRange: 15
-  PlayerLoseRange: 25
+  PlayerLoseRange: 50
   TimeUntilOutOfCombat: 10
-  spawnReturnDistance: 5
-  spawnTime: 2
-  deathTime: 2
-  meleeRange: 1
-  attackRange: 15
+  SpawnReturnDistance: 5
+  SpawnTime: 2
+  DeathTime: 2
+  MeleeRange: 3
+  RangedAttackRangeMin: 10
+  RangedAttackRangeMax: 35
   MeleeAttackCooldown: 2
   RangedAttackCooldown: 4
   MeleeAnimationTime: 0.5
   RangedAnimationTime: 0.5
   currentLevel: 0
-  BaseRewardAmount: 50
+  BaseRewardAmount: 500
   PlayerRageLevelRewardMultiplier: 0.5
   EnemyLevelRewardMultiplier: 1.75
   RandomRewardMultiplier: 0.2
@@ -1180,26 +1181,24 @@ MonoBehaviour:
   ProjectileHP: 50
   ProjectileTrackingChance: 0.5
   wanderSpeed: 2
-  wanderDistance: 5
+  wanderDistance: 15
   combatSpeed: 4
+  StoppingDistance: 1
   Gravity: 20
   Sounds:
   - Type: 8
     Clips:
     - Object:
         Clip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
-        Volume: 1
-        pitch: 1
+        Volume: 0
+        pitch: 0
         StereoPan: 0
-        MinDistance: 1
+        MinDistance: 0
         MaxDistance: 100
       Enaled: 1
       SpawnWeight: 1
   SpacialAudio: {fileID: 8340472513281035610}
   NavMeshPosCorrectionMax: 25
-  AreaDefaultCost: 1
-  nonPrioAreaCost: 10
-  aiCirclingMargin: 3
   currentHP: 0
   HealthSlider: {fileID: 7279466557401182094}
 --- !u!195 &7327127629816567629
@@ -1245,9 +1244,9 @@ AudioSource:
   m_GameObject: {fileID: 4022036406902719952}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -3305767098247582436, guid: 8f2eac6d7ca5cd84388686dfabba3153, type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

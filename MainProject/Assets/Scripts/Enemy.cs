@@ -29,18 +29,19 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float MaxHP { get; set; }
     [field: SerializeField]
     public float CurrentHP { get; protected set; }
-    public float MeleeDamage = 15f;
-    public float RangedDamage = 5f;
+    public float MeleeDamage = 30f;
+    public float RangedDamage = 12f;
     public float Armor = 0f;
     public float FrontBlock = 0f;
     public float PlayerDetectRange = 15f;
-    public float PlayerLoseRange = 25f;
+    public float PlayerLoseRange = 50f;
     public float TimeUntilOutOfCombat = 10f;
     public float SpawnReturnDistance = 5f;
     public float SpawnTime = 2f;
     public float DeathTime = 2f;
     public float MeleeRange = 3f;
-    public float AttackRange = 15f;
+    public float RangedAttackRangeMin = 10f;
+    public float RangedAttackRangeMax = 35f;
     public float MeleeAttackCooldown = 2f;
     public float RangedAttackCooldown = 4f;
     public float MeleeAnimationTime = 0.5f;
@@ -59,9 +60,11 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float ProjectileHP = 50f; //relevant for aura plant for example
     public float ProjectileTrackingChance = 0.5f; //slowtracking or simple
 
-    public float wanderSpeed = 2f;
-    public float wanderDistance = 5f;
-    public float combatSpeed = 4f;
+    public float WanderSpeed = 2f;
+    public float WanderDistanceMin = 5f;
+    public float WanderDistanceMax = 15f;
+    public float CombatSpeed = 4f;
+    public float StoppingDistance = 2.5f;
 
     public float Gravity = 20f;
 
@@ -86,6 +89,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public Slider HealthSlider;
     protected GameObject model; //TODO remove later
     protected Animation modelAnimation; //TODO remove later
+
+
     public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
     public event Action<ITakeDamage> OnDeath = delegate { };
     public Team Team { get => Team.Enemy; }
@@ -96,8 +101,21 @@ public class Enemy : MonoBehaviour, ITakeDamage
     {
         player = GameManager.Instance.Player;
         currentLevel = player.RageLevel;
+
+        Vector3 sourcePostion = transform.position;
+        if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
+        {
+            transform.position = closestHit.position;
+            spawnPoint = transform.position;
+        }
+        else
+        {
+            Debug.Log("Enemy Bad Spawn");
+            Destroy(gameObject);
+        }
         ChangeBehaviour(currentLevel);
         StartCoroutine(Behaviour.CheckDistance());
+        
         All.Add(this);
         PlayerController.OnRageLevelUp += OnRageLevelUp;
 
@@ -118,6 +136,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         modelAnimation = model.GetComponent<Animation>();
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
+        agent.stoppingDistance = StoppingDistance;
         SpacialAudio = GetComponent<SpacialAudioSource>();
 
 
@@ -128,17 +147,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     {
 
 
-        Vector3 sourcePostion = transform.position;
-        if (NavMesh.SamplePosition(sourcePostion, out NavMeshHit closestHit, NavMeshPosCorrectionMax, agent.areaMask))
-        {
-            transform.position = closestHit.position;
-            spawnPoint = transform.position;
-        }
-        else
-        {
-            Debug.Log("Enemy Bad Spawn");
-            Destroy(gameObject);
-        }
+
         StartCoroutine(PlayPeriodicSound());
         StartCoroutine(SpawnAnimation());
     }
@@ -233,8 +242,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
         MaxHP *= MaxHP * 1.1f;
         currentHP += MaxHP * 0.1f;
         ProjectileSpeed *= 1.05f;
-        wanderSpeed *= 1.1f;
-        combatSpeed *= 1.1f;
+        WanderSpeed *= 1.1f;
+        CombatSpeed *= 1.1f;
 
 
     }

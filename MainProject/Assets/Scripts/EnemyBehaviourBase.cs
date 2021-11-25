@@ -61,7 +61,7 @@ public abstract class EnemyBehaviourBase
 
     private void EvaluateActions()
     {
-        if(AnimationLock())
+        if (AnimationLock())
         {
             return;
         }
@@ -137,7 +137,7 @@ public abstract class EnemyBehaviourBase
 
     protected virtual void EnteringCombat()
     {
-        outOfCombatTime = Time.time + Enemy.TimeUntilOutOfCombat;
+        RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
         currentTarget = GameManager.Instance.Player.transform;
         currentState = EnemyState.Combat;
     }
@@ -145,10 +145,15 @@ public abstract class EnemyBehaviourBase
     private void Wandering()
     {
         modelAnimation.Play(AnimationWalk);
-        if(CheckPlayerNearby(Enemy.PlayerDetectRange))
+        if (CheckPlayerNearby(Enemy.PlayerDetectRange))
         {
             currentState = EnemyState.EnteringCombat;
             return;
+        }
+
+        if(agent.remainingDistance < Enemy.StoppingDistance)
+        {
+            agent.destination = GetNewWanderPosition();
         }
 
         if (!agent.hasPath)
@@ -160,29 +165,37 @@ public abstract class EnemyBehaviourBase
     private void Idle()
     {
         modelAnimation.Stop();
-        if(CheckPlayerNearby(Enemy.PlayerDetectRange))
+        if (CheckPlayerNearby(Enemy.PlayerDetectRange))
         {
             currentState = EnemyState.EnteringCombat;
             return;
         }
 
-        Vector3 randompos = Random.insideUnitSphere * Enemy.wanderDistance;
-        randompos += spawnPoint;
-        if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, Enemy.wanderDistance/2f, agent.areaMask))
+        Vector3 randompos = GetNewWanderPosition();
+        if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, Enemy.WanderDistanceMax / 2f, agent.areaMask))
         {
             if (agent.isOnNavMesh)
             {
+                agent.stoppingDistance = Enemy.StoppingDistance;
                 agent.SetDestination(hit.position);
             }
             currentState = EnemyState.Wandering;
         }
     }
 
-
+    protected Vector3 GetNewWanderPosition()
+    {
+        Vector3 randompos = Random.insideUnitSphere * Enemy.WanderDistanceMax;
+        if(randompos.magnitude < Enemy.WanderDistanceMin)
+        {
+            randompos *= Enemy.WanderDistanceMin / randompos.magnitude;
+        }
+        return spawnPoint + randompos;
+    }
 
     protected bool CheckPlayerNearby(float range)
     {
-        if (Vector3.Distance(GameManager.Instance.Player.gameObject.transform.position, Enemy.transform.position) < range)
+        if (DistanceToPlayer() < range)
         {
             return true;
         }
@@ -201,7 +214,7 @@ public abstract class EnemyBehaviourBase
     {
         while (true)
         {
-            float distance = Vector3.Distance(Enemy.transform.position, GameManager.Instance.Player.transform.position);
+            float distance = DistanceToPlayer();
             if (distance > 300f)
             {
                 UnityEngine.Object.Destroy(Enemy.gameObject);
@@ -219,7 +232,7 @@ public abstract class EnemyBehaviourBase
         }
         Enemy.StartCoroutine(PlayAnimation(2f, AnimationMelee, AnimationWalk));
         nextMeleeCd += Time.time + Enemy.MeleeAttackCooldown;
-
+        RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
         float meleeAttackHeight = 0.25f;
         Vector3 p1 = Enemy.transform.position + new Vector3(0, -meleeAttackHeight / 2f, Enemy.MeleeRange);
         Vector3 p2 = Enemy.transform.position + new Vector3(0, meleeAttackHeight / 2, Enemy.MeleeRange);
@@ -244,9 +257,8 @@ public abstract class EnemyBehaviourBase
             return;
         }
         Enemy.StartCoroutine(PlayAnimation(1f, AnimationShoot, AnimationWalk));
-
         nextRangedCd = Time.time + Enemy.RangedAttackCooldown;
-
+        RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
         SimpleProjectile projectile =
             Enemy.Instantiate(Enemy.ProjectilePrefab, Enemy.transform.position + Vector3.up + Enemy.transform.forward * 1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
         if (Random.Range(0f, 1f) <= Enemy.ProjectileTrackingChance)
@@ -285,7 +297,7 @@ public abstract class EnemyBehaviourBase
         modelAnimation.Play(anmin);
         agent.isStopped = true;
 
-        while(modelAnimation.isPlaying)
+        while (modelAnimation.isPlaying)
         {
             yield return null;
         }
@@ -297,7 +309,16 @@ public abstract class EnemyBehaviourBase
         {
             agent.isStopped = false;
         }
+    }
 
+    protected virtual float DistanceToPlayer()
+    {
+        return Vector3.Distance(Enemy.transform.position, GameManager.Instance.Player.transform.position);
+    }
+
+    protected virtual void RefreshCombatTimer(float duration)
+    {
+        outOfCombatTime = Time.time + duration;
     }
 
 }

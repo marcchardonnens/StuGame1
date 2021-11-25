@@ -75,14 +75,14 @@ public class Boss : Enemy
     protected override void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
-        Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - AttackRange);
+        Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - RangedAttackRangeMax);
 
         //randomize pos slightly
         Vector3 randompos = Random.insideUnitSphere;
         randompos += pos;
         NavMeshHit hit;
 
-        if (NavMesh.SamplePosition(randompos, out hit, wanderDistance, agent.areaMask))
+        if (NavMesh.SamplePosition(randompos, out hit, WanderDistanceMax, agent.areaMask))
         {
             agent.SetDestination(hit.position);
         }

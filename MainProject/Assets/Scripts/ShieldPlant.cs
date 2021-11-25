@@ -94,8 +94,8 @@ public class ShieldPlant : PlantBase
             affectedColliders.Add(other);
             if (GameManager.ProfileData.HasShieldUpgrade)
             {
-                enemy.combatSpeed *= UpgradeSlowMultiplier;
-                enemy.wanderSpeed *= UpgradeSlowMultiplier;
+                enemy.CombatSpeed *= UpgradeSlowMultiplier;
+                enemy.WanderSpeed *= UpgradeSlowMultiplier;
             }
         }
         else
@@ -124,8 +124,8 @@ public class ShieldPlant : PlantBase
         {
             if (GameManager.ProfileData.HasShieldUpgrade)
             {
-                enemy.combatSpeed /= UpgradeSlowMultiplier;
-                enemy.wanderSpeed /= UpgradeSlowMultiplier;
+                enemy.CombatSpeed /= UpgradeSlowMultiplier;
+                enemy.WanderSpeed /= UpgradeSlowMultiplier;
             }
         }
         else

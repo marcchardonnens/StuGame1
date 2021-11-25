@@ -10,31 +10,28 @@ public class EnemyBehaviourMeleeSwarm : EnemyBehaviourBase
 
     public EnemyBehaviourMeleeSwarm(Enemy enemy, GameObject model, Animation modelAnimation, NavMeshAgent agent, Vector3 spawnPoint) : base(enemy, model, modelAnimation, agent, spawnPoint)
     {
-        
+
     }
 
     protected override void CombatActions()
     {
-        float distToPlayer = Mathf.Abs(Vector3.Distance(GameManager.Instance.Player.transform.position, Enemy.transform.position));
+        float distToPlayer = Mathf.Abs(DistanceToPlayer());
         if (distToPlayer > Enemy.PlayerLoseRange)
         {
+            outOfCombatTime = Time.time;
             currentState = EnemyState.ExitCombat;
+            return;
         }
         else if (distToPlayer < Enemy.MeleeRange)
         {
-            outOfCombatTime = Time.time + Enemy.TimeUntilOutOfCombat;
             MeleeAttack();
-            agent.SetDestination(GameManager.Instance.Player.transform.position);
         }
-        else if (distToPlayer < Enemy.AttackRange)
+        else if (distToPlayer < Enemy.RangedAttackRangeMax && distToPlayer > Enemy.RangedAttackRangeMin)
         {
-            if (outOfCombatTime < (Time.time + Enemy.TimeUntilOutOfCombat / 2f))
-            {
-                outOfCombatTime = Time.time + Enemy.TimeUntilOutOfCombat / 2f;
-            }
             RangedAttack();
         }
 
+        
         if (agent.isOnNavMesh)
         {
             agent.SetDestination(GameManager.Instance.Player.transform.position);

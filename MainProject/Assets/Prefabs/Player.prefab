@@ -393,10 +393,10 @@ MonoBehaviour:
   RageLevelThreshholdCurrent: 100
   RageLevelThreshholdIncreasePower: 1.5
   MeleeHitRageAmount: 5
-  BlockRageAmount: 1
-  KillRageAmount: 20
-  RageDissipationTime: 15
-  RageDissipationRatePerSecond: 0.5
+  BlockRageAmount: 5
+  KillRageAmount: 15
+  RageDissipationTime: 8
+  RageDissipationRatePerSecond: 2
   RageIntoHPConversion: 0.1
   RageHealingMissingHPMultiplierMax: 2.5
   HPLevel: 10

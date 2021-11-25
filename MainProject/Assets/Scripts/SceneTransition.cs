@@ -20,6 +20,21 @@ public static class SceneTransition
     public static event Action OnHubTransitionComplete = delegate { };
     public static event Action OnGameplayTransitionComplete = delegate { };
 
+    public async static void TransitionToArena()
+    {
+        await TransitionInitialize();
+        UIController.Instance.ShowLoadingScreen("Preparing Arena");
+        await FadeSceneToTransparent(FADETIME);
+        GameManager.Instance.UpdateState(GameState.Transition);
+        GameManager.Instance.DestroyCurrentManager();
+        AsyncOperation load = SceneManager.LoadSceneAsync(GameConstants.ARENASCENE);
+        load.completed += delegate
+        {
+            UIController.SetLoadingScreenText("Fight!");
+            UIController.EnableUIInteraction();
+        };
+    }
+
     public async static void TransitionToMenu()
     {
         OnMenuTransitionBegin?.Invoke();
@@ -27,7 +42,6 @@ public static class SceneTransition
         GameManager.Instance.UpdateState(GameState.Transition);
         GameManager.Instance.DestroyCurrentManager();
         SceneManager.LoadScene(GameConstants.MAINMENUSCENE);
-
     }
 
     public async static void TransitionToHub()
@@ -56,7 +70,7 @@ public static class SceneTransition
         GameManager.Instance.DestroyCurrentManager();
         AsyncOperation load = SceneManager.LoadSceneAsync(GameConstants.GAMEPLAYSCENE);
         load.completed += delegate
-        {            
+        {
             UIController.SetLoadingScreenText("Save the Survivor!");
             UIController.EnableUIInteraction();
         };

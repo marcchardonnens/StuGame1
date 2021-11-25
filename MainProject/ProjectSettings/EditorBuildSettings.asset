@@ -15,6 +15,6 @@ EditorBuildSettings:
     path: Assets/Scenes/GameplayFinal.unity
     guid: 650e8fe7e0fbe2c47927a4879200ce9c
   - enabled: 1
-    path: Assets/scenetransitiontestingdiscardlater.unity
-    guid: 4a813923aa7094e46a1aa8ca2c4aaa3a
+    path: Assets/Scenes/ArenaScene.unity
+    guid: d472d91ed3704174ab746b6ae0e84850
   m_configObjects: {}

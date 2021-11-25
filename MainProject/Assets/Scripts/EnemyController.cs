@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class EnemyController
 {
@@ -9,8 +10,8 @@ public class EnemyController
 
     //constants
     private bool active = false;
-    private const int MAXENEMIES = 20;
-    private const int SPAWNINTERVAL = 10 * 1000; //seconds to milis
+    private const int MAXENEMIES = 15;
+    private const int SPAWNINTERVAL = 10; //seconds to milis
     private const int GROUPSIZE = 5;
     private const float SPAWNDISTANCEPLAYERMIN = 25f;
     private const float SPAWNDISTANCEPLAYERMAX = 100f;
@@ -29,12 +30,12 @@ public class EnemyController
         Manager = manager;
         EnemyPrefab = enemyPrefab;
         PlayerController.OnRageLevelUp += OnRageLevelUp;
+        CheckEnemySpawn();
     }
 
     private void OnRageLevelUp(int oldLevel, int newLevel)
     {
         CurrentEnemyLevel = newLevel;
-        //TODO set statemachine
     }
 
     public void Tick()
@@ -46,28 +47,39 @@ public class EnemyController
     {
         while (active)
         {
-            if (Enemy.All.Count > MAXENEMIES)
+            await Task.Delay(Util.SecondsToMillis(SPAWNINTERVAL));
+            Debug.Log("Check Enemy Spawn");
+            if (Enemy.All.Count < MAXENEMIES)
             {
                 SpawnEnemies();
             }
-            await Task.Delay(SPAWNINTERVAL);
         }
     }
     private void SpawnEnemies()
     {
+        Debug.Log("Spawning Enemies");
         int toSpawn = Math.Min(GROUPSIZE, MAXENEMIES - Enemy.All.Count);
         for (int i = 0; i < toSpawn; i++)
         {
             // Manager.GetNavmeshLocationNearPlayer(SPAWNDISTANCEPLAYERMIN, SPAWNDISTANCEPLAYERMAX);
-            Vector2 circle = UnityEngine.Random.insideUnitCircle * (SPAWNDISTANCEPLAYERMAX - SPAWNDISTANCEPLAYERMIN);
-            Vector3 randompos = new Vector3(circle.x, 0, circle.y) + GameManager.Instance.Player.transform.position;
+            // Vector2 circle = UnityEngine.Random.insideUnitCircle * (SPAWNDISTANCEPLAYERMAX - SPAWNDISTANCEPLAYERMIN);
+            // Vector3 randompos = new Vector3(circle.x, 0, circle.y) + GameManager.Instance.Player.transform.position;
+            Vector3 randompos = new Vector3(Random.Range(-50f, 50f), 0, Random.Range(-50f, 50f));
             //TODO check min distance
             if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, SPAWNDISTANCEPLAYERMAX, NavMesh.AllAreas))
             {
                 UnityEngine.Object.Instantiate(EnemyPrefab, hit.position, Quaternion.identity);
             }
-            UnityEngine.Object.Instantiate(EnemyPrefab);
+            else
+            {
+                i--; //try again
+            }
         }
+    }
+
+    private void ForceEnemyBehaviour(Enemy enemy, int level)
+    {
+        enemy.ChangeBehaviour(level);
     }
 
     private void AnalyseState()

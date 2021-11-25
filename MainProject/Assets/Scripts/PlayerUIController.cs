@@ -133,7 +133,6 @@ public class PlayerUIController : MonoBehaviour
 
     public void UpdateRage(float current, float max)
     {
-        Debug.Log("update rage");
         RageSlider.minValue = 0;
         RageSlider.maxValue = max;
         RageSlider.value = current;

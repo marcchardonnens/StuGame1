@@ -48,7 +48,7 @@ public class Hand : MonoBehaviour
             float animationSpeed = 1f + (Player.AttackSpeed/100f);
             anim[SWINGANIM].speed = animationSpeed;
             anim.Play(SWINGANIM);
-            Debug.Log("animation speed " + animationSpeed);
+            // Debug.Log("animation speed " + animationSpeed);
             weapon.MeleeAttack(SWINGTIME / animationSpeed);
         }
     }

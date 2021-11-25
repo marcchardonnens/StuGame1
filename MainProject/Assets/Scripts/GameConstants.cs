@@ -18,6 +18,7 @@ public static class GameConstants
     public const int MAINMENUSCENE = 0;
     public const int HUBSCENE = 1;
     public const int GAMEPLAYSCENE = 2;
+    public const int ARENASCENE = 3;
 
 
     //tags

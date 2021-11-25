@@ -128,9 +128,9 @@ public class UIController : MonoBehaviour
 
     private void OnStartButtonClicked()
     {
-        Debug.Log("start button");
         DisableUIInteraction();
-        SceneTransition.TransitionToHub();
+        // SceneTransition.TransitionToHub();
+        SceneTransition.TransitionToArena();
     }
 
     private void OnProfileButtonClicked()
@@ -153,7 +153,6 @@ public class UIController : MonoBehaviour
 
     private void OnExitButtonClicked()
     {
-        Debug.Log("exit game");
         Application.Quit();
     }
 

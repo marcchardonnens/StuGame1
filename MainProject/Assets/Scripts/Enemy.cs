@@ -86,10 +86,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public Slider HealthSlider;
     protected GameObject model; //TODO remove later
     protected Animation modelAnimation; //TODO remove later
-
     public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
     public event Action<ITakeDamage> OnDeath = delegate { };
-
     public Team Team { get => Team.Enemy; }
 
 
@@ -97,6 +95,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     protected virtual void OnEnable()
     {
         All.Add(this);
+        ChangeBehaviour(currentLevel);
         PlayerController.OnRageLevelUp += OnRageLevelUp;
     }
 
@@ -104,7 +103,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     {
         LevelUp();
         currentLevel = newLevel;
-        //TODO statemachine change
+        ChangeBehaviour(currentLevel);
     }
 
     protected virtual void OnDisable()
@@ -121,9 +120,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         agent = GetComponent<NavMeshAgent>();
         SpacialAudio = GetComponent<SpacialAudioSource>();
 
-        // EnemyBehaviourBase = new 
-
-        //TODO level up to current level
+        currentLevel = player.RageLevel;
     }
 
     // Start is called before the first frame update
@@ -157,6 +154,18 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
         Behaviour.Tick();
 
+    }
+
+    public void ChangeBehaviour(int level)
+    {
+        if(level == 0)
+        {
+            Behaviour = new EnemyBehaviourMeleeSwarm(this, model, modelAnimation, agent, spawnPoint);
+        }
+        else if(level == 1)
+        {
+            Behaviour = new EnemyBehaviourRangedKiting(this, model, modelAnimation, agent, spawnPoint);
+        }
     }
 
     private void UpdateHealthbar()
@@ -514,21 +523,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     // }
 
-    protected virtual IEnumerator PlayAnimation(float duration, string anmin, string queued)
-    {
 
-        modelAnimation.Play(anmin);
-        agent.isStopped = true;
-
-        yield return new WaitForSeconds(duration);
-        modelAnimation.Play(queued);
-
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-        }
-
-    }
 
     protected virtual void OnDrawGizmosSelected()
     {

@@ -11,13 +11,17 @@ using static Util;
 
 public abstract class EnemyBehaviourBase
 {
-    public abstract int DifficultyLevel { get;}
+    public abstract int DifficultyLevel { get; }
     public bool IsInCombat { get => outOfCombatTime > Time.time; }
     public bool IsStunned { get => stunnedTime > Time.time; }
 
     protected bool MeleeCDReady { get => nextMeleeCd <= Time.time; }
     protected bool RangedCDReady { get => nextRangedCd <= Time.time; }
 
+    private const string AnimationWalk = "Walk";
+    private const string AnimationShoot = "Shoot";
+    private const string AnimationMelee = "Melee";
+    private const string AnimationDeath = "Death";
     public float aiCirclingMargin = 3f; //choosing random pos within this range from target
 
     protected Enemy Enemy;
@@ -30,7 +34,7 @@ public abstract class EnemyBehaviourBase
 
 
     protected EnemyState currentState = EnemyState.Spawning;
-    protected Transform target;
+    protected Transform currentTarget;
     protected float outOfCombatTime = 0f;
     protected float stunnedTime = 0f;
     protected float nextMeleeCd = 0f;
@@ -57,6 +61,10 @@ public abstract class EnemyBehaviourBase
 
     private void EvaluateActions()
     {
+        if(AnimationLock())
+        {
+            return;
+        }
         StunnedActions();
         switch (currentState)
         {
@@ -83,6 +91,12 @@ public abstract class EnemyBehaviourBase
                 break;
         }
     }
+
+    private bool AnimationLock()
+    {
+        return modelAnimation.IsPlaying(AnimationShoot) || modelAnimation.IsPlaying(AnimationMelee);
+    }
+
     private bool StunnedActions()
     {
         if (stunnedTime > Time.time)
@@ -99,7 +113,7 @@ public abstract class EnemyBehaviourBase
 
     private void Dying()
     {
-        modelAnimation.Play("Death");
+        modelAnimation.Play(AnimationDeath);
         model.transform.eulerAngles += new Vector3((90f / Enemy.DeathTime) * Time.deltaTime, 0, 0);
         model.transform.position += new Vector3(0, (-2f / Enemy.DeathTime) * Time.deltaTime, 0);
 
@@ -128,7 +142,7 @@ public abstract class EnemyBehaviourBase
 
     private void Wandering()
     {
-        modelAnimation.Play("Walk");
+        modelAnimation.Play(AnimationWalk);
         CheckPlayerNearby(Enemy.PlayerDetectRange);
 
         if (!agent.hasPath)
@@ -161,7 +175,7 @@ public abstract class EnemyBehaviourBase
 
         for (int i = 0; i < 100; i++)
         {
-            float newy = posy + ((1.5f / 100f) * (float)i);
+            float newy = posy + (1.5f / 100f * i);
             model.transform.position = new Vector3(Enemy.transform.position.x, newy, Enemy.transform.position.z);
             await Task.Delay(SecondsToMillis(Enemy.SpawnTime / 2f) / 100);
         }
@@ -185,7 +199,7 @@ public abstract class EnemyBehaviourBase
         {
             stunnedTime = duration + Time.time;
         }
-        // UpdateState(EnemyState.Stunned);
+        // UpdateState(EnemyState.Stunned); //TODO fix
     }
     internal virtual IEnumerator CheckDistance()
     {
@@ -200,4 +214,94 @@ public abstract class EnemyBehaviourBase
             yield return new WaitForSeconds(5f);
         }
     }
+
+    protected void MeleeAttack()
+    {
+        if (nextMeleeCd > Time.time)
+        {
+            return;
+        }
+        Enemy.StartCoroutine(PlayAnimation(2f, AnimationMelee, AnimationWalk));
+        nextMeleeCd += Time.time + Enemy.MeleeAttackCooldown;
+
+        float meleeAttackHeight = 0.25f;
+        Vector3 p1 = Enemy.transform.position + new Vector3(0, -meleeAttackHeight / 2f, Enemy.MeleeRange);
+        Vector3 p2 = Enemy.transform.position + new Vector3(0, meleeAttackHeight / 2, Enemy.MeleeRange);
+        RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, Enemy.MeleeRange, Vector3.forward);
+
+        foreach (RaycastHit hit in hits)
+        {
+            //do damage to player
+            ITakeDamage damageable = hit.collider.GetComponent<ITakeDamage>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(Enemy.MeleeDamage);
+            }
+        }
+    }
+
+    protected void RangedAttack()
+    {
+        //cooldown check
+        if (nextRangedCd > Time.time)
+        {
+            return;
+        }
+        Enemy.StartCoroutine(PlayAnimation(1f, AnimationShoot, AnimationWalk));
+
+        nextRangedCd = Time.time + Enemy.RangedAttackCooldown;
+
+        SimpleProjectile projectile =
+            Enemy.Instantiate(Enemy.ProjectilePrefab, Enemy.transform.position + Vector3.up + Enemy.transform.forward * 1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
+        if (Random.Range(0f, 1f) <= Enemy.ProjectileTrackingChance)
+        {
+            //simple projectile
+            projectile.SetPropertiesSimple(Enemy.gameObject,
+                                           Vector3.up + currentTarget.transform.position - Enemy.transform.position,
+                                           Enemy.ProjectileSpeed,
+                                           Enemy.RangedDamage,
+                                           Enemy.ProjectileHP,
+                                           Enemy.ProjectileLifetime,
+                                           currentTarget,
+                                           Enemy.Team);
+        }
+        else
+        {
+            //slowtracking projectile
+            projectile.SetPropertiesTracked(Enemy.gameObject,
+                                            Vector3.up + Enemy.transform.position + Enemy.transform.forward * 0.5f,
+                                            Enemy.ProjectileSpeed,
+                                            Enemy.RangedDamage,
+                                            Enemy.ProjectileHP,
+                                            Enemy.ProjectileLifetime,
+                                            true,
+                                            Enemy.ProjectileTurnSpeed,
+                                            currentTarget.transform,
+                                            false,
+                                            Enemy.Team);
+        }
+    }
+
+
+    public virtual IEnumerator PlayAnimation(float duration, string anmin, string queued)
+    {
+        modelAnimation.wrapMode = WrapMode.Once;
+        modelAnimation.Play(anmin);
+        agent.isStopped = true;
+
+        while(modelAnimation.isPlaying)
+        {
+            yield return null;
+        }
+
+        // yield return new WaitForSeconds(duration);
+        modelAnimation.Play(queued);
+
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+        }
+
+    }
+
 }

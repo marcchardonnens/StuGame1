@@ -56,7 +56,7 @@ public class Weapon : MonoBehaviour
 
     public void MeleeAttack(float swingTime)
     {
-        Debug.Log("melee swingtime " + swingTime);
+        // Debug.Log("melee swingtime " + swingTime);
         blocking = false;
         swingTimer = swingTime / AnimationTimeScale;
     }

@@ -108,7 +108,6 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerCreation(PlayerController player)
     {
-        Debug.Log("player creation");
         if(Player != null)
         {
             Destroy(Player.gameObject);

@@ -576,7 +576,6 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         if (postMitigation >= 0)
         {
-
             AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerHurt, PlayerSounds));
             CurrentHP -= postMitigation;
             OnHealthChanged?.Invoke(CurrentHP, MaxHP);
@@ -648,13 +647,19 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         if (Rage + amount >= RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
         {
             //conver full ragebar into hp
-
             Heal(RageLevelThreshholdCurrent * RageIntoHPConversion);
             RageLevelUp();
         }
         else
         {
-            Rage += amount;
+            if(Rage + amount > RageLevelThreshholdCurrent)
+            {
+                Rage = RageLevelThreshholdCurrent;
+            }
+            else
+            {
+                Rage += amount;
+            }
         }
 
         OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);

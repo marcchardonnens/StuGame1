@@ -53,6 +53,26 @@ public abstract class EnemyBehaviourBase
     public void Tick()
     {
         EvaluateActions();
+        SetLookRotation();
+    }
+
+    protected void SetLookRotation()
+    {
+        Vector3 destination = agent.destination;
+        if (currentState == EnemyState.Combat)
+        {
+            Vector3 lookPos = GameManager.Instance.Player.transform.position - Enemy.transform.position;
+            lookPos.y = 0;
+            Quaternion rotation = Quaternion.LookRotation(lookPos);
+            Enemy.transform.rotation = Quaternion.Slerp(Enemy.transform.rotation, rotation, Enemy.TurnSpeed * Time.deltaTime);
+        }
+        else
+        {
+            if(destination == Vector3.zero)
+                return;
+            Quaternion rotation = Quaternion.LookRotation(destination);
+            Enemy.transform.rotation = Quaternion.Slerp(Enemy.transform.rotation, rotation, Enemy.TurnSpeed * Time.deltaTime);
+        }
     }
 
     public void UpdateState(EnemyState newState)
@@ -245,7 +265,7 @@ public abstract class EnemyBehaviourBase
         {
             //do damage to player
             ITakeDamage damageable = hit.collider.GetComponent<ITakeDamage>();
-            if (damageable != null)
+            if (damageable != null && damageable.Team != Enemy.Team)
             {
                 damageable.TakeDamage(Enemy.MeleeDamage);
             }
@@ -268,20 +288,20 @@ public abstract class EnemyBehaviourBase
         Vector3 forward = Enemy.transform.forward;
         forward.y = 0;
 
-        float oldSpeed = agent.speed;
-        float oldAcceleration = agent.acceleration;
-        float oldAngularSpeed = agent.angularSpeed;
-        bool oldAutobreaking = agent.autoBraking;
+        // float oldSpeed = agent.speed;
+        // float oldAcceleration = agent.acceleration;
+        // float oldAngularSpeed = agent.angularSpeed;
+        // bool oldAutobreaking = agent.autoBraking;
         float angle = Vector3.Angle(forward, toPlayerDirection);
         float angleMargin = Random.Range(1f, 10f); // enemies take various amounts of time to aim for better or worse accuracy
         while (angle > angleMargin)
         {
             if (DistanceToPlayer() < Enemy.RangedAttackRangeMin)
             {
-                agent.acceleration = oldAcceleration;
-                agent.speed = oldSpeed;
-                agent.autoBraking = oldAutobreaking;
-                agent.angularSpeed = oldAngularSpeed;
+                // agent.acceleration = oldAcceleration;
+                // agent.speed = oldSpeed;
+                // agent.autoBraking = oldAutobreaking;
+                // agent.angularSpeed = oldAngularSpeed;
                 Aiming = false;
                 yield break;
             }
@@ -292,21 +312,21 @@ public abstract class EnemyBehaviourBase
             forward.y = 0;
 
             modelAnimation.Stop();
-            agent.destination = GameManager.Instance.Player.transform.position;
-            agent.speed = 0.05f; //0 speed will block rotation movement, from testing 0.03164 and above still works
-            agent.acceleration = 10000; // allow faster rotation acceleration while aiming
-            agent.angularSpeed = 36000;
-            agent.autoBraking = false;
+            // agent.destination = GameManager.Instance.Player.transform.position;
+            // agent.speed = 0.05f; //0 speed will block rotation movement, from testing 0.03164 and above still works
+            // agent.acceleration = 10000; // allow faster rotation acceleration while aiming
+            // agent.angularSpeed = 36000;
+            // agent.autoBraking = false;
             angle = Vector3.Angle(forward, toPlayerDirection);
 
             RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
             yield return null;
         }
 
-        agent.acceleration = oldAcceleration;
-        agent.speed = oldSpeed;
-        agent.autoBraking = oldAutobreaking;
-        agent.angularSpeed = oldAngularSpeed;
+        // agent.acceleration = oldAcceleration;
+        // agent.speed = oldSpeed;
+        // agent.autoBraking = oldAutobreaking;
+        // agent.angularSpeed = oldAngularSpeed;
 
         nextRangedCd = Time.time + Enemy.RangedAttackCooldown;
         RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);

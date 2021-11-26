@@ -67,6 +67,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     public float WanderDistanceMax = 15f;
     public float CombatSpeed = 4f;
     public float StoppingDistance = 2.5f;
+    public float TurnSpeed = 120f;
 
     public float Gravity = 20f;
 
@@ -105,6 +106,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
         currentHP = MaxHP;
         agent = GetComponent<NavMeshAgent>();
         agent.stoppingDistance = StoppingDistance;
+        agent.updateRotation = false;
         SpacialAudio = GetComponent<SpacialAudioSource>();
 
 
@@ -144,8 +146,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
     // Update is called once per frame
     protected virtual void Update()
     {
-        UpdateHealthbar();
         Behaviour.Tick();
+        UpdateHealthbar();
     }
     protected virtual void OnDisable()
     {

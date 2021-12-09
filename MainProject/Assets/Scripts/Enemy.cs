@@ -194,9 +194,14 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     protected virtual IEnumerator PlayPeriodicSound()
     {
-        // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
-        SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
-        yield return new WaitForSeconds(Random.Range(2f, 4f));
+        while(currentHP > 0)
+        {
+            // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
+            SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
+            Debug.Log("enemy making sound");
+            // yield return new WaitForSeconds(Random.Range(2f, 4f));
+            yield return new WaitForSeconds(0.50f);
+        }
     }
     private void OnRageLevelUp(int oldLevel, int newLevel)
     {

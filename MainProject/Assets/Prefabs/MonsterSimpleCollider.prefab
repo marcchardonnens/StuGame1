@@ -1192,11 +1192,11 @@ MonoBehaviour:
     Clips:
     - Object:
         Clip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
-        Volume: 0
+        Volume: 1
         pitch: 0
         StereoPan: 0
-        MinDistance: 0
-        MaxDistance: 100
+        MinDistance: 5
+        MaxDistance: 500
       Enaled: 1
       SpawnWeight: 1
   SpacialAudio: {fileID: 8340472513281035610}
@@ -1246,8 +1246,8 @@ AudioSource:
   m_GameObject: {fileID: 4022036406902719952}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: -3305767098247582436, guid: 8f2eac6d7ca5cd84388686dfabba3153, type: 2}
-  m_audioClip: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1255,12 +1255,12 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 195
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0

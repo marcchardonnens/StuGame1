@@ -129,8 +129,8 @@ public class UIController : MonoBehaviour
     private void OnStartButtonClicked()
     {
         DisableUIInteraction();
-        // SceneTransition.TransitionToHub();
-        SceneTransition.TransitionToArena();
+        SceneTransition.TransitionToHub();
+        // SceneTransition.TransitionToArena();
     }
 
     private void OnProfileButtonClicked()

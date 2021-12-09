@@ -21,6 +21,7 @@ public class SpacialAudioSource : MonoBehaviour, ISpacialAudioSource
         AudioSource.rolloffMode = sound.RolloffMode;
         AudioSource.minDistance = sound.MinDistance;
         AudioSource.maxDistance = sound.MaxDistance;
+        AudioSource.clip = sound.Clip;
         AudioSource.PlayOneShot(sound.Clip);
 
     }

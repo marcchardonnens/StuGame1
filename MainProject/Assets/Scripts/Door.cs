@@ -1,32 +1,35 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Door : MonoBehaviour
-{
 
+[RequireComponent(typeof(Collider))]
+public class Door : MonoBehaviour, IInteractable
+{
+    public string Name => "Door";
+    public static event Action OnDoorInteract = delegate{};
+    private void Awake() {
+        //TODO play door close animation
+    }
     public void Interact()
     {
+        //TODO play door open animation
+        OnDoorInteract?.Invoke();
+    }
 
-        Debug.Log("loading level");
-        if(SceneManager.GetActiveScene().name == "GameplayFinal")
+    public string UiText()
+    {
+        if(GameManager.Instance.CurrentSceneIndex == GameConstants.GAMEPLAYSCENE)
         {
-            StageManager stage = FindObjectOfType<StageManager>();
-            if (stage.SurvivorFreed)
-            {
-                stage.EndStage(StageResult.SurvivorRescued);
-            }
-            else
-            {
-                stage.EndStage(StageResult.EnterHomeEarly);
-            }
+            return PlayerUIController.InteractPrefix + "Return Home Safely";
         }
-        else
+        else if(GameManager.Instance.CurrentSceneIndex == GameConstants.HUBSCENE)
         {
-            FindObjectOfType<StageManager>().ShowLoadingScreen();
+            return PlayerUIController.InteractPrefix + "Start Run";
+        }
 
-            //SceneManager.LoadScene("GameplayFinal", LoadSceneMode.Single);
-        }
+        return PlayerUIController.InteractPrefix + "Door";
     }
 }

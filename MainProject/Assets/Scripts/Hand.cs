@@ -9,8 +9,8 @@ public class Hand : MonoBehaviour
     public const string BLOCKANIM = "BlockHammerAxe";
     public const string UNBLOCKANIM = "UnBlockHammerAxe";
 
-    public const float SWINGTIME = 0.80f;
-    public const float BLOCKTIME = 0.75f;
+    public const float SWINGTIME = 0.25f; //clip length 0.5s, shortening swing time, so enemies dont get hit on the way back
+    public const float BLOCKTIME = 0.15f; // clip time 0.15s
 
     public PlayerController Player;
     public Weapon weapon;
@@ -45,12 +45,12 @@ public class Hand : MonoBehaviour
         isBlocking = false;
         if (weapon != null)
         {
-            float animationSpeed = 1f/(weapon.BaseAttackSpeed * SWINGTIME / (1f + (Player.AttackSpeed/100f)));
+            float animationSpeed = 1f + (Player.AttackSpeed/100f);
             anim[SWINGANIM].speed = animationSpeed;
             anim.Play(SWINGANIM);
-            weapon.MeleeAttack(animationSpeed * 0.6f);
+            // Debug.Log("animation speed " + animationSpeed);
+            weapon.MeleeAttack(SWINGTIME / animationSpeed);
         }
-
     }
 
     public void RangedAttack()
@@ -61,7 +61,7 @@ public class Hand : MonoBehaviour
     public void Block()
     {
         isBlocking = true;
-        float animationSpeed = 1f / (weapon.BaseAttackSpeed * BLOCKTIME / (1f + (Player.AttackSpeed / 100f)));
+        float animationSpeed = 1f + (Player.AttackSpeed / 100f);
         anim[BLOCKANIM].speed = animationSpeed;
         anim.Play(BLOCKANIM);
         weapon.Block();
@@ -70,7 +70,7 @@ public class Hand : MonoBehaviour
     public void Unblock()
     {
         isBlocking = false;
-        float animationSpeed = 1f / (weapon.BaseAttackSpeed * BLOCKTIME / (1f + (Player.AttackSpeed / 100f)));
+        float animationSpeed = 1f + (Player.AttackSpeed / 100f);
         anim[UNBLOCKANIM].speed = animationSpeed;
         anim.Play(UNBLOCKANIM);
         weapon.Block();

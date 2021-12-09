@@ -141,15 +141,14 @@ public class MeshGenerator
                 }
 
                 GameObject terrainChunk = new GameObject("map chunk " + xchunk + " " + zchunk);
-                //terrainChunk.transform.parent = gameObject.transform;
-                terrainChunk.transform.localPosition = new Vector3((xSize * xchunk - xchunk), 0, (zSize * zchunk - zchunk));
                 terrainChunk.transform.localScale = new Vector3(1, 1, 1);
-                terrainChunk.layer = 6;
+                terrainChunk.layer = GameConstants.GROUNDLAYER;
 
                 Mesh mesh = terrainChunk.AddComponent<MeshFilter>().sharedMesh = new Mesh();
                 MeshRenderer meshRenderer = terrainChunk.AddComponent<MeshRenderer>();
                 meshRenderer.sharedMaterial = material;
                 meshRenderer.material = material;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
                 MeshCollider meshCollider = terrainChunk.AddComponent<MeshCollider>();
                 
                 mesh.vertices = vertices;

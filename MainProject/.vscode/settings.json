@@ -1,0 +1,39 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "*.csproj": true,
+        "**/.vs": true,
+        "**/*.meta": true,
+        "**/*.*.meta": true,
+        "**/*.unity": true,
+        "**/*.unityproj": true,
+        "**/*.mat": true,
+        "**/*.fbx": true,
+        "**/*.FBX": true,
+        "**/*.tga": true,
+        "**/*.cubemap": true,
+        "**/*.prefab": true,
+        "**/Library": true,
+        "**/ProjectSettings": true,
+        "**/Temp": true,
+        "*.sln": true,
+        ".vsconfig": true,
+        "Packages": true,
+        "obj/Debug": true,
+        "obj": true,
+        "Logs": true
+    },
+    "git.enabled": false,
+    "favorites.resources": [
+        {
+            "filePath": "Assets\\Scripts",
+            "group": "Default"
+        }
+    ],
+    "favorites.sortOrder": "ASC",
+}

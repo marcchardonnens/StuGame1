@@ -1,46 +1,44 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WoodResource : MonoBehaviour
+public class WoodResource : MonoBehaviour, ITakeDamage
 {
-
-    public float Health = 300f;
+    public Team Team { get => Team.Neutral; }
+    [field: SerializeField]
+    public float MaxHP { get; set; }
+    [field: SerializeField]
+    public float CurrentHP { get; protected set; }
+    [SerializeField] private float DeathAnimationTime = 5f;
     public int WoodAmount = 10;
-
     private bool dead = false;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
+    public event Action<ITakeDamage> OnDeath = delegate { };
 
-    // Update is called once per frame
-    void Update()
+    public bool TakeDamage(float amount)
     {
-        
-    }
+        OnTakeDamage?.Invoke(this, amount);
+        CurrentHP -= amount;
 
-
-    public void TakeDamage(float amount)
-    {
-        Health -= amount;
-        
-        if (Health < 0 && !dead)
+        if (CurrentHP < 0 && !dead)
         {
             dead = true;
-            StageManager.Player.GetWood(WoodAmount);
+            OnDeath?.Invoke(this);
+            GameManager.Instance.Player.GetWood(WoodAmount);
 
             GetComponent<Animation>().Play("tree003UpperPart|treeFallingCut");
             StartCoroutine(Death());
+            return true;
         }
+        return false;
     }
 
 
     public IEnumerator Death()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(DeathAnimationTime);
         Destroy(gameObject);
     }
 

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShieldPlant : MonoBehaviour
+public class ShieldPlant : PlantBase
 {
     public Collider outerCollider;
     public GameObject Bubble;
@@ -10,45 +10,14 @@ public class ShieldPlant : MonoBehaviour
     public float PeriodicDamage = 10f;
     public float PulseTimer = 1f;
     public float ProjectileDamage = 40f;
-    public float Duration = 0f;
-    public float GrowTime = 0f;
-
     public float UpgradeSlowMultiplier = 0.5f;
-
-    //private bool grown = false;
-    private Vector3 finalScale;
     private List<Collider> affectedColliders = new List<Collider>();
-    private PlayerController player;
 
-    void Awake()
-    {
-        if (GrowTime > 0)
-        {
-            finalScale = transform.localScale;
-            transform.localScale = Vector3.zero;
-        }
-    }
-    void Start()
-    {
-        player = StageManager.Player;
 
+    public override IEnumerator Grow(float growtime)
+    {
+        yield return base.Grow(growtime);
         StartCoroutine(PeriodicActions());
-
-    }
-
-    void Update()
-    {
-        StartCoroutine(Grow());
-    }
-
-
-    private IEnumerator Grow()
-    {
-        if (transform.localScale.x < finalScale.x)
-        {
-            yield return null;
-            transform.localScale += (finalScale / GrowTime) * Time.deltaTime;
-        }
     }
 
 
@@ -125,8 +94,8 @@ public class ShieldPlant : MonoBehaviour
             affectedColliders.Add(other);
             if (GameManager.ProfileData.HasShieldUpgrade)
             {
-                enemy.combatSpeed *= UpgradeSlowMultiplier;
-                enemy.wanderSpeed *= UpgradeSlowMultiplier;
+                enemy.CombatSpeed *= UpgradeSlowMultiplier;
+                enemy.WanderSpeed *= UpgradeSlowMultiplier;
             }
         }
         else
@@ -155,8 +124,8 @@ public class ShieldPlant : MonoBehaviour
         {
             if (GameManager.ProfileData.HasShieldUpgrade)
             {
-                enemy.combatSpeed /= UpgradeSlowMultiplier;
-                enemy.wanderSpeed /= UpgradeSlowMultiplier;
+                enemy.CombatSpeed /= UpgradeSlowMultiplier;
+                enemy.WanderSpeed /= UpgradeSlowMultiplier;
             }
         }
         else
@@ -175,6 +144,4 @@ public class ShieldPlant : MonoBehaviour
             }
         }
     }
-
-
 }

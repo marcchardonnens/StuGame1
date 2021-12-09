@@ -36,7 +36,12 @@ public class Weapon : MonoBehaviour
     {
         //dont update while not picked up
         //needs to change if weapons can be thrown
-        enabled = false;
+        // enabled = false;
+    }
+
+    private void Update() 
+    {
+        swingTimer -= Time.deltaTime;
     }
 
     public void Pickup(PlayerController pc)
@@ -44,15 +49,16 @@ public class Weapon : MonoBehaviour
         player = pc;
         isHeld = true;
         //set components/values to when it is held
-        enabled = true;
+        // enabled = true;
         
 
     }
 
     public void MeleeAttack(float swingTime)
     {
+        // Debug.Log("melee swingtime " + swingTime);
         blocking = false;
-        swingTimer = swingTime * AnimationTimeScale;
+        swingTimer = swingTime / AnimationTimeScale;
     }
 
     public void RangedAttack()
@@ -83,20 +89,17 @@ public class Weapon : MonoBehaviour
         blocking = false;
     }
 
-    void Update()
-    {
-        swingTimer -= Time.deltaTime;
-    }
+
 
     void OnTriggerEnter(Collider collider)
     {
-        Debug.Log("stick collision");
+        // Debug.Log("stick collision");
         if (player != null && swingTimer > 0 && !blocking)
         {
             Enemy enemy = collider.GetComponent<Enemy>();
             if (enemy)
             {
-                Debug.Log("enemy damage");
+                // Debug.Log("enemy damage");
                 float totalDamage = Damage + player.BaseDamage;
                 bool lethal = enemy.TakeDamage(totalDamage);
                 player.GenerateRage(player.MeleeHitRageAmount);
@@ -119,7 +122,7 @@ public class Weapon : MonoBehaviour
             SimpleProjectile projectile = collider.GetComponent<SimpleProjectile>();
             if (projectile)
             {
-                Debug.Log("projectile block");
+                // Debug.Log("projectile block");
                 player.GenerateRage(player.BlockRageAmount);
 
                 if (BlockIsPercent)

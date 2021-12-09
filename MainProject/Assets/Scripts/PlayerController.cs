@@ -1,26 +1,36 @@
+using System.Threading;
 using System;
 using UnityEngine;
+using Unity.AI.Navigation;
 
 
-public enum PowerupType
+public class PlayerController : MonoBehaviour, ITakeDamage
 {
-    IronShroom,
-    RedShroom,
-    BlueShroom,
-    GreenShroom,
-    GoldShroom,
-    WoodShroom,
-    StoneShroom,
-    //TransparentShroom,
-    //YellowShroom,
-    //PlantShroom,
-}
+    public static event Action<PlayerController> OnPlayerCreated = delegate { };
+    public static event Action<PlayerController> OnPlayerDestroyed = delegate { };
+    public static event Action<int> OnPowerupComsume = delegate { };
+    public static event Action<float, float> OnHealthChanged = delegate { };
+    public static event Action<int, int> OnSeedCountChanged = delegate { };
+    public static event Action<float, float> OnRageAmountChanged = delegate { };
+    public static event Action<int, int> OnRageLevelUp = delegate { };
+    public static event Action OnResourcesChanged = delegate { }; //maybe move that to hubmanager or elsewhere
 
-public class PlayerController : MonoBehaviour
-{
+    public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
+    public event Action<ITakeDamage, float> OnGetHealed = delegate { };
+    public event Action<ITakeDamage> OnDeath = delegate { };
+
+    [field: SerializeField]
+    public Team Team { get; } = Team.Player;
+    [field: SerializeField]
+    public float MaxHP { get; set; }
+    [field: SerializeField]
+    public float CurrentHP { get; private set; }
 
     public Hand RightHand;
     //public Hand LeftHand;
+
+    public ClipCollection<Sound>[] PlayerSounds;
+
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float blockingSpeed = 3.5f;
@@ -43,7 +53,7 @@ public class PlayerController : MonoBehaviour
     public float RageDissipationTime = 15f;
     public float RageDissipationRatePerSecond = 0.5f;
     public float RageIntoHPConversion = 1f;
-    public float RageHealingMissingHPMultiplierMax = 2.5f; 
+    public float RageHealingMissingHPMultiplierMax = 2.5f;
 
     public float HPLevel = 10f;
     public float BaseDamageLevel = 2f;
@@ -58,6 +68,8 @@ public class PlayerController : MonoBehaviour
     public int MaxSeeds = 10;
     public int SeedGrenadeCost = 1;
     public Transform SeedGrenadeRelease;
+    public float GrenadePreviewDistance = 15f;
+    public float Radius = 0.8f;
     public GameObject SeedGrenadePrefab;
     public int ShieldPlantCost = 1;
     public GameObject ShieldPlantPrefab;
@@ -65,7 +77,7 @@ public class PlayerController : MonoBehaviour
     public GameObject TurretPlantPrefab;
     public int SeedPlantCost = 1;
     public GameObject SeedPlantPrefab;
-    
+
 
     public float PlantAnimationTime = 1f;
     public float PlantPlaceMaxDistance = 5f;
@@ -76,33 +88,31 @@ public class PlayerController : MonoBehaviour
     private MeshRenderer PreviewRenderer;
 
     //BaseStats, will change throughout the game
-    public float MaxHP = 100;
+    // public float MaxHP = 100;
     public float BaseDamage = 5f;
     public float AttackSpeed = 0f;
     public float BaseBlockAmount = 0f;
     public float Armor = 0;
 
 
-    CharacterController characterController; //unitys "improved rigidbody" for characters
-    Vector3 moveDirection = Vector3.zero;
-    float rotationX = 0;
-    [HideInInspector] public bool canMove = true;
-    [SerializeField] private float currentHP;
+    public NavMeshSurface Surface;
+    private CharacterController characterController; //unitys "improved rigidbody" for characters
+    private Vector3 moveDirection = Vector3.zero;
+    private float rotationX = 0;
+    // [SerializeField] private float currentHP;
     [SerializeField] private int currentSeeds = 5;
     [SerializeField] private float currentShield = 0f;
     private StageManager stageManager;
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
-    //HealthBar (placing tbd)
-    public HealthBar healthBar;
 
-    //SeedUI (placing tbd)
-    public SeedUI seedUI;
-    public SeedFunctionUI seedFuncUI;
 
-    //ShroomUI (placing tbd)
-    public MushroomUI shroomUI;
-    public int shroomCounter = 0;
+    private PlayerUIController playerUI = PlayerUIController.Instance;
+
+    private int shroomCounter = 0;
+
+
+    //TODO display swing timer
 
     private bool isBlocking = false;
     private float nextMeleeCD = 0f;
@@ -120,7 +130,9 @@ public class PlayerController : MonoBehaviour
     private bool playerWasGrounded = false;
 
 
-    void Start()
+    private IInteractable currentInteractable = null;
+
+    void Awake()
     {
         stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
@@ -128,49 +140,46 @@ public class PlayerController : MonoBehaviour
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
         PreviewLine = PreviewSphere.GetComponent<LineRenderer>();
         PreviewSphere.SetActive(false);
-
-        currentHP = MaxHP;
-        healthBar.SetMaxHealth(MaxHP);
-        healthBar.SetHealth(currentHP);
-
-        seedUI.SetSeedAmount(MaxSeeds); //tbd
-        seedUI.SetSeedCounter(currentSeeds);
-
-        LockCursor();
+        OnPlayerCreated?.Invoke(this);
 
     }
 
+    void Start()
+    {
+        CurrentHP = MaxHP;
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+        OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
+        OnPowerupComsume?.Invoke(shroomCounter);
+        OnSeedCountChanged?.Invoke(currentSeeds, MaxSeeds);
+        OnResourcesChanged?.Invoke();
+    }
+
+    void OnDestroy()
+    {
+        OnPlayerDestroyed?.Invoke(this);
+    }
+
+
     void Update()
     {
+        if (!GameManager.Instance.GamePaused)
+        {
+            return;
+        }
 
 
 
-        healthBar.SetHealth(currentHP);
         ScanInteractable(InteractionRange);
         if (Input.GetKeyDown(KeyCode.E))
         {
             InteractWithObject();
-            Debug.Log("clicked E");
         }
+
+
+
         //ragedissipation
-        if (rageTimer < Time.time)
-        {
-            if (Rage > RageDissipationRatePerSecond * Time.deltaTime)
-            {
-                float rageLost = RageDissipationRatePerSecond * Time.deltaTime;
-                Rage -= rageLost;
+        RageDisspation();
 
-                float misshpPercent = Mathf.Abs(1 - (currentHP / MaxHP));
-
-                float missinghpMultiplier = 1 + (RageHealingMissingHPMultiplierMax - 1) * misshpPercent;
-                //
-                Heal(rageLost * missinghpMultiplier);
-            }
-            else
-            {
-                Rage = 0f;
-            }
-        }
 
 
 
@@ -196,8 +205,9 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (!previewing) 
+        if (!previewing)
         {
+            playerUI.UpdateSeedSelectionText("");
             if (plantAnimationTimer <= Time.time)
             {
                 if (Input.GetMouseButton(0))
@@ -261,29 +271,33 @@ public class PlayerController : MonoBehaviour
                 if (previewNumber == 1)
                 {
                     previewValid = PreviewGrenades();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
-                    seedFuncUI.SetFunctionName(previewNumber);
+                    playerUI.UpdateSeedSelectionText("Seed Grenade");
+                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
                 }
             }
         }
 
 
 
-        
+
 
 
 
@@ -294,7 +308,7 @@ public class PlayerController : MonoBehaviour
         // Press Left Shift to run
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX;
-        if (canMove)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedX = blockingSpeed;
@@ -316,7 +330,7 @@ public class PlayerController : MonoBehaviour
 
 
         float curSpeedY;
-        if (canMove)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -342,15 +356,16 @@ public class PlayerController : MonoBehaviour
 
         if (characterController.isGrounded && !playerWasGrounded)
         {
-            TakeDamage((-movementDirectionY - jumpSpeed*2) * FallDamageMultiplier);
+            TakeDamage((-movementDirectionY - jumpSpeed * 2) * FallDamageMultiplier);
         }
 
 
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
+        if (Input.GetButton("Jump") && GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
+            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerJump, PlayerSounds));
         }
         else
         {
@@ -375,10 +390,11 @@ public class PlayerController : MonoBehaviour
         }
 
         // Move the controller
+        Physics.SyncTransforms();
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
-        if (canMove)
+        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
@@ -389,52 +405,52 @@ public class PlayerController : MonoBehaviour
 
     }
 
+
+
     private void InteractWithObject()
     {
-        if(GameManager.currentInteractable != null)
+        if (currentInteractable != null)
         {
-            GameManager.currentInteractable.Interact();
+            currentInteractable.Interact();
         }
     }
 
     public void ScanInteractable(float InteractionRange)
     {
-        Collider collider;
-        if(CrossHairLookPosition(out collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
+        if (CrossHairLookPosition(out Collider collider, InteractionRange, 1 << GameConstants.INTERACTABLELAYER))
         {
-            if(collider != null)
+            //give prio to interactables
+            CheckColliderInteractable(collider);
+            return;
+        }
+        else if (CrossHairLookPosition(out collider, InteractionRange))
+        {
+            CheckColliderInteractable(collider);
+            return;
+        }
+        playerUI.SetInteractText("");
+        currentInteractable = null;
+    }
+
+    private void CheckColliderInteractable(Collider collider)
+    {
+        if (collider != null)
+        {
+            if (collider.TryGetComponent(out IInteractable interactable))
             {
-                Interactable interactable = collider.GetComponent<Interactable>();
-                GameManager.currentInteractable = interactable;
+                currentInteractable = interactable;
+                playerUI.SetInteractText(interactable.Name + "\n" + interactable.UiText());
                 return;
             }
         }
-        GameManager.currentInteractable = null;
-    }
-
-    public static String ScanInteractableNameStatic(float range, Camera cam)
-    {
-        Collider collider;
-        if(CrossHairLookPositionStatic(out collider, cam, range, 1 << GameConstants.INTERACTABLELAYER))
-        {
-            if (collider != null)
-            {
-                Interactable interactable = collider.GetComponent<Interactable>();
-                if(interactable.transform.parent != null)
-                {
-                    return interactable.transform.parent.name;
-                }
-                return interactable.name;
-            }
-        }
-        return "";
+        currentInteractable = null;
+        playerUI.SetInteractText("");
     }
 
     public static bool CrossHairLookPositionStatic(out Collider collider, Camera cam, float maxDistance = float.MaxValue, int layermask = ~0)
     {
         //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
-        RaycastHit hit;
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             collider = hit.collider;
             return true;
@@ -448,15 +464,14 @@ public class PlayerController : MonoBehaviour
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
         grenade.Throw(this, playerCamera.transform.forward, BaseDamage, true);
         currentSeeds -= SeedGrenadeCost;
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewGrenades()
     {
         bool valid = true;
-        PlacePreviewSphere(15f);
+        PlacePreviewSphere(GrenadePreviewDistance);
 
-        
+
         if (currentSeeds < SeedGrenadeCost)
         {
             Debug.Log("not enough seeds!");
@@ -470,7 +485,6 @@ public class PlayerController : MonoBehaviour
     private void PlaceShieldPlant()
     {
         Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewShieldPlant()
@@ -478,7 +492,7 @@ public class PlayerController : MonoBehaviour
         bool valid = PlacePreviewSphere();
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position,
-                PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up,
+                PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up,
                 ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < ShieldPlantCost)
         {
@@ -486,21 +500,20 @@ public class PlayerController : MonoBehaviour
         }
 
         PaintPreviewSphere(valid);
-        
+
         return valid;
     }
 
     private void PlaceTurretPlant()
     {
         Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewTurretPlant()
     {
         bool valid = PlacePreviewSphere();
 
-        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < TurretPlantCost)
         {
             valid = false;
@@ -513,14 +526,13 @@ public class PlayerController : MonoBehaviour
     private void PlaceSeedPlant()
     {
         Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
-        seedUI.SetSeedCounter(currentSeeds);
     }
 
     private bool PreviewSeedPlant()
     {
         bool valid = PlacePreviewSphere();
 
-        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), 0.8f, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
+        if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || currentSeeds < SeedPlantCost)
         {
             valid = false;
@@ -546,56 +558,53 @@ public class PlayerController : MonoBehaviour
     }
 
 
-  
 
 
-    public static void LockCursor()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
 
-    public static void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
+
 
     //later damage types
-    public void TakeDamage(float amount)
+    public bool TakeDamage(float amount)
     {
+        OnTakeDamage?.Invoke(this, amount);
         if (amount <= 0)
         {
-            return;
+            return false;
         }
         rageTimer = Time.time + RageDissipationTime;
         float postMitigation = amount;
 
-        //apply mitigation
-
-
         if (postMitigation >= 0)
         {
-            currentHP -= postMitigation;
-            healthBar.SetHealth(currentHP);
+            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerHurt, PlayerSounds));
+            CurrentHP -= postMitigation;
+            OnHealthChanged?.Invoke(CurrentHP, MaxHP);
         }
 
-        if (currentHP <= 0)
+        if (CurrentHP <= 0)
         {
-            stageManager.EndStage(StageResult.Death);
+            OnDeath?.Invoke(this);
+            return true;
         }
 
-        
-
+        return false;
     }
 
     public void Heal(float amount)
     {
+        OnGetHealed?.Invoke(this, amount);
+
         //no overheal
-        currentHP += Mathf.Clamp(amount, 0f, MaxHP - currentHP);
-        if(healthBar != null)
+        CurrentHP += Mathf.Clamp(amount, 0f, MaxHP - CurrentHP);
+        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+    }
+
+    public void RefillSeeds(int amount)
+    {
+        currentSeeds += amount;
+        if (currentSeeds > MaxSeeds)
         {
-            healthBar.SetHealth(currentHP);
+            currentSeeds = MaxSeeds;
         }
     }
 
@@ -605,8 +614,8 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-
-        nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed/ (1+(AttackSpeed/100)));
+        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerAttack, PlayerSounds));
+        nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed / (1 + (AttackSpeed / 100)));
         RightHand.MeleeAttack();
         isBlocking = false;
     }
@@ -618,6 +627,7 @@ public class PlayerController : MonoBehaviour
 
     public void Block()
     {
+        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerBlock, PlayerSounds));
         isBlocking = true;
         RightHand.Block();
     }
@@ -637,14 +647,22 @@ public class PlayerController : MonoBehaviour
         if (Rage + amount >= RageLevelThreshholdCurrent && RageLevel < RageMaxLevel)
         {
             //conver full ragebar into hp
-
             Heal(RageLevelThreshholdCurrent * RageIntoHPConversion);
             RageLevelUp();
         }
         else
         {
-            Rage += amount;
+            if(Rage + amount > RageLevelThreshholdCurrent)
+            {
+                Rage = RageLevelThreshholdCurrent;
+            }
+            else
+            {
+                Rage += amount;
+            }
         }
+
+        OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
     }
 
     public void RageLevelUp()
@@ -652,7 +670,7 @@ public class PlayerController : MonoBehaviour
         Rage = 0f;
         float expoGain = Mathf.Pow(LevelToThePowerOf, RageLevel);
         MaxHP += HPLevel * expoGain;
-        Heal(currentHP += HPLevel * expoGain);
+        Heal(CurrentHP += HPLevel * expoGain);
         BaseDamage += BaseDamageLevel * expoGain;
         AttackSpeed += AttackSpeedLevel * expoGain;
         Armor += ArmorLevel * expoGain;
@@ -661,10 +679,10 @@ public class PlayerController : MonoBehaviour
         runningSpeed += RunningSpeedLevel;
         blockingSpeed += BlockingSpeedLevel;
 
-
-        healthBar.SetMaxHealth(MaxHP);
-        
+        int rageLevelOld = RageLevel;
         RageLevel++;
+
+        OnRageLevelUp?.Invoke(rageLevelOld, RageLevel);
 
         RageLevelThreshholdCurrent =
             RageLevelThreshholdCurrent * Mathf.Pow(RageLevelThreshholdIncreasePower, RageLevel);
@@ -676,6 +694,30 @@ public class PlayerController : MonoBehaviour
 
 
         //character sais something, n stuff
+    }
+
+    private void RageDisspation()
+    {
+        if (rageTimer < Time.time)
+        {
+            if (Rage > RageDissipationRatePerSecond * Time.deltaTime)
+            {
+                float rageLost = RageDissipationRatePerSecond * Time.deltaTime;
+                Rage -= rageLost;
+                OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
+
+                float misshpPercent = Mathf.Abs(1 - (CurrentHP / MaxHP));
+
+                float missinghpMultiplier = 1 + (RageHealingMissingHPMultiplierMax - 1) * misshpPercent;
+
+
+                Heal(rageLost * missinghpMultiplier);
+            }
+            else
+            {
+                Rage = 0f;
+            }
+        }
     }
 
     public void GetMonsterXP(int amount)
@@ -691,71 +733,72 @@ public class PlayerController : MonoBehaviour
     public void ConsumeShroom(Powerup powerup)
     {
 
+
+        //TODO constants in powerup class
         //Shroom UI
         shroomCounter += 1;
+        OnPowerupComsume?.Invoke(shroomCounter);
 
         switch (powerup.Type)
         {
             case PowerupType.BlueShroom:
-            {
-                walkingSpeed += 1f;
-                blockingSpeed += 0.5f;
-                runningSpeed += 1.5f;
-                break;
-            }
+                {
+                    walkingSpeed += 1f;
+                    blockingSpeed += 0.5f;
+                    runningSpeed += 1.5f;
+                    break;
+                }
 
             case PowerupType.GoldShroom:
-            {
-                MonsterXpMult += 0.1f;
-                break;
-            }
+                {
+                    MonsterXpMult += 0.1f;
+                    break;
+                }
 
             case PowerupType.GreenShroom:
-            {
-                RageIntoHPConversion += 0.25f;
-                break;
-            }
+                {
+                    RageIntoHPConversion += 0.25f;
+                    break;
+                }
 
             case PowerupType.IronShroom:
-            {
-                Armor += 1;
-                break;
-            }
+                {
+                    Armor += 1;
+                    break;
+                }
 
             case PowerupType.RedShroom:
-            {
-                AttackSpeed += 15;
-                break;
-            }
+                {
+                    AttackSpeed += 15;
+                    break;
+                }
 
             case PowerupType.StoneShroom:
-            {
-                RightHand.weapon.StunDuration += 0.25f;
-                break;
-            }
+                {
+                    RightHand.weapon.StunDuration += 0.25f;
+                    break;
+                }
 
             case PowerupType.WoodShroom:
-            {
-                BaseBlockAmount += 5f;
-                break;
-            }
+                {
+                    BaseBlockAmount += 5f;
+                    break;
+                }
 
         }
 
-        shroomUI.SetMushroomCounter(shroomCounter);
     }
 
     public bool CrossHairLookPosition(out Vector3 pos, float maxDistance = float.MaxValue, int layermask = ~0, bool hitOnly = false)
     {
-        RaycastHit hit;
-        if(Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             pos = hit.point;
             return true;
         }
-        else if(!hitOnly)
+        else if (!hitOnly)
         {
-            pos = playerCamera.transform.position +  playerCamera.transform.forward * maxDistance;
+            pos = playerCamera.transform.position + playerCamera.transform.forward * maxDistance;
             return false;
         }
         pos = Vector3.zero;
@@ -765,8 +808,7 @@ public class PlayerController : MonoBehaviour
     public bool CrossHairLookPosition(out Collider collider, float maxDistance = float.MaxValue, int layermask = ~0)
     {
         //Debug.DrawRay(playerCamera.transform.position, playerCamera.transform.forward * maxDistance, Color.red, 0f, true);
-        RaycastHit hit;
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, maxDistance, layermask))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, maxDistance, layermask))
         {
             collider = hit.collider;
             return true;
@@ -781,10 +823,9 @@ public class PlayerController : MonoBehaviour
         RightHand.gameObject.SetActive(false);
         PreviewSphere.SetActive(true);
 
-        Vector3 lookPos = new Vector3();
-        bool onGround = CrossHairLookPosition(out lookPos, maxDistance, layerMask);
+        bool onGround = CrossHairLookPosition(out Vector3 lookPos, maxDistance, layerMask);
         PreviewSphere.transform.position = lookPos;
-        
+
         PreviewLine.SetPosition(0, RightHand.transform.position);
         PreviewLine.SetPosition(1, PreviewSphere.transform.position);
 

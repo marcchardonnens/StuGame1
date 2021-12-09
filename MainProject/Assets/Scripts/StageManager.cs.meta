@@ -1,9 +1,15 @@
 fileFormatVersion: 2
-guid: f33c9dbe8c67f0b4aa78821f99fdcb64
+guid: bda76cfc671e84f4c9cf27690b4687bc
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - PlayerPrefab: {instanceID: 0}
+  - GameplayTB: {instanceID: 0}
+  - Surface: {instanceID: 0}
+  - EnemyPrefab: {instanceID: 0}
+  - SurvivorPrefab: {instanceID: 0}
+  - BossPrefab: {fileID: 4022036406902719952, guid: a2d5288ba23df1040b20e94a05bfb145, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

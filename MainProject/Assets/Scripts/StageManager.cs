@@ -17,21 +17,22 @@ public class StageManager : GameplayManagerBase
 {
     public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
     public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
+    public static event Action<float> OnTimerUpdate = delegate { };
     public float StageTimer = 900;
-    public float PlayerSpawnFromHouseOffset = 15f; 
+    public float PlayerSpawnFromHouseOffset = 15f;
     public bool TestingOnly = false;
     public bool autoupdate = false;
     public TerrainBuilder GameplayTB;
-    public NavMeshSurface Surface; 
-    public float NavMeshBakRepeatTimer = 5f; 
+    public NavMeshSurface Surface;
+    public float NavMeshBakRepeatTimer = 5f;
     public bool localNavMesh = false;
     public GameObject EnemyPrefab;
     public GameObject SurvivorPrefab;
     public GameObject BossPrefab;
 
     public bool PreSpawnEnemies = true;
-    public float EnemySpawnInitialDelay = 15f;
-    public float EnemyRespawnDelay = 10f;
+    public float EnemySpawnInitialDelay = 2f;
+    public float EnemyRespawnDelay = 5f;
     public float EnemySpawnRange = 250f;
     public int EnemiesSpawnedPerCycle = 10;
     public int MonsterXPLevelUpThreshholdBase = 250;
@@ -72,17 +73,18 @@ public class StageManager : GameplayManagerBase
         TerrainReady = false;
         NavMeshBaked = false;
 
-        Door.OnDoorInteract += OnDoorInteract;
-
         SetupStage();
         StartCoroutine(OnTerrainReady());
+        StartCoroutine(TimerUpdate());
+
+        Door.OnDoorInteract += OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
 
     }
     protected void OnEnable()
     {
-        Door.OnDoorInteract += OnDoorInteract;
-        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
-        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
+
     }
 
     protected void OnDisable()
@@ -99,44 +101,45 @@ public class StageManager : GameplayManagerBase
     }
     private void OnDoorInteract()
     {
-        Debug.Log("door interact outside");
         if (SurvivorFound)
         {
-            Result = StageResult.SurvivorRescued;
-            BeginTransition(GameConstants.HUBSCENE);
+            EndStage(StageResult.SurvivorRescued);
+            SceneTransition.TransitionToHub();
         }
         else
         {
-            Result = StageResult.EnterHomeEarly;
-            BeginTransition(GameConstants.HUBSCENE);
+            EndStage(StageResult.EnterHomeEarly);
+            SceneTransition.TransitionToHub();
         }
     }
 
     private void OnPlayerDeath()
     {
-        Result = StageResult.Death;
-        BeginTransition(GameConstants.HUBSCENE);
+        EndStage(StageResult.Death);
+        SceneTransition.TransitionToHub();
     }
 
-    private void OnGiveup()
+    protected IEnumerator TimerUpdate()
     {
-        Result = StageResult.Death;
-        BeginTransition(GameConstants.HUBSCENE);
+        while (StageTimer > 0)
+        {
+            OnTimerUpdate?.Invoke(StageTimer);
+            yield return new WaitForSeconds(1f);
+        }
     }
-
     protected override void Update()
     {
         base.Update();
 
-        if (GameManager.Instance.GamePaused)
+        if (GameManager.Instance.GameUnpaused)
         {
             StageTimer -= Time.deltaTime;
         }
 
         if (StageTimer <= 0)
         {
-            Result = StageResult.TimerExpired;
-            BeginTransition(GameConstants.HUBSCENE);
+            EndStage(StageResult.TimerExpired);
+            SceneTransition.TransitionToHub();
         }
     }
 
@@ -163,7 +166,7 @@ public class StageManager : GameplayManagerBase
         }
         OnSceneReady?.Invoke();
         RaiseSceneReady();
-        
+
         //TODO better Enemy controller
         StartCoroutine(EnemySpawner());
     }
@@ -217,7 +220,7 @@ public class StageManager : GameplayManagerBase
         player.OnDeath += OnPlayerDeath;
         return player;
     }
-    
+
     private void OnPlayerDeath(ITakeDamage player)
     {
         EndStage(StageResult.Death);
@@ -308,21 +311,15 @@ public class StageManager : GameplayManagerBase
         SurvivorFreed = true;
     }
 
-    public override void BeginTransition(int sceneIndex)
-    {
-        EndStage(Result);
-        TransitionToStage(sceneIndex);
-    }
-
     protected override void OnExitButton()
     {
-        Result = StageResult.Death;
-        BeginTransition(GameConstants.MAINMENUSCENE);
+        EndStage(StageResult.Death);
+        SceneTransition.TransitionToMenu();
     }
 
     protected override void OnWakeupButton()
     {
-        Result = StageResult.Death;
-        BeginTransition(GameConstants.HUBSCENE);
+        EndStage(StageResult.Death);
+        SceneTransition.TransitionToHub();
     }
 }

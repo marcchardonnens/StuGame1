@@ -22,7 +22,7 @@ public enum EnemyState
 }
 
 [SelectionBase]
-[RequireComponent(typeof(SpacialAudioSource))]
+[RequireComponent(typeof(AudioSource))]
 public class Enemy : MonoBehaviour, ITakeDamage
 {
     public static readonly List<Enemy> All = new List<Enemy>();
@@ -107,8 +107,9 @@ public class Enemy : MonoBehaviour, ITakeDamage
         agent = GetComponent<NavMeshAgent>();
         agent.stoppingDistance = StoppingDistance;
         agent.updateRotation = false;
-        SpacialAudio = GetComponent<SpacialAudioSource>();
+        SpacialAudio = new SpacialAudioSource(GetComponent<AudioSource>());
 
+        HealthSlider.gameObject.SetActive(false);
 
     }
 
@@ -146,8 +147,13 @@ public class Enemy : MonoBehaviour, ITakeDamage
     // Update is called once per frame
     protected virtual void Update()
     {
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+            SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
+        }
         Behaviour.Tick();
-        UpdateHealthbar();
+        // UpdateHealthbar();
+
     }
     protected virtual void OnDisable()
     {
@@ -198,9 +204,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
         {
             // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
             SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
-            Debug.Log("enemy making sound");
-            // yield return new WaitForSeconds(Random.Range(2f, 4f));
-            yield return new WaitForSeconds(0.50f);
+            // Debug.Log("enemy making sound");
+            yield return new WaitForSeconds(Random.Range(2f, 5f));
         }
     }
     private void OnRageLevelUp(int oldLevel, int newLevel)
@@ -267,289 +272,10 @@ public class Enemy : MonoBehaviour, ITakeDamage
     }
 
 
-
-
-
-    // protected virtual void EnemyActions(bool isSlowUpdate = false)
-    // {
-
-    //     switch (currentState)
-    //     {
-    //         case EnemyState.Spawning:
-    //             {
-    //                 //play animation
-
-
-    //                 //state changed in start method
-    //                 break;
-    //             }
-
-    //         case EnemyState.Idle:
-    //             {
-    //                 modelAnimation.Stop();
-    //                 if (Vector3.Distance(player.gameObject.transform.position, transform.position) < PlayerDetectRange)
-    //                 {
-    //                     currentState = EnemyState.EnteringCombat;
-    //                     break;
-    //                 }
-
-    //                 Vector3 randompos = Random.insideUnitSphere * wanderDistance;
-    //                 randompos += spawnPoint;
-    //                 if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, wanderDistance, agent.areaMask))
-    //                 {
-    //                     if (agent.isOnNavMesh)
-    //                     {
-    //                         agent.SetDestination(hit.position);
-    //                     }
-    //                     currentState = EnemyState.Wandering;
-    //                 }
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.Wandering:
-    //             {
-    //                 modelAnimation.Play("Walk");
-    //                 if (Mathf.Abs(Vector3.Distance(player.gameObject.transform.position, transform.position)) < PlayerDetectRange)
-    //                 {
-    //                     currentState = EnemyState.EnteringCombat;
-    //                     break;
-    //                 }
-
-    //                 if (!agent.hasPath)
-    //                 {
-    //                     currentState = EnemyState.Idle;
-    //                 }
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.EnteringCombat:
-    //             {
-    //                 outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-    //                 currentTarget = player.transform;
-    //                 //currentState = (Random.Range(0, 1) > 0)
-    //                 //    ? EnemyState.MeleeAttacking
-    //                 //    : EnemyState.RangedAttacking;
-
-    //                 if (currentLevel < 2)
-    //                 {
-    //                     currentState = EnemyState.MeleeAttacking;
-    //                 }
-    //                 else
-    //                 {
-    //                     if (Random.Range(0, currentLevel) < 2)
-    //                     {
-    //                         currentState = EnemyState.MeleeAttacking;
-    //                     }
-    //                     else
-    //                     {
-    //                         currentState = EnemyState.RangedAttacking;
-    //                     }
-    //                 }
-
-    //                 if (currentState == EnemyState.MeleeAttacking)
-    //                 {
-    //                     SetMeleeAgent();
-    //                 }
-    //                 else
-    //                 {
-    //                     SetRangedAgent();
-    //                 }
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.RangedAttacking:
-    //             {
-    //                 float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
-    //                 if (distToPlayer > PlayerLoseRange && outOfCombatTimer <= Time.time)
-    //                 {
-    //                     currentState = EnemyState.ReturnToSpawn;
-    //                     break;
-    //                 }
-    //                 else if (distToPlayer < MeleeRange)
-    //                 {
-    //                     outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-    //                     MeleeAttack();
-    //                     break;
-    //                 }
-    //                 else if (distToPlayer < AttackRange)
-    //                 {
-    //                     if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
-    //                     {
-    //                         outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
-    //                     }
-    //                     RangedAttack();
-    //                 }
-
-    //                 //movement
-    //                 if (isSlowUpdate)
-    //                 {
-    //                     CalcRangedPos();
-    //                 }
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.MeleeAttacking:
-    //             {
-    //                 float distToPlayer = Mathf.Abs(Vector3.Distance(player.transform.position, transform.position));
-    //                 if (distToPlayer > PlayerLoseRange)
-    //                 {
-    //                     currentState = EnemyState.ReturnToSpawn;
-    //                 }
-    //                 else if (distToPlayer < MeleeRange)
-    //                 {
-    //                     outOfCombatTimer = Time.time + TimeUntilOutOfCombat;
-    //                     MeleeAttack();
-    //                     agent.SetDestination(player.transform.position);
-    //                 }
-    //                 else if (distToPlayer < AttackRange)
-    //                 {
-    //                     if (outOfCombatTimer < (Time.time + TimeUntilOutOfCombat / 2f))
-    //                     {
-    //                         outOfCombatTimer = Time.time + TimeUntilOutOfCombat / 2f;
-    //                     }
-    //                     RangedAttack();
-    //                 }
-
-    //                 if (isSlowUpdate && agent.isOnNavMesh)
-    //                 {
-    //                     agent.SetDestination(player.transform.position);
-    //                 }
-
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.ReturnToSpawn:
-    //             {
-    //                 if (Mathf.Abs(Vector3.Distance(spawnPoint, transform.position)) < SpawnReturnDistance)
-    //                 {
-    //                     currentState = EnemyState.Idle;
-    //                 }
-
-    //                 if (isSlowUpdate && agent.isOnNavMesh)
-    //                 {
-    //                     agent.SetDestination(spawnPoint);
-    //                 }
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.Dying:
-    //             {
-
-    //                 //play death animation
-
-
-
-    //                 model.transform.eulerAngles += new Vector3((90f / DeathTime) * Time.deltaTime, 0, 0);
-    //                 model.transform.position += new Vector3(0, (-2f / DeathTime) * Time.deltaTime, 0);
-
-    //                 if (stunnedTimer <= 0)
-    //                 {
-    //                     currentState = EnemyState.Dead;
-    //                 }
-
-
-    //                 break;
-    //             }
-
-    //         case EnemyState.Dead:
-    //             {
-
-
-    //                 Destroy(gameObject);
-    //                 break;
-    //             }
-
-    //     }
-    // }
-
     protected virtual void CalcRangedPos()
     {
-        // float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
-        // Vector3 pos = Vector3.MoveTowards(transform.position, player.transform.position, dist - AttackRange);
 
-        // //randomize pos slightly
-        // Vector3 randompos = Random.insideUnitSphere * aiCirclingMargin;
-        // randompos += pos;
-
-        // if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, wanderDistance, agent.areaMask))
-        // {
-        //     if (agent.isOnNavMesh)
-        //     {
-        //         agent.SetDestination(hit.position);
-        //     }
-        // }
     }
-
-    // protected virtual void RangedAttack()
-    // {
-
-
-    //     //cooldown check
-    //     if (nextRangedCd > Time.time)
-    //     {
-    //         return;
-    //     }
-    //     StartCoroutine(PlayAnimation(1f, "Shoot", "Walk"));
-
-    //     nextRangedCd = Time.time + RangedAttackCooldown;
-
-    //     SimpleProjectile projectile =
-    //         Instantiate(ProjectilePrefab, transform.position + Vector3.up + transform.forward * 1.5f, Quaternion.identity).GetComponent<SimpleProjectile>();
-    //     if (Random.Range(0f, 1f) <= ProjectileTrackingChance)
-    //     {
-    //         //simple projectile
-    //         projectile.SetPropertiesSimple(gameObject, Vector3.up + currentTarget.transform.position - transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget, Team);
-    //     }
-    //     else
-    //     {
-    //         //slowtracking projectile
-    //         projectile.SetPropertiesTracked(gameObject, Vector3.up + transform.position + transform.forward * 0.5f, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform, false, Team);
-    //     }
-    // }
-
-    // protected virtual void MeleeAttack()
-    // {
-    //     //cooldown check
-    //     if (nextMeleeCd > Time.time)
-    //     {
-    //         return;
-    //     }
-    //     StartCoroutine(PlayAnimation(2f, "Melee", "Walk"));
-    //     nextMeleeCd += Time.time + MeleeAttackCooldown;
-
-
-    //     float meleeAttackHeight = 0.25f;
-    //     Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
-    //     Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2, MeleeRange);
-    //     RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, MeleeRange, Vector3.forward);
-
-    //     foreach (RaycastHit hit in hits)
-    //     {
-
-    //         //do damage to player
-    //         PlayerController pc = hit.collider.GetComponent<PlayerController>();
-    //         if (pc)
-    //         {
-    //             pc.TakeDamage(MeleeDamage);
-    //         }
-
-
-    //         //TODO do damage to resources
-
-
-    //     }
-
-
-    // }
-
-
-
 
 
     protected virtual bool CheckDeathCondition()

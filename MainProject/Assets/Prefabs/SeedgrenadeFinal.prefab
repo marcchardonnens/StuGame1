@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5756145027049294732}
   - component: {fileID: 8665562847690647144}
   - component: {fileID: 231669193105230480}
-  m_Layer: 12
+  m_Layer: 13
   m_Name: SeedgrenadeFinal
   m_TagString: Untagged
   m_Icon: {fileID: 0}

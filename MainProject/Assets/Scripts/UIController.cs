@@ -22,22 +22,32 @@ public class UIController : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
+            Destroy(gameObject);
+            Destroy(this);
+            return;
         }
         else
         {
-            Destroy(gameObject);
+            Instance = this;
+            // DontDestroyOnLoad(gameObject);
         }
+
         StartButton.onClick.AddListener(OnStartButtonClicked);
         ProfileButton.onClick.AddListener(OnProfileButtonClicked);
         SettingsButtonMainMenu.onClick.AddListener(OnSettingsButtonClicked);
         ExitButtonMainMenu.onClick.AddListener(OnExitButtonClicked);
         ReadyButton.onClick.AddListener(OnReadyButtonClicked);
-        SceneTransition.UIController = this;
         DisableUIInteraction();
         GameplayManagerBase.OnAnySceneReady += EnableUIInteraction;
+        SceneTransition.OnMenuTransitionComplete += ShowMenu;
+
+        if (GameManager.Instance.SkipToGameplayScene)
+        {
+            OnStartButtonClicked();
+            return;
+        }
 
         if (!GameManager.Instance.SkipIntro)
         {
@@ -63,6 +73,7 @@ public class UIController : MonoBehaviour
         const int lingerDur = 3000;
         const int startingDelay = 1000;
 
+
         MainMenu.SetActive(false);
         LoadingScreen.SetActive(false);
         CreditsScreen.SetActive(false);
@@ -70,6 +81,8 @@ public class UIController : MonoBehaviour
         FadePannel.gameObject.SetActive(true);
         FadePannel.alpha = 1;
         await Task.Delay(startingDelay);
+        AudioManager.Instance.PlayMenuMusic();
+        AudioManager.Instance.FadeInAllSound();
         await SceneTransition.FadeSceneToTransparent(fadeDur);
         await Task.Delay(lingerDur);
         await SceneTransition.FadeSceneToBlack(fadeDur);
@@ -159,6 +172,5 @@ public class UIController : MonoBehaviour
     private void OnReadyButtonClicked()
     {
         SceneTransition.FadeAwayLoadingScreen();
-        Debug.Log("ready");
     }
 }

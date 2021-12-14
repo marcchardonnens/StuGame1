@@ -68,23 +68,13 @@ public class SeedGrenade : MonoBehaviour
 
     public IEnumerator PlayEffect(float effectDuration = 0.1f)
     {
-
-
         StartCoroutine(Pulse());
-
         if (GameManager.ProfileData.HasGrenadeUpgrade)
         {
             StartCoroutine(LingeringField());
         }
-        else
-        {
-            yield return new WaitForSeconds(effectDuration);
-            Destroy(gameObject);
-        }
 
-        //visuals here
-
-
+        yield return null;
     }
 
     public IEnumerator LingeringField()
@@ -131,6 +121,7 @@ public class SeedGrenade : MonoBehaviour
         }
 
         Destroy(pulse);
+        Destroy(gameObject);
     }
 
     void OnCollisionEnter(Collision collision)

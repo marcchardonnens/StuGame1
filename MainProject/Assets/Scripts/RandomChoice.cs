@@ -9,20 +9,20 @@ using UnityEngine;
 public class RandomChoice<T>
 {
     public T Object;
-    public bool Enaled = true;
+    public bool Enabled = true;
     public float SpawnWeight = 1f;
 
     public static T Choose(RandomChoice<T>[] choices, System.Random RNG)
     {
         float totalWeight = 0f;
-        foreach (RandomChoice<T> choice in choices.Where(x => x.Enaled && x.SpawnWeight > 0))
+        foreach (RandomChoice<T> choice in choices.Where(x => x.Enabled && x.SpawnWeight > 0))
         {
             totalWeight += choice.SpawnWeight;
         }
 
         double value = RNG.NextDouble() * totalWeight;
         float curWeight = 0f;
-        foreach (RandomChoice<T> choice in choices.Where(x => x.Enaled && x.SpawnWeight > 0))
+        foreach (RandomChoice<T> choice in choices.Where(x => x.Enabled && x.SpawnWeight > 0))
         {
             curWeight += choice.SpawnWeight;
             if (curWeight >= value)
@@ -37,14 +37,14 @@ public class RandomChoice<T>
     public static T Choose(RandomChoice<T>[] choices)
     {
         float totalWeight = 0f;
-        foreach (RandomChoice<T> choice in choices.Where(x => x.Enaled && x.SpawnWeight > 0))
+        foreach (RandomChoice<T> choice in choices.Where(x => x.Enabled && x.SpawnWeight > 0))
         {
             totalWeight += choice.SpawnWeight;
         }
 
         float value = UnityEngine.Random.Range(0, 1f) * totalWeight;
         float curWeight = 0f;
-        foreach (RandomChoice<T> choice in choices.Where(x => x.Enaled && x.SpawnWeight > 0))
+        foreach (RandomChoice<T> choice in choices.Where(x => x.Enabled && x.SpawnWeight > 0))
         {
             curWeight += choice.SpawnWeight;
             if (curWeight >= value)

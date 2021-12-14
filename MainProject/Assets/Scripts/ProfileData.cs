@@ -10,7 +10,6 @@ public class ProfileData
     public int StoryReturnProgress = 0;
     public int StorySuccessProgress = 0;
 
-
     public bool UnlockedLightbulb = false;
 
     public int MonsterXPTotal = 0;

@@ -17,9 +17,9 @@ public class TurretPlant : PlantBase
     //public int AttackSalveSpreadAngle = 30;
     public int UpgradeAttackSalveAmount = 3;
 
-    public override IEnumerator Grow(float growtime)
+    public override IEnumerator Grow()
     {
-        yield return base.Grow(growtime);
+        yield return base.Grow();
         StartCoroutine(PeriodicActions(AttackCoolDown));
     }
 

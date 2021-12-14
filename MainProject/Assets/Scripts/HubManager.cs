@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class HubManager : GameplayManagerBase
-{  
+{
     public static event Action OnSceneReady = delegate { }; //stage setup, other classes can do setup
     public static event Action OnSceneCompletelyReady = delegate { }; //setup fully complete, gameplay can begin
     public Vector3 PlayerWakeupPos;
@@ -17,14 +17,14 @@ public class HubManager : GameplayManagerBase
     protected override void Awake()
     {
         base.Awake();
-        Debug.Log("Hub Manager Awake");
+        Door.OnDoorInteract += OnDoorInteract;
+        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
+        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
     }
 
     protected void OnEnable()
     {
-        Door.OnDoorInteract += OnDoorInteract;
-        PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
-        PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
+
     }
 
     protected void OnDisable()
@@ -71,7 +71,7 @@ public class HubManager : GameplayManagerBase
         //setup things like upgrades or resources if needed
 
         CreatePlayer();
-        
+
         RaiseSceneReady();
         OnSceneReady?.Invoke();
     }
@@ -96,19 +96,12 @@ public class HubManager : GameplayManagerBase
 
     private void OnDoorInteract()
     {
-        //clean up scene
-
-        BeginTransition(GameConstants.GAMEPLAYSCENE);
-    }
-    public override void BeginTransition(int sceneIndex)
-    {
-
-        TransitionToStage(sceneIndex);
+        SceneTransition.TransitionToGameplay();
     }
 
     protected override void OnExitButton()
     {
-        BeginTransition(GameConstants.MAINMENUSCENE);
+        SceneTransition.TransitionToMenu();
     }
 
     protected override void OnWakeupButton()

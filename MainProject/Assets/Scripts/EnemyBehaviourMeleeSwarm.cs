@@ -26,7 +26,7 @@ public class EnemyBehaviourMeleeSwarm : EnemyBehaviourBase
         }
         else if (distToPlayer < Enemy.MeleeRange)
         {
-            MeleeAttack();
+            Enemy.StartCoroutine(MeleeAttack());
         }
         else if (distToPlayer < Enemy.RangedAttackRangeMax && distToPlayer > Enemy.RangedAttackRangeMin)
         {

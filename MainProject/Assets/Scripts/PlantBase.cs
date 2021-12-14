@@ -14,7 +14,6 @@ public abstract class PlantBase : MonoBehaviour, IPlant
     public float Duration = 0f; //0 = infinite
     private Vector3 finalScale;
     protected bool grown = false;
-    protected PlayerController player;
     public event Action<ITakeDamage, float> OnTakeDamage = delegate { };
     public event Action<ITakeDamage> OnDeath = delegate { };
 
@@ -22,28 +21,25 @@ public abstract class PlantBase : MonoBehaviour, IPlant
     {
         if (GrowTime > 0)
         {
-            finalScale = transform.localScale;
-            transform.localScale = Vector3.zero;
-            StartCoroutine(Grow(GrowTime));
+            StartCoroutine(Grow());
         }
         CurrentHP = MaxHP;
-        player = GameManager.Instance.Player;
     }
 
-    public virtual IEnumerator Grow(float growtime)
+    public virtual IEnumerator Grow()
     {
-        player = GameManager.Instance.Player;
         if (GrowTime > 0)
         {
             finalScale = transform.localScale;
             transform.localScale = Vector3.zero;
         }
-
-        if (transform.localScale.x < finalScale.x)
+        while (transform.localScale.x < finalScale.x)
         {
+            transform.localScale += finalScale / GrowTime * Time.deltaTime;
             yield return null;
-            transform.localScale += finalScale / growtime * Time.deltaTime;
         }
+        transform.localScale = finalScale;
+        grown = true;
     }
 
     public virtual bool TakeDamage(float amount)

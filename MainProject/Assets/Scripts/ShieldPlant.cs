@@ -14,9 +14,9 @@ public class ShieldPlant : PlantBase
     private List<Collider> affectedColliders = new List<Collider>();
 
 
-    public override IEnumerator Grow(float growtime)
+    public override IEnumerator Grow()
     {
-        yield return base.Grow(growtime);
+        yield return base.Grow();
         StartCoroutine(PeriodicActions());
     }
 
@@ -31,36 +31,29 @@ public class ShieldPlant : PlantBase
             List<Collider> toRemove = new List<Collider>();
             foreach (Collider collider in affectedColliders)
             {
-                if (collider == null || player == null)
-                {
+                if(collider == null)
                     continue;
-                }
-                Enemy enemy = collider.GetComponent<Enemy>();
-                if (enemy)
+
+                if (collider.TryGetComponent(out SimpleProjectile projectile))
                 {
-                    Debug.Log("pulse dmg");
+                    if (projectile.Team != Team)
+                    {
+                        projectile.hp -= ProjectileDamage;
+                        if (projectile.hp < 0)
+                        {
+                            toRemove.Add(collider);
+                        }
+                    }
+                    StartCoroutine(Pulse());
+                }
+                else if (collider.TryGetComponent(out Enemy enemy))
+                {
                     bool lethal = enemy.TakeDamage(PeriodicDamage);
                     if (lethal)
                     {
                         toRemove.Add(collider);
                     }
                     StartCoroutine(Pulse());
-                }
-                else
-                {
-                    SimpleProjectile projectile = collider.GetComponent<SimpleProjectile>();
-                    if (projectile)
-                    {
-                        if (projectile.gameObject.layer != GameConstants.PLAYERLAYER)
-                        {
-                            projectile.hp -= ProjectileDamage;
-                            if (projectile.hp < 0)
-                            {
-                                toRemove.Add(collider);
-                            }
-                        }
-                        StartCoroutine(Pulse());
-                    }
                 }
             }
             toRemove.ForEach(c => affectedColliders.Remove(c));

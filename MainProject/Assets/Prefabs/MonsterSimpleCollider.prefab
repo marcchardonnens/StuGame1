@@ -1201,7 +1201,7 @@ MonoBehaviour:
         SpacialBlend: 1
         Spread: 0
         MinDistance: 5
-        MaxDistance: 120
+        MaxDistance: 500
       Enabled: 1
       SpawnWeight: 1
   NavMeshPosCorrectionMax: 25
@@ -1269,8 +1269,8 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.08941844
-      value: 0.5621414
+      time: 0.10030559
+      value: 0.57549286
       inSlope: -8.745449
       outSlope: -8.745449
       tangentMode: 0
@@ -1278,7 +1278,7 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.14596486
+      time: 0.18044972
       value: 0.074020326
       inSlope: -0.103781246
       outSlope: -0.103781246

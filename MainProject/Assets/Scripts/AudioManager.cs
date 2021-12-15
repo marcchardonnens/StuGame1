@@ -38,6 +38,7 @@ public class AudioManager : MonoBehaviour
         // SceneTransition.OnAnyTransitionComplete += FadeInAllSound;
 
 
+        AudioSources[MUSICCHANNEL].loop = true;
     }
 
 

@@ -136,8 +136,9 @@ public class StageManager : GameplayManagerBase
             StageTimer -= Time.deltaTime;
         }
 
-        if (StageTimer <= 0)
+        if (StageTimer <= 0 && GameManager.Instance.GameUnpaused)
         {
+            GameManager.Instance.PauseGame();
             EndStage(StageResult.TimerExpired);
             SceneTransition.TransitionToHub();
         }

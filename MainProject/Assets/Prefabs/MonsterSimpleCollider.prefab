@@ -1193,7 +1193,7 @@ MonoBehaviour:
     - Object:
         Randomize: 1
         Clip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
-        Volume: 0.75
+        Volume: 1
         VolumeRandomRange: 0
         Pitch: 1
         PitchRandomRange: 0.2

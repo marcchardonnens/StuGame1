@@ -43,6 +43,7 @@ public class AudioManager : MonoBehaviour
 
     public void PlayGameplayMusic()
     {
+        AudioSources[MUSICCHANNEL].Stop();
         Sound s = ClipCollection<Sound>.ChooseClipFromType(SoundType.MusicGameplay, Music);
         if (s == null)
             return;
@@ -55,6 +56,8 @@ public class AudioManager : MonoBehaviour
 
     public void PlayHubMusic()
     {
+        AudioSources[MUSICCHANNEL].Stop();
+        AudioSources[MUSICCHANNEL].clip = null;
         Sound s = ClipCollection<Sound>.ChooseClipFromType(SoundType.MusicHub, Music);
         if (s == null)
             return;

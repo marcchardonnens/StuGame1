@@ -3982,12 +3982,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2004050622}
+  - component: {fileID: 2004050624}
   - component: {fileID: 2004050623}
   - component: {fileID: 2004050625}
   - component: {fileID: 2004050627}
   - component: {fileID: 2004050626}
   - component: {fileID: 2004050628}
-  - component: {fileID: 2004050624}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -4123,8 +4123,8 @@ MonoBehaviour:
     Clips:
     - Object:
         Randomize: 0
-        Clip: {fileID: 8300000, guid: ef5f6ea993bd01946a2ac03608cd74c3, type: 3}
-        Volume: 0.2
+        Clip: {fileID: 8300000, guid: 4a37f90a939614355b08ad2e6e5c7b6b, type: 3}
+        Volume: 1
         VolumeRandomRange: 0
         Pitch: 1
         PitchRandomRange: 0
@@ -4140,15 +4140,15 @@ MonoBehaviour:
         VolumeRandomRange: 0
         Pitch: 1
         PitchRandomRange: 0
-      Enabled: 1
+      Enabled: 0
       SpawnWeight: 1
   - enabled: 1
     Type: 3
     Clips:
     - Object:
         Randomize: 0
-        Clip: {fileID: 8300000, guid: 67a77c319e075b7479dbb53ece8c7bf8, type: 3}
-        Volume: 1
+        Clip: {fileID: 8300000, guid: face35de32d0c4baf83a6a0d451a9084, type: 3}
+        Volume: 0.6
         VolumeRandomRange: 0
         Pitch: 1
         PitchRandomRange: 0

@@ -528,7 +528,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     private bool PreviewShieldPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position,
                 PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up,
@@ -551,7 +551,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     private bool PreviewTurretPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || CurrentSeeds < TurretPlantCost)
@@ -571,7 +571,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     private bool PreviewSeedPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
             || CurrentSeeds < SeedPlantCost)

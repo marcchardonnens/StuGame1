@@ -1083,7 +1083,6 @@ GameObject:
   - component: {fileID: 927489730158286974}
   - component: {fileID: 604930530864542282}
   - component: {fileID: 7327127629816567629}
-  - component: {fileID: 8340472513281035610}
   - component: {fileID: 5876838414994417818}
   m_Layer: 11
   m_Name: MonsterSimpleCollider
@@ -1156,8 +1155,8 @@ MonoBehaviour:
   RangedDamage: 12
   Armor: 0
   FrontBlock: 0
-  PlayerDetectRange: 25
-  PlayerLoseRange: 50
+  PlayerDetectRange: 18
+  PlayerLoseRange: 60
   TimeUntilOutOfCombat: 10
   SpawnReturnDistance: 5
   SpawnTime: 2
@@ -1169,7 +1168,7 @@ MonoBehaviour:
   RangedAttackCooldown: 4
   MeleeAnimationTime: 0.5
   RangedAnimationTime: 0.5
-  currentLevel: 0
+  currentLevel: 1
   BaseRewardAmount: 500
   PlayerRageLevelRewardMultiplier: 0.5
   EnemyLevelRewardMultiplier: 1.75
@@ -1188,18 +1187,23 @@ MonoBehaviour:
   TurnSpeed: 1
   Gravity: 20
   Sounds:
-  - Type: 8
+  - enabled: 1
+    Type: 11
     Clips:
     - Object:
+        Randomize: 1
         Clip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
-        Volume: 1
-        pitch: 0
-        StereoPan: 0
+        Volume: 0.75
+        VolumeRandomRange: 0
+        Pitch: 1
+        PitchRandomRange: 0.2
+        PanStereo: 0
+        SpacialBlend: 1
+        Spread: 0
         MinDistance: 5
         MaxDistance: 500
-      Enaled: 1
+      Enabled: 1
       SpawnWeight: 1
-  SpacialAudio: {fileID: 8340472513281035610}
   NavMeshPosCorrectionMax: 25
   currentHP: 0
   HealthSlider: {fileID: 7279466557401182094}
@@ -1225,18 +1229,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 1
   m_ObstacleAvoidanceType: 4
---- !u!114 &8340472513281035610
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4022036406902719952}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6aed9ad1e0293c4ab0b0f09e01356ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!82 &5876838414994417818
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1246,8 +1238,8 @@ AudioSource:
   m_GameObject: {fileID: 4022036406902719952}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
+  OutputAudioMixerGroup: {fileID: -3854618895372207334, guid: 8f2eac6d7ca5cd84388686dfabba3153, type: 2}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1255,12 +1247,12 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 195
+  Priority: 128
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 2
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -1277,14 +1269,32 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
+      time: 0.10030559
+      value: 0.57549286
+      inSlope: -8.745449
+      outSlope: -8.745449
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.18044972
+      value: 0.074020326
+      inSlope: -0.103781246
+      outSlope: -0.103781246
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.19759324
+      outWeight: 0.1990881
+    - serializedVersion: 3
+      time: 0.9800415
+      value: 0
+      inSlope: -0.33387142
+      outSlope: -0.33387142
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.112628534
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -1293,7 +1303,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

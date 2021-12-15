@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8999575113112919859}
   - component: {fileID: 2574363613959914498}
   - component: {fileID: 3687748983188801544}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: GardenSticks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 7863295576823247141}
   - component: {fileID: 8680651294893143978}
   - component: {fileID: 7069031589878661398}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: library002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -186,7 +186,8 @@ GameObject:
   m_Component:
   - component: {fileID: 190480130561323622}
   - component: {fileID: 2014786246639019688}
-  m_Layer: 0
+  - component: {fileID: -5798016147996448675}
+  m_Layer: 6
   m_Name: house_base_OutsideOptimized
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -248,9 +249,28 @@ Animation:
   - {fileID: 1371062618531562728, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
   - {fileID: -5399200397528593491, guid: bc3077f57f7494512bcf3368ca0af7b1, type: 3}
   m_WrapMode: 0
-  m_PlayAutomatically: 1
-  m_AnimatePhysics: 0
+  m_PlayAutomatically: 0
+  m_AnimatePhysics: 1
   m_CullingType: 0
+--- !u!95 &-5798016147996448675
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715905249282418908}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 803902dbcb7c10148b1b1eb266f8dabb, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &744048778928008799
 GameObject:
   m_ObjectHideFlags: 0
@@ -358,7 +378,7 @@ GameObject:
   - component: {fileID: 3713992675946235056}
   - component: {fileID: 1578852978983041119}
   - component: {fileID: 3049340796957328113}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -631,7 +651,7 @@ GameObject:
   - component: {fileID: 1006114386140118161}
   - component: {fileID: 8259456199504181291}
   - component: {fileID: 5394827679240672896}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bedStructure
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -713,7 +733,7 @@ GameObject:
   - component: {fileID: 5080158322020420538}
   - component: {fileID: 1671518887923693399}
   - component: {fileID: 5387940093971639796}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -808,7 +828,7 @@ GameObject:
   - component: {fileID: 7800821454842779048}
   - component: {fileID: 1692823662823702279}
   - component: {fileID: 9004050323384793295}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: chair1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -889,7 +909,7 @@ GameObject:
   - component: {fileID: 2739700029830258852}
   - component: {fileID: 7840649612778499781}
   - component: {fileID: 8108829920786879190}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: stool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -970,7 +990,7 @@ GameObject:
   - component: {fileID: 1579949628490920064}
   - component: {fileID: 8439094469791534371}
   - component: {fileID: 536157185118988424}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1051,7 +1071,7 @@ GameObject:
   - component: {fileID: 1580601901128783931}
   - component: {fileID: 1978861196134324317}
   - component: {fileID: 2320394002235529732}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: chair2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1132,7 +1152,8 @@ GameObject:
   - component: {fileID: 4059975671725520803}
   - component: {fileID: 582075034100899505}
   - component: {fileID: 6028794663734460650}
-  m_Layer: 0
+  - component: {fileID: 8465375673977950777}
+  m_Layer: 6
   m_Name: round
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1202,6 +1223,102 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!82 &8465375673977950777
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3802210683389394917}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 387574929317360122, guid: 8f2eac6d7ca5cd84388686dfabba3153, type: 2}
+  m_audioClip: {fileID: 8300000, guid: d6a08d81d3dd35c4d88612b123c40738, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 20
+  MaxDistance: 75
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &4057691968652248558
 GameObject:
   m_ObjectHideFlags: 0
@@ -1215,7 +1332,7 @@ GameObject:
   - component: {fileID: 8706940757141515239}
   - component: {fileID: 5736140500483808075}
   - component: {fileID: 9039322272720512105}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1322,7 +1439,7 @@ GameObject:
   - component: {fileID: 2103490850618365415}
   - component: {fileID: 663537746691699853}
   - component: {fileID: 8868859886357058512}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: stool.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1403,7 +1520,7 @@ GameObject:
   - component: {fileID: 1246534154270109227}
   - component: {fileID: 8289994199615639502}
   - component: {fileID: 3879654860787336573}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Floor001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1484,7 +1601,7 @@ GameObject:
   - component: {fileID: 7423337361859651225}
   - component: {fileID: 7430948298507562355}
   - component: {fileID: 5600714596538483665}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Floor002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1565,7 +1682,7 @@ GameObject:
   - component: {fileID: 2636752433720066810}
   - component: {fileID: 8947265109590047446}
   - component: {fileID: 5008613288927128404}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: library001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1645,7 +1762,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2560429603869165926}
   - component: {fileID: 3340369437025108829}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1739,7 +1856,7 @@ GameObject:
   - component: {fileID: 5387847743284666420}
   - component: {fileID: 2222187213113925203}
   - component: {fileID: 2479221159940044120}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: table
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2092,7 +2209,7 @@ GameObject:
   - component: {fileID: 1534264821259672628}
   - component: {fileID: 6187053396048187760}
   - component: {fileID: 5433983569822057153}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Garden
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2173,7 +2290,7 @@ GameObject:
   - component: {fileID: 1313157884934797440}
   - component: {fileID: 2292150057394199346}
   - component: {fileID: 4400135868449859572}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Structure
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2255,7 +2372,7 @@ GameObject:
   - component: {fileID: 5433589418963485483}
   - component: {fileID: 6915162617134712925}
   - component: {fileID: 7898532264901188922}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: pot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2351,7 +2468,7 @@ GameObject:
   - component: {fileID: 7447056018614652002}
   - component: {fileID: 1808803862267911551}
   - component: {fileID: 700320418755159243}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: seedsContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}

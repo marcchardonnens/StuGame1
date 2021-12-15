@@ -1,8 +1,9 @@
+using System.Diagnostics;
 using System.Threading;
 using System;
 using UnityEngine;
 using Unity.AI.Navigation;
-
+using Debug = UnityEngine.Debug;
 
 public class PlayerController : MonoBehaviour, ITakeDamage
 {
@@ -23,11 +24,19 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     public Team Team { get; } = Team.Player;
     [field: SerializeField]
     public float MaxHP { get; set; }
-    [field: SerializeField]
-    public float CurrentHP { get; private set; }
+    public float CurrentHP
+    {
+        get => currentHP; set
+        {
+            currentHP = value;
+            OnHealthChanged?.Invoke(currentHP, MaxHP);
+        }
+    }
+
+
 
     public Hand RightHand;
-    //public Hand LeftHand;
+    //public Hand LeftHand; 
 
     public ClipCollection<Sound>[] PlayerSounds;
 
@@ -99,10 +108,17 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private CharacterController characterController; //unitys "improved rigidbody" for characters
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
-    // [SerializeField] private float currentHP;
-    [SerializeField] private int currentSeeds = 5;
+    private int CurrentSeeds
+    {
+        get => currentSeeds; set
+        {
+            currentSeeds = value;
+            OnSeedCountChanged?.Invoke(currentSeeds, MaxSeeds);
+        }
+    }
+
     [SerializeField] private float currentShield = 0f;
-    private StageManager stageManager;
+    // private StageManager stageManager;
     //private List<Enemy> chasingEnemies = new List<Enemy>(); // not sure i need this, but i might later
 
 
@@ -131,10 +147,13 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
 
     private IInteractable currentInteractable = null;
+    private float nextFootStepTimer;
+    private int currentSeeds;
+    private float currentHP;
 
     void Awake()
     {
-        stageManager = FindObjectOfType<StageManager>();
+        // stageManager = FindObjectOfType<StageManager>();
         characterController = GetComponent<CharacterController>();
         PreviewSphere = Instantiate(PreviewSphere);
         PreviewRenderer = PreviewSphere.GetComponent<MeshRenderer>();
@@ -142,15 +161,17 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         PreviewSphere.SetActive(false);
         OnPlayerCreated?.Invoke(this);
 
+        HarvestableSeed.OnSeedHarvest += RefillSeeds;
+
     }
 
     void Start()
     {
         CurrentHP = MaxHP;
-        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+        CurrentSeeds = MaxSeeds;
         OnRageAmountChanged?.Invoke(Rage, RageLevelThreshholdCurrent);
         OnPowerupComsume?.Invoke(shroomCounter);
-        OnSeedCountChanged?.Invoke(currentSeeds, MaxSeeds);
+        OnSeedCountChanged?.Invoke(CurrentSeeds, MaxSeeds);
         OnResourcesChanged?.Invoke();
     }
 
@@ -162,7 +183,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     void Update()
     {
-        if (!GameManager.Instance.GamePaused)
+        if (!GameManager.Instance.GameUnpaused)
         {
             return;
         }
@@ -272,25 +293,25 @@ public class PlayerController : MonoBehaviour, ITakeDamage
                 {
                     previewValid = PreviewGrenades();
                     playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(SeedGrenadeCost) + "\nLeft Mouse - Throw\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Shield Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(ShieldPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Turret Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(TurretPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Seed Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(SeedPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
             }
         }
@@ -308,7 +329,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         // Press Left Shift to run
         bool isRunning = Input.GetKey(KeyCode.LeftShift);
         float curSpeedX;
-        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GameUnpaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedX = blockingSpeed;
@@ -321,7 +342,6 @@ public class PlayerController : MonoBehaviour, ITakeDamage
             {
                 curSpeedX = walkingSpeed;
             }
-
         else
         {
             curSpeedX = 0;
@@ -330,7 +350,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
 
         float curSpeedY;
-        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GameUnpaused && !playerUI.PauseMenuOpen)
             if (isBlocking)
             {
                 curSpeedY = blockingSpeed;
@@ -362,10 +382,10 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen && characterController.isGrounded)
+        if (Input.GetButton("Jump") && GameManager.Instance.GameUnpaused && !playerUI.PauseMenuOpen && characterController.isGrounded)
         {
             moveDirection.y = jumpSpeed;
-            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerJump, PlayerSounds));
+            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerJump, PlayerSounds), AudioManager.PLAYERACTIONCHANNEL);
         }
         else
         {
@@ -394,7 +414,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Player and Camera rotation
-        if (GameManager.Instance.GamePaused && !playerUI.PauseMenuOpen)
+        if (GameManager.Instance.GameUnpaused && !playerUI.PauseMenuOpen)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
@@ -403,6 +423,20 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         }
 
 
+        Vector3 xzMovement = new Vector3(moveDirection.x, 0, moveDirection.z);
+        if (characterController.isGrounded && nextFootStepTimer < Time.time && xzMovement.magnitude >= 1f)
+        {
+            Sound s = new Sound(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerStepSound, PlayerSounds));
+            float soundWaitTime = 0.75f - xzMovement.magnitude / 50f;
+            if (isRunning || isBlocking)
+            {
+                s.Volume *= 0.2f;
+                s.VolumeRandomRange *= 0.2f;
+                soundWaitTime *= 2;
+            }
+            AudioManager.Instance.PlayClip(s, AudioManager.STEPSOUNDCHANNEL);
+            nextFootStepTimer = Time.time + soundWaitTime;
+        }
     }
 
 
@@ -436,7 +470,12 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     {
         if (collider != null)
         {
-            if (collider.TryGetComponent(out IInteractable interactable))
+            IInteractable interactable = collider.GetComponent<IInteractable>();
+            if (interactable == null)
+                interactable = collider.GetComponentInChildren<IInteractable>();
+            if (interactable == null)
+                interactable = collider.GetComponentInParent<IInteractable>();
+            if (interactable != null)
             {
                 currentInteractable = interactable;
                 playerUI.SetInteractText(interactable.Name + "\n" + interactable.UiText());
@@ -463,7 +502,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     {
         SeedGrenade grenade = Instantiate(SeedGrenadePrefab, SeedGrenadeRelease.position, SeedGrenadeRelease.rotation).GetComponent<SeedGrenade>();
         grenade.Throw(this, playerCamera.transform.forward, BaseDamage, true);
-        currentSeeds -= SeedGrenadeCost;
+        CurrentSeeds -= SeedGrenadeCost;
     }
 
     private bool PreviewGrenades()
@@ -472,9 +511,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         PlacePreviewSphere(GrenadePreviewDistance);
 
 
-        if (currentSeeds < SeedGrenadeCost)
+        if (CurrentSeeds < SeedGrenadeCost)
         {
-            Debug.Log("not enough seeds!");
             valid = false;
         }
 
@@ -485,16 +523,17 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private void PlaceShieldPlant()
     {
         Instantiate(ShieldPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        currentShield -= ShieldPlantCost;
     }
 
     private bool PreviewShieldPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position,
                 PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up,
                 ~(1 << GameConstants.GROUNDLAYER))
-            || currentSeeds < ShieldPlantCost)
+            || CurrentSeeds < ShieldPlantCost)
         {
             valid = false;
         }
@@ -507,14 +546,15 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private void PlaceTurretPlant()
     {
         Instantiate(TurretPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        CurrentSeeds -= TurretPlantCost;
     }
 
     private bool PreviewTurretPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
-            || currentSeeds < TurretPlantCost)
+            || CurrentSeeds < TurretPlantCost)
         {
             valid = false;
         }
@@ -526,14 +566,15 @@ public class PlayerController : MonoBehaviour, ITakeDamage
     private void PlaceSeedPlant()
     {
         Instantiate(SeedPlantPrefab, PreviewSphere.transform.position, Quaternion.identity);
+        CurrentSeeds -= SeedPlantCost;
     }
 
     private bool PreviewSeedPlant()
     {
-        bool valid = PlacePreviewSphere();
+        bool valid = PlacePreviewSphere(5f, 1 << GameConstants.GROUNDLAYER);
 
         if (Physics.CapsuleCast(PreviewSphere.transform.position, PreviewSphere.transform.position + new Vector3(0, 1f, 0), Radius, Vector3.up, ~(1 << GameConstants.GROUNDLAYER))
-            || currentSeeds < SeedPlantCost)
+            || CurrentSeeds < SeedPlantCost)
         {
             valid = false;
         }
@@ -576,9 +617,9 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         if (postMitigation >= 0)
         {
-            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerHurt, PlayerSounds));
+            AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerHurt, PlayerSounds), AudioManager.PLAYERACTIONCHANNEL);
             CurrentHP -= postMitigation;
-            OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+            // OnHealthChanged?.Invoke(CurrentHP, MaxHP);
         }
 
         if (CurrentHP <= 0)
@@ -596,15 +637,18 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
         //no overheal
         CurrentHP += Mathf.Clamp(amount, 0f, MaxHP - CurrentHP);
-        OnHealthChanged?.Invoke(CurrentHP, MaxHP);
+        // OnHealthChanged?.Invoke(CurrentHP, MaxHP);
     }
 
     public void RefillSeeds(int amount)
     {
-        currentSeeds += amount;
-        if (currentSeeds > MaxSeeds)
+        if (CurrentSeeds + amount <= MaxSeeds)
         {
-            currentSeeds = MaxSeeds;
+            CurrentSeeds += amount;
+        }
+        else
+        {
+            CurrentSeeds = MaxSeeds;
         }
     }
 
@@ -614,7 +658,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         {
             return;
         }
-        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerAttack, PlayerSounds));
+        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerAttack, PlayerSounds), AudioManager.PLAYERACTIONCHANNEL);
         nextMeleeCD = Time.time + (RightHand.weapon.BaseAttackSpeed / (1 + (AttackSpeed / 100)));
         RightHand.MeleeAttack();
         isBlocking = false;
@@ -627,7 +671,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public void Block()
     {
-        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerBlock, PlayerSounds));
+        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerBlock, PlayerSounds), AudioManager.PLAYERACTIONCHANNEL);
         isBlocking = true;
         RightHand.Block();
     }
@@ -652,7 +696,7 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         }
         else
         {
-            if(Rage + amount > RageLevelThreshholdCurrent)
+            if (Rage + amount > RageLevelThreshholdCurrent)
             {
                 Rage = RageLevelThreshholdCurrent;
             }
@@ -722,12 +766,12 @@ public class PlayerController : MonoBehaviour, ITakeDamage
 
     public void GetMonsterXP(int amount)
     {
-        stageManager.OnPlayerGetMonsterXP(Mathf.RoundToInt((float)amount * (1f + MonsterXpMult)));
+        // stageManager.OnPlayerGetMonsterXP(Mathf.RoundToInt((float)amount * (1f + MonsterXpMult)));
     }
 
     public void GetWood(int amount)
     {
-        stageManager.OnPlayerGetWood(amount);
+        // stageManager.OnPlayerGetWood(amount);
     }
 
     public void ConsumeShroom(Powerup powerup)
@@ -738,6 +782,8 @@ public class PlayerController : MonoBehaviour, ITakeDamage
         //Shroom UI
         shroomCounter += 1;
         OnPowerupComsume?.Invoke(shroomCounter);
+
+        AudioManager.Instance.PlayClip(ClipCollection<Sound>.ChooseClipFromType(SoundType.PlayerConsumeShroom, PlayerSounds), AudioManager.EFFECTCHANNEL);
 
         switch (powerup.Type)
         {

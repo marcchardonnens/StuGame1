@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class PlayerUIController : MonoBehaviour
 {
-    public static PlayerUIController Instance {get; private set;}
+    public static PlayerUIController Instance { get; private set; }
     public const string InteractPrefix = "E - ";
     public Button BackToGameButton, SettingsButton, WakeupButton, ExitGameButton;
     public GameObject PauseMenu, SharedHUD, GameplayHUD, HubHUD;
@@ -21,13 +21,15 @@ public class PlayerUIController : MonoBehaviour
 
     void Awake()
     {
-        if(Instance == null)
+        if (Instance == null || Instance == this)
         {
             Instance = this;
         }
         else
         {
+            Destroy(gameObject);
             Destroy(this);
+            return;
         }
         BackToGameButton.onClick.AddListener(OnBackToGameButtonClicked);
         SettingsButton.onClick.AddListener(OnSettingsButtonClicked);
@@ -42,6 +44,8 @@ public class PlayerUIController : MonoBehaviour
         HubManager.OnSceneCompletelyReady += ShowHubHud;
         StageManager.OnSceneCompletelyReady += ShowGameplayHud;
         ArenaManager.OnSceneCompletelyReady += ShowGameplayHud;
+        StageManager.OnTimerUpdate += UpdateTime;
+        GameplayManagerBase.OnPauseRequest += PauseButtonPressed;
 
         PlayerController.OnHealthChanged += UpdateHealth;
         PlayerController.OnRageAmountChanged += UpdateRage;
@@ -49,16 +53,36 @@ public class PlayerUIController : MonoBehaviour
         PlayerController.OnPowerupComsume += UpdateMushroomCount;
         PlayerController.OnResourcesChanged += UpdateResources;
     }
+
+    private void PauseButtonPressed()
+    {
+        if (GameManager.Instance.State == GameState.StagePlaying)
+        {
+            if (PauseMenuOpen)
+            {
+                HidePauseMenu();
+            }
+            else
+            {
+                ShowPauseMenu();
+            }
+        }
+    }
+
     private void ShowGameplayHud()
     {
+        HideAllPannels();
         SharedHUD.SetActive(true);
         GameplayHUD.SetActive(true);
+        WakeupButton.interactable = true;
     }
 
     private void ShowHubHud()
     {
+        HideAllPannels();
         SharedHUD.SetActive(true);
         HubHUD.SetActive(true);
+        WakeupButton.interactable = false;
     }
 
     private void HideAllPannels()
@@ -79,7 +103,7 @@ public class PlayerUIController : MonoBehaviour
 
     private void ShowPauseMenu()
     {
-        HideHud();
+        // HideHud();
         PauseMenu.SetActive(true);
         PauseMenuOpen = true;
         GameManager.Instance.UnlockCursor();
@@ -96,27 +120,27 @@ public class PlayerUIController : MonoBehaviour
 
     private void OnBackToGameButtonClicked()
     {
-        Debug.Log("back to game");
+        // Debug.Log("back to game");
         HidePauseMenu();
     }
 
     private void OnSettingsButtonClicked()
     {
-        Debug.Log("settings");
+        // Debug.Log("settings");
     }
 
     private void OnWakeupButtonClicked()
     {
-        Debug.Log("wake up");
-        HideAllPannels();
+        // Debug.Log("wake up"); 
+        // HideAllPannels();
         // StageManager.GiveUp();
     }
 
     private void OnExitGameButtonClicked()
     {
-        Debug.Log("exit game from game");
-        HideAllPannels();
-        // StageManager.ExitGame();
+        // Debug.Log("exit game from game");
+        // HideAllPannels();
+        // SceneTransition.TransitionToMenu();
     }
 
     public void SetInteractText(string text)

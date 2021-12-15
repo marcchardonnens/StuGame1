@@ -22,9 +22,6 @@ public class ArenaManager : GameplayManagerBase
         base.Update();
         EnemyController.Tick();
     }
-    public override void BeginTransition(int sceneIndex)
-    {
-    }
 
     public override void SetupStage()
     {
@@ -45,10 +42,10 @@ public class ArenaManager : GameplayManagerBase
         return base.CreatePlayer();
     }
 
-    protected override void TransitionToStage(int sceneIndex)
-    {
-        base.TransitionToStage(sceneIndex);
-    }
+    // protected override void TransitionToStage(int sceneIndex)
+    // {
+    //     base.TransitionToStage(sceneIndex);
+    // }
 
     public override void GiveControl()
     {

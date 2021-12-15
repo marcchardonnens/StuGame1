@@ -12,8 +12,8 @@ public class EnemyController
     //constants
     private bool active = false;
     private const int MAXENEMIES = 10;
-    private const int SPAWNINTERVAL = 10; //seconds to milis
-    private const int GROUPSIZE = 5;
+    private const int SPAWNINTERVAL = 1;
+    private const int GROUPSIZE = 10;
     private const float SPAWNDISTANCEPLAYERMIN = 25f;
     private const float SPAWNDISTANCEPLAYERMAX = 100f;
 

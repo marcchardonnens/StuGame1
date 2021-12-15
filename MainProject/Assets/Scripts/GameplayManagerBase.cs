@@ -9,20 +9,23 @@ using UnityEngine;
 public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 {
     public static event Action OnAnySceneReady = delegate { }; //stage setup, other classes can do setup
+    public static event Action OnPauseRequest = delegate { };
     public GameObject PlayerPrefab;
-    protected static GameplayManagerBase instance;
-    public static GameplayManagerBase Instance { get { return instance; } }
+    public static GameplayManagerBase Instance { get; set; } 
 
     protected virtual void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
+            Destroy(this);
+            return;
         }
         else
         {
-            instance = this;
+            Instance = this;
         }
+
         GameManager.Instance.CurrentManager = this;
         PlayerUIController.Instance.WakeupButton.onClick.AddListener(OnWakeupButton);
         PlayerUIController.Instance.ExitGameButton.onClick.AddListener(OnExitButton);
@@ -33,7 +36,10 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 
     protected virtual void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            OnPauseRequest?.Invoke();
+        }
     }
 
     public virtual PlayerController CreatePlayer()
@@ -44,28 +50,27 @@ public abstract class GameplayManagerBase : MonoBehaviour, IGameplayManager
 
     public abstract void SetupStage();
 
-    public abstract void BeginTransition(int sceneIndex);
 
     internal Vector3? GetNavmeshLocationNearPlayer(float minDistance, float maxDistance)
     {
         return null;
     }
 
-    protected virtual void TransitionToStage(int sceneIndex)
-    {
-        if(sceneIndex == GameConstants.MAINMENUSCENE)
-        {
-            SceneTransition.TransitionToMenu();
-        }
-        else if(sceneIndex == GameConstants.HUBSCENE)
-        {
-            SceneTransition.TransitionToHub();
-        }
-        else if(sceneIndex == GameConstants.GAMEPLAYSCENE)
-        {
-            SceneTransition.TransitionToGameplay();
-        }
-    }
+    // protected virtual void TransitionToStage(int sceneIndex)
+    // {
+    //     if(sceneIndex == GameConstants.MAINMENUSCENE)
+    //     {
+    //         SceneTransition.TransitionToMenu();
+    //     }
+    //     else if(sceneIndex == GameConstants.HUBSCENE)
+    //     {
+    //         SceneTransition.TransitionToHub();
+    //     }
+    //     else if(sceneIndex == GameConstants.GAMEPLAYSCENE)
+    //     {
+    //         SceneTransition.TransitionToGameplay();
+    //     }
+    // }
 
     protected void RaiseSceneReady()
     {

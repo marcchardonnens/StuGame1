@@ -5,6 +5,7 @@ using UnityEngine;
 
 public interface IInteractable
 {
+    bool Enabled {get; set;}
     string Name{get;}
     void Interact();
     string UiText();

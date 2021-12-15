@@ -108,20 +108,22 @@ public class TerrainBuilder : MonoBehaviour
 
         Scenery = new GameObject("Scenery");
         Scenery.transform.SetParent(transform, false);
-        SceneVisibilityManager.instance.DisablePicking(Scenery, true);
-
+        
         Ground = new GameObject("Ground");
         Ground.transform.SetParent(transform, false);
 
         Terrain = new GameObject("HubTerrain");
         Terrain.transform.SetParent(transform, false);
-        SceneVisibilityManager.instance.DisablePicking(Terrain, true);
+        
 
         Terrain.transform.position += new Vector3(HubXOffset, 0, 0);
         Scenery.transform.SetParent(Terrain.transform, false);
         Ground.transform.SetParent(Terrain.transform, false);
-
-
+        
+        #if UNITY_EDITOR
+        SceneVisibilityManager.instance.DisablePicking(Scenery, true);
+        SceneVisibilityManager.instance.DisablePicking(Terrain, true);
+        #endif
 
         RNG = Seed == 0 ? new System.Random() : new System.Random(Seed);
 
@@ -187,7 +189,7 @@ public class TerrainBuilder : MonoBehaviour
             return;
         }
 
-        Debug.Log(Time.time);
+        // Debug.Log(Time.time);
 
         if (DoCleanupScene)
         {
@@ -198,8 +200,10 @@ public class TerrainBuilder : MonoBehaviour
 
         Scenery = new GameObject("Scenery");
         Scenery.transform.SetParent(transform, false);
+        
+        #if UNITY_EDITOR
         SceneVisibilityManager.instance.DisablePicking(Scenery, true);
-
+        #endif
         Ground = new GameObject("Ground");
         Ground.transform.SetParent(transform, false);
 
@@ -263,7 +267,6 @@ public class TerrainBuilder : MonoBehaviour
         TextureData.UpdateMeshHeights(material, minmax.x * transform.localScale.y, minmax.y * transform.localScale.y);
 
         finished = true;
-        Debug.Log(Time.time);
     }
 
     private void PlaceSideObjectives()
@@ -427,8 +430,9 @@ public class TerrainBuilder : MonoBehaviour
         go.transform.localPosition = housePosition;
         houseGlobalPosition = go.transform.position;
 
+        #if UNITY_EDITOR
         SceneVisibilityManager.instance.DisablePicking(go, true);
-
+        #endif
 
         toCleanUp.Add(go);
     }

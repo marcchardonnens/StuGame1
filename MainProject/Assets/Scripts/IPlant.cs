@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IPlant : ITakeDamage
 {
-    IEnumerator Grow(float growtime);
+    IEnumerator Grow();
 }

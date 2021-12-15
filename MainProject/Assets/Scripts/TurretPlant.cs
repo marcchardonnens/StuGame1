@@ -1,7 +1,10 @@
+using System.Numerics;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
+using Quaternion = UnityEngine.Quaternion;
 
 public class TurretPlant : PlantBase
 {
@@ -13,13 +16,15 @@ public class TurretPlant : PlantBase
     public bool SlowTracking = false;
 
     public GameObject ProjectilePrefab;
+    public Transform[] ProjectileSpawnPosition;
 
     //public int AttackSalveSpreadAngle = 30;
-    public int UpgradeAttackSalveAmount = 3;
+    public int BaseAttackSalveAmount = 3;
+    public int UpgradeAttackSalveAmount = 6;
 
-    public override IEnumerator Grow(float growtime)
+    public override IEnumerator Grow()
     {
-        yield return base.Grow(growtime);
+        yield return base.Grow();
         StartCoroutine(PeriodicActions(AttackCoolDown));
     }
 
@@ -27,12 +32,11 @@ public class TurretPlant : PlantBase
     {
         while (true)
         {
-            int shots = GameManager.ProfileData.HasTurretUpgrade ? UpgradeAttackSalveAmount : 1;
+            int shots = GameManager.ProfileData.HasTurretUpgrade ? UpgradeAttackSalveAmount : BaseAttackSalveAmount;
 
-            List<Enemy> enemies = new List<Enemy>();
+            HashSet<Enemy> enemies = new HashSet<Enemy>();
             for (int i = 0; i < shots; i++)
             {
-
                 Collider[] hits = Physics.OverlapSphere(transform.position, Range, 1 << GameConstants.ENEMYLAYER);
 
                 //find closest target
@@ -57,7 +61,8 @@ public class TurretPlant : PlantBase
             for (int i = 0; i < shots; i++)
             {
                 SimpleProjectile projectile = Instantiate(ProjectilePrefab, transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();
-                projectile.SetPropertiesTracked(gameObject, (enemies[i].transform.position - transform.position) + new Vector3(0, 3f, 0), ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, enemies[i].transform, true, Team);
+                projectile.SetPropertiesTracked(gameObject, enemies.ElementAt(i).transform.position - transform.position, ProjectileSpeed, Damage, 1000f, 10f, SlowTracking, 1000f, enemies.ElementAt(i).transform, true, Team);
+                projectile.transform.position = ProjectileSpawnPosition[i%ProjectileSpawnPosition.Length].position;
             }
 
             yield return new WaitForSeconds(periodicDelay);

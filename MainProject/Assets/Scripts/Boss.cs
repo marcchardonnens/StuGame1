@@ -34,7 +34,7 @@ public class Boss : Enemy
 
     protected override IEnumerator PlayPeriodicSound()
     {
-        AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.EnemyBoss, Sounds));
+        // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.EnemyBoss, Sounds));
         yield return new WaitForSeconds(Random.Range(2f,4f));
     }
 
@@ -69,9 +69,6 @@ public class Boss : Enemy
 
     }
 
-
-
-
     protected override void CalcRangedPos()
     {
         float dist = Mathf.Abs(Vector3.Distance(transform.position, player.transform.position));
@@ -80,101 +77,13 @@ public class Boss : Enemy
         //randomize pos slightly
         Vector3 randompos = Random.insideUnitSphere;
         randompos += pos;
-        NavMeshHit hit;
 
-        if (NavMesh.SamplePosition(randompos, out hit, WanderDistanceMax, agent.areaMask))
+        if (NavMesh.SamplePosition(randompos, out NavMeshHit hit, WanderDistanceMax, agent.areaMask))
         {
             agent.SetDestination(hit.position);
         }
-
-
     }
 
-    // protected override void RangedAttack()
-    // {
-        // //cooldown check
-        // if (nextRangedCd > Time.time)
-        // {
-        //     return;
-        // }
-        // nextRangedCd = Time.time + RangedAttackCooldown;
-
-
-        // for (int i = 0; i < RangedAttackSalveAmount; i++)
-        // {
-
-        //     float angle;
-        //     if (RangedAttackSalveAmount % 2 == 1)
-        //     {
-        //         angle = (RangedAttackSalveSpreadAngle * 2) / (RangedAttackSalveAmount - 1);
-        //         angle = angle * (((RangedAttackSalveAmount - i) - RangedAttackSalveAmount / 2) - 1);
-
-        //     }
-        //     else
-        //     {
-        //         float spread = (RangedAttackSalveSpreadAngle * 2) / (RangedAttackSalveAmount - 1);
-        //         angle = spread;
-        //         angle = angle * (((RangedAttackSalveAmount - i) - RangedAttackSalveAmount / 2));
-        //         angle -= spread / 2;
-
-        //     }
-
-        //     Vector3 direction = currentTarget.transform.position - transform.position;
-        //     direction = direction.normalized;
-        //     direction *= transform.localScale.z;
-            
-
-        //     SimpleProjectile projectile =
-        //         Instantiate(ProjectilePrefab, direction + transform.position, Quaternion.identity).GetComponent<SimpleProjectile>();
-        //     if (currentLevel < 2)
-        //     {
-        //         //simple projectile
-        //         projectile.SetPropertiesSimple(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, currentTarget, Team);
-        //     }
-        //     else
-        //     {
-        //         //slowtracking projectile
-        //         projectile.SetPropertiesTracked(gameObject, direction + transform.position, ProjectileSpeed, RangedDamage, ProjectileHP, ProjectileLifetime, true, ProjectileTurnSpeed, currentTarget.transform,false, Team);
-        //     }
-
-        //     projectile.transform.RotateAround(transform.position, Vector3.up, angle);
-
-        // }
-    // }
-
-    // protected override void MeleeAttack()
-    // {
-    //     //cooldown check
-    //     if (nextMeleeCd > Time.time)
-    //     {
-    //         return;
-    //     }
-    //     nextMeleeCd += Time.time + MeleeAttackCooldown;
-
-
-    //     float meleeAttackHeight = 0.25f;
-    //     Vector3 p1 = transform.position + new Vector3(0, -meleeAttackHeight / 2f, MeleeRange);
-    //     Vector3 p2 = transform.position + new Vector3(0, meleeAttackHeight / 2, MeleeRange);
-    //     RaycastHit[] hits = Physics.CapsuleCastAll(p1, p2, MeleeRange, Vector3.forward);
-
-    //     foreach (RaycastHit hit in hits)
-    //     {
-
-    //         //do damage to player
-    //         PlayerController pc = hit.collider.GetComponent<PlayerController>();
-    //         if (pc)
-    //         {   
-    //             pc.TakeDamage(MeleeDamage);
-    //         }
-
-
-    //         //TODO do damage to resources
-
-
-    //     }
-
-
-    // }
 
     protected override void OnDrawGizmosSelected()
     {

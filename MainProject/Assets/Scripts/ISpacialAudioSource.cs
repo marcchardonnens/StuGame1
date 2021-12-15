@@ -5,5 +5,8 @@ using UnityEngine;
 
 public interface ISpacialAudioSource
 {
-    void Play(SpacialSound sound);
+    public List<ClipCollection<SpacialSound>> Sounds {get;}
+    public SpacialAudioSource SpacialAudioSource { get; }
+    public void Play(SpacialSound sound);
+    public void Play(SoundType type);
 }

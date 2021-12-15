@@ -27,24 +27,20 @@ public enum GameState
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    [field: SerializeField]
-    public GameObject PlayerPrefab { get; set; }
-    [field: SerializeField]
-    public bool SkipIntro { get; set; } = false;
+    [field: SerializeField] public GameObject PlayerPrefab { get; set; }
+    [field: SerializeField] public bool SkipIntro { get; set; } = false;
+    [field: SerializeField] public bool SkipToGameplayScene { get; set; }
     public static ProfileData ProfileData { get; set; } = new ProfileData(false);
     public PlayerController Player { get; set; }
-    public GameState State {get; private set;} = GameState.Intro; 
+    public GameState State { get; private set; } = GameState.Intro;
     public GameplayManagerBase CurrentManager { get; set; }
     [field: SerializeField]
     public UIController UIController { get; set; }
-    [field: SerializeField]
-    public Camera MainCamera { get; set; }
-    public event Action<GameState, GameState> OnGameStateChanged = delegate{};
-    [field: SerializeField]
-    public bool UnlockedProfile { get; set; } = false;
+    [field: SerializeField] public Camera MainCamera { get; set; }
+    public event Action<GameState, GameState> OnGameStateChanged = delegate { };
+    [field: SerializeField] public bool UnlockedProfile { get; set; } = false;
     public bool InstructionsOKPressed { get; set; } = false;
-    [field: SerializeField]
-    public bool GamePaused { get; set; } = false;
+    [field: SerializeField] public bool GameUnpaused { get; private set; } = false;
     public bool InGamePlayScene { get; set; } = false;
     public bool SceneLoaded { get; set; } = false;
     public bool SceneCompletelyReady { get; set; } = false;
@@ -52,24 +48,30 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            Destroy(this);
+            return;
+        }
+        else
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+
         PlayerController.OnPlayerCreated += OnPlayerCreation;
         PlayerController.OnPlayerDestroyed += OnRemovePlayerSwapToMainCamera;
     }
 
     public void DestroyCurrentManager()
     {
-        if(CurrentManager != null)
+        if (CurrentManager != null)
         {
             Destroy(CurrentManager.gameObject);
+            Destroy(CurrentManager);
+            CurrentManager = null;
+            GameplayManagerBase.Instance = null;
         }
     }
 
@@ -86,10 +88,14 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.TransitionBegin:
                 PauseGame();
+                if(!GameManager.Instance.SkipToGameplayScene)
+                    AudioManager.Instance.FadeOutAllSound();
                 break;
             case GameState.Transition:
                 break;
             case GameState.TransitionEnding:
+                if(!GameManager.Instance.SkipToGameplayScene)
+                    AudioManager.Instance.FadeInAllSound();
                 break;
             case GameState.StageInitializing:
                 break;
@@ -108,7 +114,7 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerCreation(PlayerController player)
     {
-        if(Player != null)
+        if (Player != null)
         {
             Destroy(Player.gameObject);
         }
@@ -127,17 +133,17 @@ public class GameManager : MonoBehaviour
 
     public void OnRemovePlayerSwapToMainCamera(PlayerController player)
     {
-        if(Player != null)
+        if (Player != null)
         {
             Destroy(Player.gameObject);
             Player = null;
         }
-        if(MainCamera == null)
+        if (MainCamera == null)
         {
             return;
         }
-        MainCamera.enabled = false;
-        MainCamera.GetComponent<AudioListener>().enabled = false;
+        MainCamera.enabled = true;
+        MainCamera.GetComponent<AudioListener>().enabled = true;
     }
 
     public void UnlockEverything()
@@ -153,13 +159,13 @@ public class GameManager : MonoBehaviour
     public void PauseGame()
     {
         Time.timeScale = 0;
-        GamePaused = false;
+        GameUnpaused = false;
     }
 
     public void UnPauseGame()
     {
         Time.timeScale = 1;
-        GamePaused = true;
+        GameUnpaused = true;
     }
     public void LockCursor()
     {

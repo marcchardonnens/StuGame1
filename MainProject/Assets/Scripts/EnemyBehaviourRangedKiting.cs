@@ -28,7 +28,7 @@ public class EnemyBehaviourRangedKiting : EnemyBehaviourBase
             else if (distToPlayer < Enemy.MeleeRange)
             {
                 outOfCombatTime = Time.time + Enemy.TimeUntilOutOfCombat;
-                MeleeAttack();
+                Enemy.StartCoroutine(MeleeAttack());
             }
             else if (distToPlayer < Enemy.RangedAttackRangeMax)
             {
@@ -58,9 +58,6 @@ public class EnemyBehaviourRangedKiting : EnemyBehaviourBase
             }
         }
     }
-
-
-
 
 
 

@@ -68,7 +68,7 @@ public abstract class EnemyBehaviourBase
         }
         else
         {
-            if(destination == Vector3.zero)
+            if(destination == Vector3.zero || destination == null || Enemy == null || !Enemy.isActiveAndEnabled || !Enemy.enabled)
                 return;
             Quaternion rotation = Quaternion.LookRotation(destination);
             Enemy.transform.rotation = Quaternion.Slerp(Enemy.transform.rotation, rotation, Enemy.TurnSpeed * Time.deltaTime);
@@ -245,17 +245,17 @@ public abstract class EnemyBehaviourBase
         }
     }
 
-    protected async void MeleeAttack()
+    protected IEnumerator MeleeAttack()
     {
         if (nextMeleeCd > Time.time)
         {
-            return;
+            yield break;
         }
         Enemy.StartCoroutine(PlayAnimation(2f, AnimationMelee, AnimationWalk));
         nextMeleeCd += Time.time + Enemy.MeleeAttackCooldown;
         RefreshCombatTimer(Enemy.TimeUntilOutOfCombat);
 
-        await Task.Delay(Util.SecondsToMillis(1f)); // melee wind up time
+        yield return new WaitForSeconds(1f); // melee wind up time
 
         float meleeAttackHeight = 1.25f;
         Vector3 p1 = Enemy.transform.position + new Vector3(0, meleeAttackHeight, 0) + Enemy.transform.forward * Enemy.MeleeRadius;

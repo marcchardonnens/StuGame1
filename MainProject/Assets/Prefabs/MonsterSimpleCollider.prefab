@@ -1193,8 +1193,8 @@ MonoBehaviour:
     - Object:
         Randomize: 1
         Clip: {fileID: 8300000, guid: 72720dc230d33411bb3f441bb8ffdddd, type: 3}
-        Volume: 0.6
-        VolumeRandomRange: 0.05
+        Volume: 0.75
+        VolumeRandomRange: 0
         Pitch: 1
         PitchRandomRange: 0.2
         PanStereo: 0
@@ -1250,7 +1250,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 120
+  MaxDistance: 500
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -1269,17 +1269,17 @@ AudioSource:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.28031948
-      value: 0.6702302
-      inSlope: -2.9544923
-      outSlope: -2.9544923
+      time: 0.08941844
+      value: 0.5621414
+      inSlope: -8.745449
+      outSlope: -8.745449
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.45994496
-      value: 0.0393371
+      time: 0.14596486
+      value: 0.074020326
       inSlope: -0.103781246
       outSlope: -0.103781246
       tangentMode: 0
@@ -1287,13 +1287,13 @@ AudioSource:
       inWeight: 0.19759324
       outWeight: 0.1990881
     - serializedVersion: 3
-      time: 1
-      value: 0.0025939941
-      inSlope: -0.2886118
-      outSlope: -0.2886118
+      time: 0.9800415
+      value: 0
+      inSlope: -0.33387142
+      outSlope: -0.33387142
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.17994057
+      inWeight: 0.112628534
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

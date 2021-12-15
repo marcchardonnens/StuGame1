@@ -88,12 +88,14 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.TransitionBegin:
                 PauseGame();
-                AudioManager.Instance.FadeOutAllSound();
+                if(!GameManager.Instance.SkipToGameplayScene)
+                    AudioManager.Instance.FadeOutAllSound();
                 break;
             case GameState.Transition:
                 break;
             case GameState.TransitionEnding:
-                AudioManager.Instance.FadeInAllSound();
+                if(!GameManager.Instance.SkipToGameplayScene)
+                    AudioManager.Instance.FadeInAllSound();
                 break;
             case GameState.StageInitializing:
                 break;

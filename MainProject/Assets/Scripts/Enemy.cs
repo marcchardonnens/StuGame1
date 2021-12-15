@@ -205,7 +205,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
             // AudioManager.Instance.PlayClip(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
             SpacialAudio.Play(ClipCollection<SpacialSound>.ChooseClipFromType(SoundType.Enemy, Sounds));
             // Debug.Log("enemy making sound");
-            yield return new WaitForSeconds(Random.Range(2f, 5f));
+            yield return new WaitForSeconds(Random.Range(2.5f, 5.5f));
         }
     }
     private void OnRageLevelUp(int oldLevel, int newLevel)

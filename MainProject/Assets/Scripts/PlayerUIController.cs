@@ -74,6 +74,7 @@ public class PlayerUIController : MonoBehaviour
         HideAllPannels();
         SharedHUD.SetActive(true);
         GameplayHUD.SetActive(true);
+        WakeupButton.interactable = true;
     }
 
     private void ShowHubHud()
@@ -81,6 +82,7 @@ public class PlayerUIController : MonoBehaviour
         HideAllPannels();
         SharedHUD.SetActive(true);
         HubHUD.SetActive(true);
+        WakeupButton.interactable = false;
     }
 
     private void HideAllPannels()

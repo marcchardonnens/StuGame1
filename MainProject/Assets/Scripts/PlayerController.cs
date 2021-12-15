@@ -293,25 +293,25 @@ public class PlayerController : MonoBehaviour, ITakeDamage
                 {
                     previewValid = PreviewGrenades();
                     playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(SeedGrenadeCost) + "\nLeft Mouse - Throw\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 2)
                 {
                     previewValid = PreviewShieldPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Shield Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(ShieldPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 3)
                 {
                     previewValid = PreviewTurretPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Turret Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(TurretPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
                 else if (previewNumber == 4)
                 {
                     previewValid = PreviewSeedPlant();
-                    playerUI.UpdateSeedSelectionText("Seed Grenade");
-                    playerUI.SetInteractText("Left Mouse - Throw|n Right Mouse - Cancel");
+                    playerUI.UpdateSeedSelectionText("Seed Plant");
+                    playerUI.SetInteractText("Cost - " + SeedGrenadeCost + " Seed" + Util.Plural(SeedPlantCost) + "\nLeft Mouse - Plant on Ground\nRight Mouse - Cancel");
                 }
             }
         }

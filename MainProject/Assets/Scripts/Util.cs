@@ -30,5 +30,10 @@ public static class Util
             SetChildrenActive (childObj, active);
         }
     }
+
+    public static string Plural(float num)
+    {
+        return num == 1 ? "" : "s";
+    }
  
 }
